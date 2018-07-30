@@ -1,0 +1,124 @@
+
+
+\documentclass{report}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+%\usepackage{algorithm}
+\usepackage{listings}
+%\usepackage{standalone}
+%\usepackage{algpseudocode}
+%\usepackage{algorithm2e}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\usepackage{verbatim}
+\usepackage{tabularx}
+%\usepackage{program}
+%\input{externaldoc}
+%\input{verticalblock}
+%\algrenewcommand\algorithmicindent{1.0em}
+\usepackage{minitoc}
+\usepackage{float}
+
+
+\title{thesis}
+\author{garniron}
+\date{January 2018}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\lstset{language=Fortran, morekeywords={assert}}
+
+\newcommand{\Hij}[3][H]{\langle #2 | #1 | #3 \rangle}
+\newcommand{\ket}[1]{| #1 \rangle}
+
+
+\begin{document}
+
+\dominitoc
+
+\maketitle
+\newpage
+
+\chapter*{Acknowledgments - PROBLEMS}
+
+
+
+Alors?? Tu n'ecris pas ta these ???
+
+
+----$\mu$ VS $\ket \alpha$ pour les externes
+
+$\ket \alpha$ au lieu de $\alpha$
+
+probablement $N_{det}$ et $N_{gen}$
+
+Ce qui va dans matrix dressing VS dans alpha-factory
+
+algos dans matrix dressing au lieu de pt2
+
+enlever $teethSize$ et en faire un simple changement de poids.
+
+indice i+1 et j dans phasemask
+
+permuter $N$ et $\tilde N$ ?
+
+$f_A^B$ dans CIPSI n'est pas une "hamming" distance
+
+Remplacer "DROP" par "BREAK" ?
+
+mono et bi excitation c'est francais
+
+notation "int"
+
+changer U par V pour les sets
+
+phase factors
+
+\newpage
+
+\tableofcontents
+\newpage
+
+
+\chapter{Introduction}
+
+During my 3 years at the LCPQ, my work focused on improving the Quantum Package, a suit of quantum chemistry code intended for developpers. It focuses on ease of implementation and parallelism.
+
+\chapter{Quantum Package basics}
+\minitoc
+\input{qp_general}
+
+
+\chapter{Determinant-driven approach}
+\minitoc
+\input{det_driven}
+
+\chapter{Davidson}
+\minitoc
+\input{davidson}
+
+\chapter{CIPSI}
+\minitoc
+\input{cipsi}
+
+\chapter{PT2}
+\minitoc
+\input{pt2}
+
+
+\chapter{Matrix dressing}
+\minitoc
+\input{matrix_dressing}
+
+
+\chapter{exponential dressing etc}
+\input{exp_dressing}
+
+
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}
+
+
+
+

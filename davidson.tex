@@ -1,0 +1,430 @@
+
+Need for variational coefficients. \\
+boils down to find connected determinants. \\
+Computing excitation is extremely fast already. \\
+need to avoid doing comparisons at all \\
+Davidson : connections inside a given set \\
+
+
+\section{def}
+
+
+    
+\section{general approach}
+Algorithmically, the expensive part of our Davidson diagonalization is the matrix-vector products $Hc$. Because $H$ cannot be stored, $H_{ij}$ elements must be re-computed on the fly. This effectively means iterating over $i$ and $j$, checking whether $\ket i$ and $\ket j$ are connected and if they are, accessing the corresponding integral(s) and computing the phase factor.
+Even though we presented a very effective method to compute the excitation degree between two determinants, the number of such computations to be made scales as $N_{det}^2$, which can be prohibitively high.
+The base approach to this problem is to sort, or rather classify, determinants so as to build sets that are by construction disconnected from others. Generally speaking, the set of all variational determinants is split in disjoint sets $S_c$, $c$ being a mathematical object of type $\mathcal{T}$. $\mathcal{D}$ is the type of determinants. For a specific method, we have 
+\begin{itemize}
+	\item
+	$C(D):\mathcal{D} \rightarrow \mathcal{T}$, a function that takes a determinant $D$ and returns a value of type $\mathcal{T}$
+	\item
+	$p(x,y):(\mathcal{T},\mathcal{T}) \rightarrow logical$, a function that takes $x$ and $y$ two values of type $\mathcal{T}$, and returns FALSE if $S_x$ and $S_y$ are disconnected by construction, TRUE otherwise.
+	\item
+	$D \in S_{C(D)}$
+\end{itemize}  
+
+Although it's not formally needed, it's pretty much necessary in practice to have some comparison operator for objects of type $\mathcal{T}$, so that sets can be easily formed by sorting determinants according to their respective $C(D)$. However, the choice for this operator is entierly arbitrary and doesn't affect the method, so it will not be discussed.
+    
+    
+We can then represent the cost of computing $H$ using a matrix $M$ of same size, each element of which is set to 1 if the corresponding $H_{ij}$ element needs to be computed, and to 0 if it is known to be null by construction.
+    
+
+Theoretical reprensentation of $M$ with 3 classes of determinants $A$, $B$, and $C$, $A$ and $C$ being by constrution disconnected. $H_{ij}$ elements corresponding to the white area are, by construction, known to be null. Those in the yellow area need to be computed.
+    
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.4\columnwidth]{figures/davidson/disconnected_classes}
+		\caption{{\label{generators_selectors}
+		}}
+	\end{center}
+\end{figure}
+
+Because the number of determinants used in the following examples is 500k, $M$ is shown as a density map.
+
+As an example, one of the first attempted classification was according to the number of electrons in $s$ a subset of orbitals. Indeed, if $\ket I$ has $n$ electrons in an arbitrary subset of orbitals, and $\ket J$ has $n-3$, quite obviously it will take at least 3 excitations to excite from $\ket I$ to $\ket J$.
+\begin{itemize}
+	\item
+	$\mathcal{T}$ is type scalar
+	\item
+	$C(D)$ returns the number of electrons in the chosen subset.
+	\item
+	$p(x, y) = |x-y| \leq 2$
+\end{itemize}
+
+Computation of $C(D)$ can be acheived using bitstrings. With $S$ a bitstring containing the orbitals wanted in the subset. The number of electrons in this subset for a determinant $\ket I$ represented by a $\alpha \beta$-bitstring $I$ is
+$$C(I)=|I_{\alpha} \wedge S|+|I_{\beta} \wedge S|$$
+    
+Using a subset is equivalent to using the complementary subset, so it is best to pick $N_{orb}/2$ orbitals. For a better entropy, it is of course better to interleave the chosen orbitals.
+$$S=binary(...101010101...)$$
+    
+    
+    
+Determinants are sorted according to this criterion. Using ClBr with 500k determinants, and sorting determinant in increasing order of their respecive $C(D)$, we got matrix $M$ shown in figure \ref{fig:num_subspace}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.6\columnwidth]{figures/davidson/num_subspace}
+		\caption{{\label{fig:num_subspace}
+		}}
+	\end{center}
+\end{figure}
+    
+As expected, the farther away two determinants $\ket I$ and $\ket J$ are in the sorted determinant vector, the likelier it is that $|C(I)-C(J)| > 2$ which makes them disconnected by construction. The "staircase" aspect shows the boundaries of each class.
+However, only a relatively small area of $H$ is null by construction. It is possible to further reduce the area to be explored by chosing several orbital subsets $S_1$ to $S_n$ instead of a single one. In this case, $C(D)$ returns $c$ a vector of size $n$ with $c_{i}$ the number of electron in subset $S_i$ for $D$
+
+\begin{itemize}
+	\item
+	$\mathcal{T}$ is type vector size $n$
+	\item
+	$C(D)$ returns $c$ a vector of size $n$, $c_i$ the number of electron in subset $S_i$
+	\item
+	$p(x, y) = |x_i - y_i| \leq 2 \forall i$
+\end{itemize}
+
+
+
+Using $n=3$ uncorrelated subsets
+$$S_1 = binary(...010101010101...)$$
+$$S_2 = binary(...110011001100...)$$
+$$S_3 = binary(...111100001111...)$$
+The resulting $M$ in figure \ref{fig:num_subspace3} looks awesome but the area isn't reduced much.
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.6\columnwidth]{figures/davidson/num_subspace3}
+		\caption{{\label{fig:num_subspace3}
+		}}
+	\end{center}
+\end{figure}
+
+
+\section{A few methods of interest}
+
+A few methods happened to be of interest
+\subsection{Highest electrons}
+This method hasn't been explored throughoutly, but is still mentioned as it showed potentially interesting results, and can be use in combination with other methods.
+The highest electrons are the most mobile ones, so they are the most likely not to match between two determinants. 
+
+\begin{itemize}
+	\item
+$n \geq 3$ is a parameter of the method. 
+	\item
+$\mathcal{T}$ is a set of $n \geq 3$ electrons. 
+	\item
+$C(D)$ returns the set of the $n$ highest occupied spinorbitals of $D$. To make this unambiguous, it is arbitrarily decided that $\alpha$ spinorbitals are considere higher than their $\beta$ counterpart of same index.
+	\item
+$p(x, y) = n - |x \wedge y)| \leq 2$
+\end{itemize}
+
+$n$ is typically 3 or 4, as a greater value will result in lots of singletons, and the whole point of grouping determinants into sets being defeated. In the extreme case where $n = N_{electron}$, $C(D) = D$
+   
+
+
+\subsection{Singly occupied orbitals}
+If there are $n$ orbitals that are singly occupied in $\ket I$ and not singly occupied in $\ket J$, it will take at least $n$ excitations to excite between $\ket I$ and $\ket J$.
+
+\begin{itemize}
+	\item
+$\mathcal{T}$ is a set of orbitals
+	\item
+$C(D)$ returns the set of singly occupied orbitals in $D$
+	\item
+%$p(x, y) = max \big [popcnt(iand(x, z)), popcnt(iand(y, z)) \big ] > 2 ; z = ieor(x, y)$
+$p(x, y) = max (|x|, |y|) - |x \wedge y| \leq 2$
+\end{itemize}
+
+Matrix $M$ for that method is shown in figure \ref{fig:xor_subspace}.
+This method has one interesting property. If we compare determinants only with those contained in the same set - which is a tiny fraction of the total number of comparisons to be performed - we are guaranteed to find all excitations of the form $\hat T_{a \bar a}^{b \bar b}$ and $\hat T_{a \bar b}^{b \bar a}$, which are typically the greatest non-diagonal matrix elements. Indeed, those excitations imply there was no change in singly occupied orbitals. And since they are the only one to do so, we are also guaranteed not to find any other type of excitation within a set.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.6\columnwidth]{figures/davidson/xor_subspace}
+		\caption{{\label{fig:xor_subspace}
+		}}
+	\end{center}
+\end{figure}
+
+
+\subsection{Simple spin part}
+This methods has been implemented but was overriden by Composite spin part, introduced next. It is mostly mentioned for comprehension.
+
+\begin{itemize}
+	\item
+$\mathcal{T}$ is a set of $\alpha$ spinorbitals
+	\item
+$C(D)$ returns $D_\alpha$, the set of occupied $\alpha$ spinorbitals in $D$
+	\item
+$p(x, y) = \frac{|x \oplus y|}{2} \leq 2$
+\end{itemize}
+
+$\frac{|x \oplus y|}{2}$ computes the excitation degree between $x$ and $y$ spin parts. 
+    
+
+    
+\subsection{Composite spin part}
+What can be noticed in the previous method, is that when we compute $p(x, y)$ to check if two sets $S_x$ and $S_y$ are disconnected, the value returned is the excitation degree for the $\alpha$ part between any $D_1 \in S_x$ and $D_2 \in S_y$. If $p(x, y)=2$, it means, $D_1$ and $D_2$ can only be connected if the excitation for the $\beta$ part is 0, in other words, if they share the same $\beta$ part. This in turn means that, when we compare determinants from $S_x$ and $S_y$, we are only looking for determinants with equal $\beta$ spin part.
+Had we chosen $C(D)$ to return the $\beta$ spin part instead of the $\alpha$ one, $D_1$ and $D_2$ would have ended in the same set.
+Taking this into account, we can set up a method that is made of two sub-methods, each one finding of a subset of possible excitations.
+
+\begin{itemize}
+\item
+Find all connections between determinants that share the same $\alpha$ spin part. In other words, it finds all purely $\beta$ excitation,$\hat T_{\bar a}^{\bar b}$ and $\hat T_{\bar a \bar b}^{\bar c \bar d}$
+\begin{itemize}
+	\item
+$\mathcal{T}_\alpha$ is a set of $\alpha$ spinorbitals
+	\item
+$C_\alpha(D)$ is the set of occupied $\alpha$ spinorbitals in $D$
+	\item
+%$p_\alpha(x, y) = max \big [popcnt(iand(x, z)), popcnt(iand(y, z)) \big ] > 2$, with $z = ieor(x, y)$
+$p_\alpha(x, y) = (x = y)$
+\end{itemize}
+\item
+Find all connections between determinants that are at most singly excited in their $\beta$ part.
+This includes purely $\alpha$ excitation as well as $\alpha+\beta$ ones, $\hat T_a^b$, $\hat T_{ab}^{cd}$ and $\hat T_{\bar a b}^{\bar c d}$.
+\begin{itemize}
+	\item
+$\mathcal{T}_\beta$ is a set of $\beta$ spinorbitals
+	\item
+$C_\beta(D)$ is the set of occupied $\beta$ spinorbitals in $D$
+	\item
+$p_\beta(x, y) = \frac{|x \oplus y|}{2} \leq 1$
+\end{itemize}
+\end{itemize}
+    
+
+All types of double excitations are found by either sub-method. The resulting $M$ matrices are shown in figures \ref{fig:aabb_subspace} and \ref{fig:ab_subspace}.
+The point of this method compared to the previous one, is that the $p$ condition is drastically tightened, resulting in many more sets being by construction disconnected. For the simple spin part method, given a spin part $x$, the cardinality of the set of all $y$ spin parts so that $p(x, y) = TRUE$ is the number of possible double excitations. For composite spin part, it is respectively 1 ($p_\alpha$) and the number of single excitations ($p_\beta$).
+As can be seen, the first method, although it finds all purely $\beta$ excitations, and could as well be used to find purely $\alpha$ ones, explores a minuscule area of $H$. As a matter of fact, finding those is pretty much "free", the vast majority of computational time is spent finding $\alpha \beta$ excitations.
+As previously seen, the most important of excitations, those of the form $\hat T_{a \bar b}^{b \bar a}$, happen to be $\alpha \beta$ ones and can also be obtained for a very small cost using the singly occupied orbitals method. ( et donc? )
+
+    
+    \begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.6\columnwidth]{figures/davidson/aabb_subspace}
+		\caption{{\label{fig:aabb_subspace}
+		}}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.55\columnwidth]{figures/davidson/ab_subspace}
+		\caption{{\label{fig:ab_subspace}
+		}}
+	\end{center}
+\end{figure}
+
+\section{excitation driven(?) - a reecrire/tester}
+
+There is a way to find connections using an 'excitation driven' approach, that would be closer to an integral-driven approach. Essentially, it is possible to find all determinants of an arbitrary set that connects by a particular excitation, with a complexity linear (logarithmic???) with $N_{det}$.
+To understand this approach, we will considered bitstrings as single integers of arbitrary size.
+
+SCHEMA
+
+
+$$\hat T_{a}^{b} D = E$$ 
+
+$$ibclr(ibset(I_D, b), a)$$
+ 
+ 
+$$ibclr(X, a) = X - ISHFT(1,a) ; ibtest(X,a) == TRUE$$
+
+$$ibset(X, b) = X + ISHFT(1,b) ; ibtest(X,b) == FALSE$$
+
+If $\hat T_{a}^b$ can be applied to $D$, $$ibtest(I_D,a)\ and\ not\ ibtest(I_D,b)$$
+$$I_E = I_D + I_T ; I_T = ISHFT(1,b) - ISHFT(1,a)$$
+
+As can be seen, it is possible to have an integer representation of an excitation.
+
+$$TD = E \implies I_E = I_D + I_T ; E \neq 0$$
+
+It must be noted that, if $T$ cannot be applied to $D$, $I_E = I_D + I_T$ will, in most cases, not be a valid reprensentation of a determinant ; that is, $popcnt(I_{E_\alpha}) \neq N_{e,\alpha} \vee popcnt(I_{E_\beta}) \neq N_{e,\beta}$. However, there are rare instances where this isn't true.
+
+EXEMPLE avec 8bit?
+
+Therefore, if $I_E - I_D = I_T$, additional checks are required to establish that $TD = E$.
+
+
+Implementing this in Fortran may not looks straightforward considering in this language, integers are always signed, thus the leftmost bit has a special status. However, it is actually of no relevance except when it comes to sorting, and merely changing the sorting order won't cause any malfunction.
+If "signed" sorting is however desired, it can easily be emulated. Be $X$ and $Y$ two 64-bit integers, $u_comp$ the unsigned comparison operator (the one used by Fortran) and $s_comp$ the signed comparison operator.
+
+$$s\_comp(X,Y) = u\_comp(IEOR(X,ISHFT(1,63)), IEOR(Y,ISHFT(1,63))$$
+
+
+$IEOR(X,ISHFT(1,63)$ returns $X$ with bit at position 63 flipped. Bit are indexed from 0 so bit at position 63 is the leftmost one for 64-bit integers.
+
+The algorithm for "excitation driven" connection finding is detailed in algorithm XX.
+
+=========
+
+
+\begin{comment}
+
+
+
+
+\begin{algorithm}
+	\caption{base functions}
+		
+	\SetKwFunction{FMain}{AddBigint}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+	\Fn(\tcc*[h]{co}){\FMain{some args}}{
+		$overflow \gets 0$ \;
+		\For{$i=1,N_{int}$}{
+			$may \gets IOR(I[i], J[i])$ \;
+			$will \gets IAND(I[i], J[i])$ \;
+			$R[i] = I[i] + J[i] + overflow$ \;
+			$overflow = ISHFT(IOR(will, IAND(may, not(R[i]))), -63)$ \;
+		}
+	}
+\end{algorithm}
+
+
+\begin{algorithm}
+	\caption{base functions}
+		
+	\SetKwFunction{FMain}{AddBigint}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+	\Fn(\tcc*[h]{co}){\FMain{some args}}{
+		$i \gets 1$ \;
+		$j \gets 1$ \;
+		\While{$i \leq N_i \& j \leq N_j$}{
+			\For{$\sigma = \{\alpha, \beta\}$}{
+			$overflow \gets 0$ \;
+			\For{$k=1,N_{int}$}{
+				$m \gets I_i[k,\sigma] + E[k, \sigma] + overflow$ \;
+				\uIf{$m > J_j[k, \sigma]$}{
+					$j \gets j+1$ \;
+					cycle i,j loop \;
+				}\ElseIf{$m < J_j[k, \sigma]$}{
+					$i \gets i+1$ \;
+					cycle i,j loop \;
+				}
+				$may \gets IOR(I_i[k,\sigma], E[k, \sigma])$ \;
+				$will \gets IAND(I_i[k,\sigma], E[k, \sigma])$ \;
+				$overflow \gets ISHFT(IOR(will, IAND(may, not(m))), -63)$ \;
+			}
+			}
+			\If{$EXC(I_i, J_j) \leq 2$}{
+				$assert(J=EI)$ \;			
+			}
+		}
+	}
+\end{algorithm}
+
+
+
+
+
+\begin{algorithm}
+	\caption{base functions}
+	\label{EXCITATION_DRIVEN}
+	\SetKwFunction{FMain}{EXCITATION\_DRIVEN}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+		\Fn(\tcc*[h]{A VERIFIER}){\FMain{some args}}{
+		$i \gets 1$ \;
+		$j \gets 1$ \;
+		
+
+		\While{$i \leq N_i \& j \leq N_j$}{
+			$aim \gets APPLY(I_i, E, ok)$ \;
+			\If{$not\ ok$}{
+				$i \gets i+1$ \;
+				cycle \;
+			}
+			\While{$j \leq N_j$}{
+				\tcc{find the index of $aim$ in $J$ in the range $[j, N_j]$. If not found, return the lowest $j$ so that $detCmp(aim, J_j) = 1$, or $N_{j}+1$ if $aim > J_{N_j}$.}
+				$j \gets find(aim, J, j, N_j, ok)$ \;
+				\If{$ok$}{
+					found \;
+				}
+				%				$cmp \gets DetCmp(J_j, aim)$ \;
+%				\uIf{$cmp = 1$}{
+%					break \;
+%				}\ElseIf{$cmp = 0$}{
+%					found \;
+%					break \;
+%				}
+%				$j \gets j+1$ \;
+			}
+		}
+
+	}
+	
+			
+	\SetKwFunction{FDetCmp}{DetCmp}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+	\Fn(\tcc*[h]{co}){\FDetCmp{$I$, $J$}}{
+		\For{$\sigma = \{\alpha, \beta\}$}{
+		\For{$k=1,N_{int}$}{
+			\uIf{$I_\sigma[k] > J_\sigma[k]$}{
+				\KwRet{1} \;
+			}\uElseIf{$I_\sigma[k] < J_\sigma[k]$}{
+				\KwRet{-1} \;
+			}
+		}
+		}
+		\KwRet 0 \;
+	}
+\end{algorithm}
+\end{comment}
+
+
+
+\begin{algorithm}
+	\caption{EXCITATION\_DRIVEN}
+	\label{EXCITATION_DRIVEN}
+	\SetKwFunction{FMain}{EXCITATION\_DRIVEN}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+		\Fn(\tcc*[h]{CHECK}){\FMain{$I$, $J$}}{
+		$i \gets 1$ \;
+		$j \gets 1$ \;
+		
+
+		\While{$i \leq N_I \& j \leq N_J$}{
+			$aim \gets APPLY(I_i, E, ok)$ \;
+			$j \gets find\_first\_geq(aim, J, j, N_j, match)$ \;				
+			
+			\If{$not(match) \& j \leq N_j$}{
+				$aim \gets REVERSE\_APPLY(J_j, E, ok)$ \;
+				$i \gets find\_first\_geq(aim, I, i, N_i, match)$ \;
+				
+			}
+			\If{$match$}{
+				\If{$ok$}{
+					assert $J_j = \hat EI_i$ \;	
+				}
+				$i \gets i+1$ \;
+			}
+		}
+	}
+
+	
+	
+			
+	\SetKwFunction{FDetCmp}{DetCmp}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+	\Fn(\tcc*[h]{REPLACE WITH find\_first\_geq}){\FDetCmp{$I$, $J$}}{
+		\For{$\sigma = \{\alpha, \beta\}$}{
+		\For{$k=1,N_{int}$}{
+			\uIf{$I_\sigma[k] > J_\sigma[k]$}{
+				\KwRet{1} \;
+			}\uElseIf{$I_\sigma[k] < J_\sigma[k]$}{
+				\KwRet{-1} \;
+			}
+		}
+		}
+		\KwRet 0 \;
+	}
+\end{algorithm}
+
+
+Final idea : alpha/beta with integrals in hashtable \\
+%Next idea(?) : singly occupied with T|I> = T+I \\
+parallelisation  ************* \\
