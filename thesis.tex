@@ -1,7 +1,7 @@
-
-
-\documentclass{report}
+\documentclass[12pt,a4paper]{report}
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage{amsmath}
 %\usepackage{algorithm}
 \usepackage{listings}
@@ -17,7 +17,22 @@
 %\algrenewcommand\algorithmicindent{1.0em}
 \usepackage{minitoc}
 \usepackage{float}
+\usepackage{hyperref}
+\usepackage{physics}
+\usepackage{color}
 
+\hypersetup{
+ colorlinks=true,
+ linkcolor=blue,
+ filecolor=blue,
+ urlcolor=blue,
+ citecolor=blue
+}
+\usepackage{mathpazo,libertine}
+
+
+
+\input{macros}
 
 \title{thesis}
 \author{garniron}
@@ -26,10 +41,24 @@
 \usepackage{natbib}
 \usepackage{graphicx}
 
-\lstset{language=Fortran, morekeywords={assert}}
 
-\newcommand{\Hij}[3][H]{\langle #2 | #1 | #3 \rangle}
-\newcommand{\ket}[1]{| #1 \rangle}
+\lstset{% setup listings
+	language=Fortran,% set programming language
+	basicstyle=\ttfamily\footnotesize,% basic font style
+%	keywordstyle=\bfseries,% keyword style
+%        commentstyle=\ttfamily\itshape,% comment style
+%	numbers=left,% display line numbers on the left side
+%	numberstyle=\scriptsize,% use small line numbers
+%	numbersep=10pt,% space between line numbers and code
+	tabsize=2,% sizes of tabs
+	showstringspaces=false,% do not replace spaces in strings by a certain character
+	captionpos=b,% positioning of the caption below
+        breaklines=true,% automatic line breaking
+        escapeinside={(*}{*)},% escaping to LaTeX
+        extendedchars=false,% prohibit extended chars (chars of codes 128--255)
+        otherkeywords={assert}
+}
+
 
 
 \begin{document}

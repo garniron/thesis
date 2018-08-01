@@ -9,44 +9,29 @@ Need to explicitly maintain a list of determinant. \\
 
 \section{Notation TBUpdated}
 \begin{itemize}
-	\item \textbf{$N_{det}$}    
-	    
-	Number of determinants in the variational wavefunction.
+	\item [$\Ndet$] : Number of determinants in the variational wavefunction.
 	
-	\item \textbf{$N_{orb}$}    
-	    
-	Number of orbitals.
+	\item [$\Norb$] : Number of orbitals.
 
-	
-	\item \textbf{$N_{int} = \lfloor \frac{N_{orb}-1}{64} \rfloor + 1$}    
-	    
-	Number of 64-bit integers required to store $N_{orb}$ bits.
+	\item [$\Nint$] : Number of 64-bit integers required to store $N_{orb}$ bits.
+        $\Nint = \lfloor \frac{N_{orb}-1}{64} \rfloor + 1$
 		
-	\item \textbf{$I$}
-	    
-	Bitstring representation of $|I \rangle$
-	\lstset{language=Fortran, morekeywords={assert}}
-	\begin{lstlisting}
-       integer*8 :: I(N_int, 2)
-	\end{lstlisting}
+	\item [$\bitI$] : Bitstring representation of $\kI$
+\begin{lstlisting}
+integer*8 :: I(N_int, 2)
+\end{lstlisting}
 	
-	
-	\item \textbf{$I_\sigma ; \sigma \in \{\alpha, \beta\}$}
-	    
-	Bitstring representation of $\sigma$ spinorbitals of $|I \rangle$
-	\lstset{language=Fortran, morekeywords={assert}}
-	\begin{lstlisting}
-       integer*8 :: Is(N_int)
-	\end{lstlisting}
-	
-	\item \textbf{$I_{\sigma}[n] ; 0 \leq n \leq N_{int}-1 ; \sigma \in \{\alpha, \beta\}$}
-	    
-	Bitstring representation of $\sigma$ spinorbitals of $|I \rangle$ in the range $[1+n \times 64, min \big ( n \times 64 + 63, N_{orb} \big )]$.
-	\lstset{language=Fortran, morekeywords={assert}}
-	\begin{lstlisting}
-       integer*8 :: Isn
-	\end{lstlisting}
-	
+	\item [$\bitIsigma$] : 
+	Bitstring representation of $\sigma$ spinorbitals of $\kI$, $\sigma \in \{\alpha, \beta\}$ 
+\begin{lstlisting}
+integer*8 :: Is(N_int)
+\end{lstlisting}
+
+	\item [ {$\bitIsigma [n] $} ] :
+	Bitstring representation of $\sigma$ spinorbitals of $\kI$ in the range $[ 1+n \times 64, \min \qty (n \times 64 + 63, \Norb) ]$, $0 \leq n \leq \Nint-1 \; ;\; \sigma \in \{\alpha, \beta\}$
+\begin{lstlisting}
+integer*8 :: Isn
+\end{lstlisting}
 
 \end{itemize}
 
