@@ -1,3 +1,28 @@
+\alert{ Il faut ecrire quelque part la fonction d'onde:
+$$ \ket{\Psi} = \sum_I^\Ndet c_I \kI $$
+et l'expression des determinants:
+\begin{equation}
+\begin{array}{c}
+ \Psi({\bf r}_1,\dots,{\bf r}_{\Na},{\bf r}_{\Na+1},\dots,{\bf r}_N;
+      \alpha_1,\dots,\alpha_{\Na},\beta_{\Na+1},\dots,\beta_N) = \\
+\left|
+ \begin{array}{ccc}
+ \varphi_1({\bf r}_1) & \dots & \varphi_1({\bf r}_{\Na}) \\
+ \vdots               & \dots &   \vdots             \\
+ \varphi_{\Na}({\bf r}_1) & \dots & \varphi_{\Na}({\bf r}_{\Na}) \\
+ \end{array}
+\right|
+\left|
+ \begin{array}{ccc}
+ \varphi_1({\bf r}_{\Na+1}) & \dots & \varphi_1({\bf r}_{N}) \\
+ \vdots               & \dots &   \vdots             \\
+ \varphi_{N_\beta}({\bf r}_{\Na+1}) & \dots & \varphi_{N_\beta}({\bf r}_{N}) \\
+ \end{array}
+\right|
+\end{array} 
+\label{eq:slater}
+\end{equation}
+}
 
 Generally speaking, implementing a wavefunction method requires iteration over either bielectronic integrals or determinants. \\
 ease of implementation VS performances \\
@@ -9,12 +34,15 @@ Need to explicitly maintain a list of determinant. \\
 
 \section{Notation TBUpdated}
 \begin{itemize}
-	\item [$\Ndet$] : Number of determinants in the variational wavefunction.
+	\item [$\Ne$] : Number of electrons.
+	\item [$\Na$] : Number of $\alpha$-spin electrons.
+	\item [$\Nb$] : Number of $\beta$-spin electrons.
+	\item [$\Ndet$] : Number of determinants in the wavefunction.
 	
 	\item [$\Norb$] : Number of orbitals.
 
-	\item [$\Nint$] : Number of 64-bit integers required to store $N_{orb}$ bits.
-        $\Nint = \lfloor \frac{N_{orb}-1}{64} \rfloor + 1$
+	\item [$\Nint$] : Number of 64-bit integers required to store $\Norb$ bits.
+        $\Nint = \lfloor \frac{\Norb-1}{64} \rfloor + 1$
 		
 	\item [$\bitI$] : Bitstring representation of $\kI$
 \begin{lstlisting}
@@ -35,21 +63,19 @@ integer*8 :: Isn
 
 \end{itemize}
 
+All the program is built such that the $\alpha$ and $\beta$ spinorbitals share the same space part. In other words, spinorbitals $i$ and $\bar{i}$ both refer to orbital $\phi_i(\br)$.
 
 
 \section{Determinant internal representation}
 
-Determinants can be written as a serie of creation operators applying to the vacuum $\ket \ $.
-$$a^\dagger_i a^\dagger_j a^\dagger_k \ket \  = \ket I$$
 
-Because of the fermionic nature of electrons(?), permutation of two contiguous creation operators results in a sign change, which makes their ordering relevant.
-
-$$a^\dagger_j a^\dagger_i = -a^\dagger_i a^\dagger_j$$
-$$a^\dagger_j a^\dagger_i a^\dagger_k \ket \  = -\ket I$$
-
-This effectively allows to make any $N_{perm}$ permutations (even of non-contiguous operators), and always get
-
-$$-1^{N_{perm}} \ket I$$
+Determinants can be written as a string of creation operators applying to the vacuum state $\vac$.
+$$\ac{i} \ac{j} \ac{k} \vac = \kI$$
+Because of the fermionic nature of electrons, permutation of two contiguous creation operators results in a sign change, which makes their ordering relevant.
+$$\ac{j} \ac{i} = -\ac{i} \ac{j}$$
+$$\ac{j} \ac{i} \ac{k} \vac = -\kI$$
+This effectively allows to make any $\Nperm$ permutations (even of non-contiguous operators), and always get
+$$-1^{\Nperm} \kI$$
 
 
 We see a determinant can be broken down into two pieces of information:
@@ -57,64 +83,56 @@ We see a determinant can be broken down into two pieces of information:
 \item
 An unordered set of creation operators. Essentially, the set of occupied spinorbitals.
 \item
-A sign, the so-called \emph{phase factor}, indicating whether the creation operators are ordered so as to refer to $\ket I$ or $-\ket I$.
+A sign, the so-called \emph{phase factor}, indicating whether the creation operators are ordered so as to refer to $\kI$ or $-\kI$.
 \end{itemize}
 
-Determinants always have an associated coefficient, so we don't need to make the phase factor part of a determinant's internal representation ; the sign is simply reported on the coefficent. Still, we have to make unambiguous to what exact determinant this coefficent applies to, so we need to define some arbitrary ordering our "phaseless" representation will implicitely refer to. We define this ordering as $\alpha$ before $\beta$, then increasing orbital indices.
-For instance, the set of spinorbitals $\{\bar i, i,j>i,k>j\}$ refers to
+Determinants are always associated with a coefficient, so we don't need to make the phase factor part of a determinant's internal representation ; the sign will simply be reported on the associated coefficient. Still, we have to make unambiguous to what exact determinant this coefficient applies to, so we need to define an ordering to which our ``phaseless'' representation implicitly refers. We choose the order where all the $\alpha$ spinorbitals are placed before the $\beta$ spinorbitals, and for each spin then orbitals are sorted with increasing indices.
+For instance, the set of spinorbitals $\{\bar i, i,j,k \}$ with $j>i$ and $k>j$ refers to
+$$\kJ = \ac{i} \ac{j} \ac{k} \ac{\bar i} \vac $$
 
-$$\ket J = a^\dagger_i a^\dagger_j a^\dagger_k a^\dagger_{\bar i} \ket \ $$
-
-So if we happen to build a determiant initially expressed as
-
-$$\ket {J'} = a^\dagger_j a^\dagger_i a^\dagger_k a^\dagger_{\bar i} \ket \ $$
-
-It will be ``translated'' to $-\ket J$, and $a\ket {J'}$ will be translated to $-a\ket J$.
+So if we happen to build a determinant initially expressed as
+$$\kJp = \ac{j} \ac{i} \ac{k} \ac{\bar i} \vac $$
+It will be translated to $-\kJ$.
 
 
-Occupation status of spinorbitals are stored using the so-called \emph{bitstring} encoding. A bitstring is an array of bits ; typically, a 64-bit integer is a bitstring of size 64.
-Quite simply, the idea is to map each spinorbital to a single bit, whose value is set to its occupation number. In other words '0' and '1' are associated with the 'unoccupied' and 'occupied' status.
-By this definition, bitstrings are essentially lists of occupation numbers. But they can be equally thought of as sets. A spinorbital is part of the set defined by a bitstring if the bit it is associated with is non-null.
+The occupations of the spinorbitals are stored using the so-called \emph{bitstring} encoding. A bitstring is an array of bits ; typically, the 64-bit binary representation of an integer is a bitstring of size 64.
+Quite simply, the idea is to map each spinorbital to a single bit, whose value is set to its occupation number. In other words \texttt{0} and \texttt{1} are associated with the \emph{unoccupied} and \emph{occupied} states.
+By this definition, bitstrings are essentially lists of occupation numbers, which is a convenient way to
+store the set of occupied spinorbitals in a determinant.
 
-To keep convenience and performance, because operations often need to be carried out separately on $\alpha$ and $\beta$ spinorbitals, occupation status for $\alpha$ and $\beta$ spinorbitals are stored on different bitstrings, rather than interleaved or otherwise merged in the same one. This allows to straightforwardly map orbital index $n$ to bit index $n-1$ (orbitals are usually indexed from $1$, while bits are indexed from $0$), and makes a bitstring a set of orbitals.
+For simplicity and performance considerations, the occupations of the $\alpha$ and $\beta$ spinorbitals are stored on different bitstrings, rather than interleaved or otherwise merged in the same one. This allows to straightforwardly map orbital index $n$ to bit index $n-1$ (orbitals are usually indexed from $1$, while bits are indexed from $0$), and makes a bitstring a set of orbitals.
 This makes the representation of a determinant a tuple of two bitstrings, associated with respectively $\alpha$ and $\beta$ spinorbitals. Such objects are refered to as \emph{$\alpha \beta$-bitstrings}, and generally define a set a spinorbitals. When used to define a determinant, they imply the previously defined ordering.
 
 
 \begin{itemize}
 \item
-$I$ is the $\alpha \beta$-bitstring representation of $\ket I$
+$\bitI$ is the $\alpha \beta$-bitstring representation of $\kI$
 \item
-$I_\alpha$ is the set of orbitals of $\ket I$ that contain an $\alpha$ electron, as a bitstring
+$\bitI_\alpha$ is the bitstring representation of the set of occupied $\alpha$ spinorbitals of $\kI$ 
 \item
-$I_\beta$ is the set of orbitals of $\ket I$ that contain a $\beta$ electron, as a bitstring
+$\bitI_\beta$ is the bitstring representation of the set of occupied $\beta$ spinorbitals of $\kI$ 
 
 \end{itemize}
-It's easier to think of $I_\alpha$ and $I_\beta$ as "sets of occupied $\alpha$/$\beta$ spinorbitals". But bitstrings are generally sets of orbitals, they are sets of spinorbitals only by context.
+%It's easier to think of $I_\alpha$ and $I_\beta$ as "sets of occupied $\alpha$/$\beta$ spinorbitals". But bitstrings are generally sets of orbitals, they are sets of spinorbitals only by context.
+% C'est vrai dans RHF, pas dans UHF. Pas necessaire alors on peut virer la phrase.
 
 
-The storage space required for a single determinant is, in principle, one bit per spinorbital, or $2 \times N_{orb}$ bits. However, because CPUs are designed to handle 64-bit integers, each spin part is stored on an integer number of 64-bit integers, the unused space being padded with null bits. 
-
-
-In the end, a set of two 64-bit integers - one for alpha spinorbitals and one for beta spinorbitals - is needed to accomodate up to 64 orbitals, making the actual storage needed for 1 determinant
-
-
-
-\begin{equation}
-2 \times 64 \times  \big \lfloor \frac{N_{orb}-1}{64} + 1 \big \rfloor \ bits
+The storage space required for a single determinant is, in principle, one bit per spinorbital, or $2 \times \Norb$ bits. However, because CPUs are designed to handle efficiently 64-bit integers, each spin part is stored as an array of 64-bit integers, the unused space being padded with zeros. 
+The actual storage needed for a determinant is
+$$
+2 \times 64 \times  \left \lfloor \frac{\Norb-1}{64} + 1 \right \rfloor \, \text{bits}
 \label{determinantstoragespace}
-\end{equation}
+$$
 
-Did I mention equation \eqref{determinantstoragespace} ?
-
-For a given system, we call $N_{int}$ the number of 64-bits integer needed to store one spin part.
+For a given system, we call $\Nint$ the number of 64-bits integers needed to store one spin part.
 \begin{equation}
-N_{int} = \big \lfloor \frac{N_{orb}-1}{64} \big \rfloor + 1
+\Nint = \left \lfloor \frac{\Norb-1}{64} \right \rfloor + 1
 \end{equation}
 
 
-The internal Fortran representation of a bitstring is an array of integer*8 (64-bit integer) size $N_{int}$.
+The internal Fortran representation of a bitstring is an array of $\Nint$ \lstinline{integer*8}'s (64-bit integers).
 
-The internal Fortran representation of a $\alpha \beta$-bitstring is a two dimensional array of integer*8, the first dimension of size $N_{int}$ and the second one of size $2$, corresponding to $\alpha$ and $\beta$ spin.
+The internal Fortran representation of an $\alpha \beta$-bitstring is a two dimensional array of \lstinline{integer*8}'s, the first dimension of size $\Nint$ and the second of size $2$, corresponding to the $\alpha$ and $\beta$ spin parts.
 
 
 \lstset{language=Fortran, morekeywords={assert}, frame=single}
@@ -124,19 +142,20 @@ The internal Fortran representation of a $\alpha \beta$-bitstring is a two dimen
   
   integer*8 :: I(N_int, 2)
   integer*8 :: I_alpha(N_int), I_beta(N_int)
+
   ... ! load some determinant in I
   I_alpha(:) = I(:,1)
-  I_beta(:) = I(:,2)
+  I_beta (:) = I(:,2)
 \end{lstlisting}
 
-       
+
+In formulas or algorithms, depending on the level of detail desired, a bitstring can be treated as a single integer of infinite size. This hides some implementation details but is unambiguous. However, in algorithms we will usually try to stay closer to the actual implementation. $\bitI$ being the $\alpha \beta$-bitstring associated with $\kI$, we can explicitly refer to a single 64-bit integer
+$$\bitI_{\sigma}[i]\; ;\; \sigma \in \{\alpha, \beta\}\; ;\; i \in [0, \Nint-1]$$
+which is the bitstring representation of the $\sigma$ spinorbitals of determinant $\kI$ in the range $[1+i \times 64, \min \left( (i+1) \times 64, \Norb \right)]$, indexed from $0$ to $63$.
 
       
-In formulae or algorithms, depending on the level of detail desired, a bitstring can be treated as a single integer of infinite size. This hides some implementation details but is unambiguous. However, in algorithms we will usually try to stay closer to the actual implementation. $I$ being the $\alpha \beta$-bitstring associated with $\ket I$, we can explicitely refer to a single 64-bit integer
-$$I_{\sigma}[i] ; \sigma \in \{\alpha, \beta\} ; i \in [0, N_{int}-1]$$
-which is the bitstring representation of $\sigma$ spinorbitals of $\ket I$ in the range $[1+i \times 64, min \big ( (i+1) \times 64, N_{orb} \big )]$, indexed from $0$ to $63$.
+%TODO : JE ME SUIS ARRETE ICI
 
-      
 \section{Bit manipulation}
 \lstset{language=Fortran, morekeywords={assert}, frame=none, xleftmargin=.1\textwidth}
 
@@ -286,7 +305,7 @@ Note that these notations apply to integers ; whether or not they are meant to b
 
        
 Some examples of how these instructions can be used are given below. They are key to understand how we can determine which holes and particles are created when exciting from $\ket I$ to $\ket J$.
-Let $I$ and $J$ be the bitstring representations of $\ket I$ and $\ket J$, and $P$ a bitstring with $N_{int}=1$. 
+Let $I$ and $J$ be the bitstring representations of $\ket I$ and $\ket J$, and $P$ a bitstring with $\Nint=1$. 
 
       
       
@@ -336,7 +355,7 @@ Because computing excitations is done heavily, and because we are typically inte
 
 		$X \gets 0$   \;
 		\For{$\sigma \in \{\alpha, \beta\}$}{
-		\For{$i \gets 0, N_{int}-1$}{
+		\For{$i \gets 0, \Nint-1$}{
 		  $X \gets X+POPCNT(IEOR(I_{\sigma}[i], J_{\sigma}[i]))$  \;
 		}
 		}
@@ -356,7 +375,7 @@ Because computing excitations is done heavily, and because we are typically inte
 	\KwData{ $I, J$ bitstring representations of determinants $\ket I$ and $\ket J = \hat T \ket I$}
 	\KwResult{ Returns a tuple $(P,H)$, $P$ and $H$ are respectively the sets of particles and holes created by $\hat T$, as $\alpha \beta$-bitstrings}
 		\For{$\sigma \in \{\alpha, \beta\}$}{
-		\For{$i \gets 0, N_{int}-1$}{
+		\For{$i \gets 0, \Nint-1$}{
 			$C \gets IEOR(I_{\sigma}[i],  J_{\sigma}[i])$\;
 			$P_{\sigma}[i] \gets IAND(C, J_{\sigma}[i])$\;
 			$H_{\sigma}[i] \gets IAND(C, I_{\sigma}[i])$\;
@@ -379,7 +398,7 @@ Because computing excitations is done heavily, and because we are typically inte
 		\KwData{ $P$ a bitstring }
 		\KwResult{ $L$ the list of indicies contained in $P$ in increasing order. $P$ is destroyed. }
 		$k \gets 0$ \;
-		\For{$i \gets 0, N_{int}-1$}{
+		\For{$i \gets 0, \Nint-1$}{
 		\While{$P[i] \neq 0$}{
 		$e \gets TRAILZ(P[i])$\;
 		$P[i] \gets IBCLR(P[i], e)$\;
@@ -518,7 +537,7 @@ $$N^{S}_{ij} = |S_\sigma \wedge R_{ij}|$$
 Thus 
 
 $$phase(ij, \ket S) = -1^{p(N^S_{ij})}$$
-Using the above formulas and taking into account the bitstring's internal representation as arrays of integer*8 size $N_{int}$, we get algorithm \ref{alg:PHASE_MONO}.   
+Using the above formulas and taking into account the bitstring's internal representation as arrays of integer*8 size $\Nint$, we get algorithm \ref{alg:PHASE_MONO}.   
 
 
 \begin{algorithm}
@@ -570,7 +589,7 @@ $$\tilde N^S_{ij} = E^S_j - E^S_{i+1} ; i \neq j$$
 $$N^S_{ij} = \tilde N^S_{ij} ; j>i$$
 
 Note that $\tilde N^S_{ij}$ is still defined when $j<i$. The reason for this will be made clear later.
-This requires to store $E^S$ which is an integer array of size $2 \times (N_{orb}+1)$. Note that there is a slight waste as $E^S_1 = 0 \forall \ket S$ ( there is always $0$ electrons under the first orbital ) and $E^S_{N_{orb}+1} = N_{electron,\sigma} \forall \ket S$ ( there is always $N_{electron,\sigma}$ electrons in all orbitals ). Those values are still stored for convenience.
+This requires to store $E^S$ which is an integer array of size $2 \times (\Norb+1)$. Note that there is a slight waste as $E^S_1 = 0 \forall \ket S$ ( there is always $0$ electrons under the first orbital ) and $E^S_{\Norb+1} = N_{electron,\sigma} \forall \ket S$ ( there is always $N_{electron,\sigma}$ electrons in all orbitals ). Those values are still stored for convenience.
 
 
 
@@ -578,11 +597,11 @@ This requires to store $E^S$ which is an integer array of size $2 \times (N_{orb
 
 
 \begin{comment}
-This requires to store $E^S$ which is an integer array of size $2 \times (N_{orb}+1)$.
-Note that although only $2 \times N_{orb}$ integers are required to store the whole information, for practical reasons the actual size of the array is $2 \times (N_{orb}+1)$ because when the last orbital is involved, we need to access $E_{N_{orb}+1}$. The reason for this loss is that $E_1$ contains no information - there are always 0 electrons under the first orbital, $E^S_1 = 0 \forall \ket S$.
+This requires to store $E^S$ which is an integer array of size $2 \times (\Norb+1)$.
+Note that although only $2 \times \Norb$ integers are required to store the whole information, for practical reasons the actual size of the array is $2 \times (\Norb+1)$ because when the last orbital is involved, we need to access $E_{\Norb+1}$. The reason for this loss is that $E_1$ contains no information - there are always 0 electrons under the first orbital, $E^S_1 = 0 \forall \ket S$.
 \end{comment}
 
-This may be somewhat memory consumming if we want to pre-compute and store $E$ for each variational determinant. However, because the actual information needed isn't $N^S_{ij}$, but merely its parity, we only need to store the so-called "phasemask" vector $P^S$
+This may be somewhat memory consuming if we want to pre-compute and store $E$ for each determinant. However, because the actual information needed isn't $N^S_{ij}$, but merely its parity, we only need to store the so-called "phasemask" vector $P^S$
 
 $$P^S_i = p(E^S_i)$$
 
@@ -627,8 +646,8 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 		   
 		\For{$\sigma \in \{\alpha, \beta\}$}{
 		 $p \gets 0$ \;
-		\For{$i \gets 0, N_{int}-1$}{
-		 $n \gets min(64, N_{orb} - i \times 64)$ \;
+		\For{$i \gets 0, \Nint-1$}{
+		 $n \gets min(64, \Norb - i \times 64)$ \;
 		\For{$j \gets 0,n-1$}{
 		 $P_\sigma[i \times 64 + j] \gets p$ \;
 		\If{$BTEST(I, j)$}{
@@ -637,7 +656,7 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 		}
 		}
 		}
-		 $P_\sigma [N_{orb}] \gets p$ \;
+		 $P_\sigma [\Norb] \gets p$ \;
 		}
 		\KwRet{$P$} \;
 		}
@@ -677,7 +696,7 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
         
 Currently, the quantum package does not store the $P$ vector for each variational determinant, but re-computes it whenever needed before a loop. The memory cost being negligible this way, for CPU performance reason, each bit is stored on a separate 32-bit integer.
 The algorithm for computing $P^S$ is show as algorithm \ref{alg:PHASEMASK}. 
-With this method, the cost of computing a phase - after paying the overhead of computing $P$ - is accessing two integers and IEOR them together (and tests.......). Unlike the general method, its cost doesn't depend on $N_{int}$, and doesn't require to deal with the boundaries of 64-bit integers which are ANNOYING AS FUCK.
+With this method, the cost of computing a phase - after paying the overhead of computing $P$ - is accessing two integers and IEOR them together (and tests.......). Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the boundaries of 64-bit integers which are ANNOYING AS FUCK.
         
 
 \subsection{Biexcitation}
