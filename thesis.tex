@@ -20,6 +20,7 @@
 \usepackage{hyperref}
 \usepackage{physics}
 \usepackage{color}
+\usepackage{subfiles}
 
 \hypersetup{
  colorlinks=true,
@@ -33,6 +34,8 @@
 
 
 \input{macros}
+
+
 
 \title{thesis}
 \author{garniron}
@@ -115,33 +118,37 @@ During my 3 years at the LCPQ, my work focused on improving the Quantum Package,
 
 \chapter{Quantum Package basics}
 \minitoc
-\input{qp_general}
+\subfile{qp_general}
 
 
 \chapter{Determinant-driven approach}
 \minitoc
-\input{det_driven}
+
+
+
+
+\subfile{det_driven}
 
 \chapter{Davidson}
 \minitoc
-\input{davidson}
+\subfile{davidson}
 
 \chapter{CIPSI}
 \minitoc
-\input{cipsi}
+\subfile{cipsi}
 
 \chapter{PT2}
 \minitoc
-\input{pt2}
+\subfile{pt2}
 
 
 \chapter{Matrix dressing}
 \minitoc
-\input{matrix_dressing}
+\subfile{matrix_dressing}
 
 
 \chapter{exponential dressing etc}
-\input{exp_dressing}
+\subfile{exp_dressing}
 
 
 \bibliographystyle{plain}
