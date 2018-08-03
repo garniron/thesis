@@ -31,7 +31,7 @@ et l'expression des determinants:
 \end{equation}
 }
 
-Generally speaking, implementing a wavefunction method requires iteration over either bielectronic integrals or determinants. \\
+Generally speaking, implementing a wavefunction method requires iteration over either two-electron integrals or determinants. \\
 ease of implementation VS performances \\
 ease of parallelism(?) \\
 Need to explicitly maintain a list of determinant. \\
@@ -74,7 +74,7 @@ All the program is built such that the $\alpha$ and $\beta$ spinorbitals share t
 
 
 \section{Determinant internal representation}
-
+\label{sec:det_representation}
 
 Determinants can be written as a string of creation operators applying to the vacuum state $\vac$.
 $$\ac{i} \ac{j} \ac{k} \vac = \kI$$
@@ -120,8 +120,6 @@ $\bitI_\alpha$ is the bitstring representation of the set of occupied $\alpha$ s
 $\bitI_\beta$ is the bitstring representation of the set of occupied $\beta$ spinorbitals of $\kI$ 
 
 \end{itemize}
-%It's easier to think of $I_\alpha$ and $I_\beta$ as "sets of occupied $\alpha$/$\beta$ spinorbitals". But bitstrings are generally sets of orbitals, they are sets of spinorbitals only by context.
-% C'est vrai dans RHF, pas dans UHF. Pas necessaire alors on peut virer la phrase.
 
 
 The storage space required for a single determinant is, in principle, one bit per spinorbital, or $2 \times \Norb$ bits. However, because CPUs are designed to handle efficiently 64-bit integers, each spin part is stored as an array of 64-bit integers, the unused space being padded with zeros. 
@@ -167,15 +165,7 @@ which is the bitstring representation of the $\sigma$ spinorbitals of determinan
 The bitstring encoding is a compact way of storing determinants, but it is more than just a storage method. It allows to perform a variety of operations on determinants by taking advantage of CPU's hardware aptitude to perform efficiently bitwise operations on integers.
 
 In many of the presented algorithms, some Fortran intrinsics will be of use. Each of those maps to a CPU instruction that is available on modern CPUs.
-%POPCNT, in particular, is a relatively recent instruction, and is standard starting from Fortran 2008.
 
-%The pseudo-instruction
-%\begin{lstlisting}
-%assert LOGICAL_EXPRESSION
-%\end{lstlisting}
-%means \texttt{LOGICAL\_EXPRESSION} is guaranteed to be true. The syntax is otherwise Fortran-style.
-
-      
 
 \begin{sloppypar}
 \begin{itemize}
@@ -228,6 +218,7 @@ $$ \ISHFT{1}{n} =
 \end{cases}
 $$
 
+It is convenient to introduce functions and notations acting on sets 
 More convenient notations are also desired for some operators. All binary operators are of same precedence and left-associative.
 
 \begin{table}[H]
@@ -275,50 +266,35 @@ More convenient notations are also desired for some operators. All binary operat
 
 Note that these notations apply to integers ; whether or not they are meant to be bitstrings.
 
-
-
-       
 Some examples of how these instructions can be used are given below. They are key to understand how we can determine which holes and particles are created when exciting from $\kI$ to $\kJ$.
 Let $\bitI$ and $\bitJ$ be the bitstring representations of $\kI$ and $\kJ$, and $\bit{P}$ a bitstring with $\Nint=1$. 
 
 
-%TODO : Confusion entre sets et integers
-%TODO : Confusion entre sets et integers en dessous. Introduire notation curly pour les sets
-      
-      
 \begin{itemize}
 	      
-	\item
-		$I_{\alpha}$ : the set of orbitals containing an $\alpha$ electron in $\ket I$
+	\item $\bitx{I}{\alpha}$ : bitstring representation of the set of $\alpha$ spinorbitals of $\kI$
 	            
-	\item
-		$|I_{\alpha}|$ : number of orbitals in the set $I_{\alpha}$. In other words, number of $\alpha$ electrons in $\ket I$ 
+	\item $\popcnt{\bitx{I}{\alpha}}$ : number of spinorbitals in $\bitx{I}{\alpha}$ (equal to the number of $\alpha$ electrons).
 	            
-	\item
-		$I_{\alpha} \oplus J_{\alpha}$ : set of $\alpha$ spinorbitals that are contained in exactly one of $I_{\alpha}$ or $J_{\alpha}$. In other words, $\alpha$ spinorbitals whose occupation status change when exciting between $\ket I$ and $\ket J$. 
+	\item $\ieor{\bitx{I}{\alpha}}{\bitx{J}{\alpha}}$ : bitstring representation of the set of $\alpha$ spinorbitals that are present in either $\bitx{I}{\alpha}$ or $\bitx{J}{\alpha}$, but not in both (exclusive disjunction).
+        This operator identifies the $\alpha$ spinorbitals involved in the excitation from $\kI$ to $\kJ$. 
 	            
-	\item
-		$|I_{\alpha} \oplus J_{\alpha}|/2$ : half the number of $\alpha$ spinorbitals whose occupation status changes when exciting between $\ket I$ and $\ket J$. Because an excitation means a status change for exactly 2 spinorbitals, this value is the $\alpha$ excitation degree between $\ket I$ and $\ket J$.
+	\item $\iand{\bitx{I}{\alpha}}{\qty(\ieor{\bitx{I}{\alpha}}{\bitx{J}{\alpha}})}$ : 
+        bitstring representation of the set of $\alpha$ spinorbitals of $\kI$ involved in the excitation from $\kI$ to $\kJ$. This corresponds to the indices of the holes in the excitation $\excdet{I}{J}$ or to the particles in $\excdet{J}{I}$. 
 	            
-	\item
-		$(I_{\alpha} \oplus J_{\alpha}) \wedge J_{\alpha}$ :
-		%$iand(J_{\alpha}, ieor(I_{\alpha}, J_{\alpha}))$ :
-	      The set of $\alpha$ spinorbitals that are occupied in $\ket J$ and whose occupation status changes when exciting between $\ket I$ and $\ket J$. In other words, the set of $\alpha$ spinorbitals where particles are created when exciting from $\ket I$ to $\ket J$ or where holes are created when exciting from $\ket J$ to $\ket I$.
+	\item $\popcnt{\ieor{\bitx{I}{\alpha}}{\bitx{J}{\alpha}}}/2$ : because the excitation of an electron involves 2 spinorbitals (one hole and one particle), this is the $\alpha$ excitation degree between $\kI$ and $\kJ$.
 	            
-	\item
-		$TRAILZ(P)+1$ :
-	      If $P$ is the empty set, returns $65$. Otherwise returns the index of the lowest orbital in set $P$.
+	\item $\TRAILZ{\bit{P}}+1$ : the index of the lowest orbital in $P$. If $\bit{P}$ is $0$, returns $65$.
 	            
-	\item
-		$IBCLR(P,TRAILZ(P))$ :
-	      if $P$ is the empty set, the empty set. Otherwise, the set $P$ minus its orbital of lowest index.
+	\item $\IBCLR{\bit{P}}{\TRAILZ{P}}$ : $P$ without its orbital of lowest index.
+
 \end{itemize}
 
 
 \section{Computing Excitations}
 
-An algorithm used to compute excitation degree is presented as algorithm \ref{alg:EXC_DEGREE}, and one to compute the sets of created holes and particles as algorithm \ref{alg:EXC}. Algorithm \ref{alg:EXC}, however, returns the sets as determinants bitstrings. Extracting the indices from a bitstring is another basic operation, presented as algorithm \ref{alg:LIST_FROM_BITSTRING}.
-Because computing excitations is done heavily, and because we are typically interested in double excitations at most, a more specialized algorithm can be used ( PAS ENCORE ECRIT/POMPÉ )
+An algorithm used to compute the excitation degree is presented as algorithm \ref{alg:EXC_DEGREE}, and one to compute the sets of created holes and particles as algorithm \ref{alg:EXC}. Algorithm \ref{alg:EXC}, however, returns the sets as bitstrings. Extracting the indices from a bitstring is another basic operation, presented as algorithm \ref{alg:LIST_FROM_BITSTRING}.
+Because computing excitations is a hotspot of the program, and because we are typically interested in double excitations at most, a more specialized algorithm can be used ( PAS ENCORE ECRIT/POMPÉ ).
 
 
 \begin{algorithm}[h!]
@@ -328,13 +304,13 @@ Because computing excitations is done heavily, and because we are typically inte
 	\SetKwProg{Fn}{Function}{:}{}
 	
 	\Fn(\tcc*[h]{Computes the excitation degree between two determinants}){\FMain{$I, J$}}{
-		\KwData {$I, J$ bitstring representations of determinants $\ket I$ and $\ket J$}
-		\KwResult{ Returns the excitation degree between $\ket I$ and $\ket J$ }
+		\KwData {$I, J$ bitstring representations of determinants $\kI$ and $\kJ$}
+		\KwResult{ Returns the excitation degree between $\kI$ and $\kJ$ }
 
 		$X \gets 0$   \;
 		\For{$\sigma \in \{\alpha, \beta\}$}{
-		\For{$i \gets 0, \Nint-1$}{
-		  $X \gets X+POPCNT(IEOR(I_{\sigma}[i], J_{\sigma}[i]))$  \;
+		\For{$i \gets 0,  \Nint-1$}{
+		  $X \gets X+\POPCNT{\IEOR{I_{\sigma}[i]}{J_{\sigma}[i]}}$  \;
 		}
 		}
 		\KwRet $X / 2$\;
@@ -350,13 +326,13 @@ Because computing excitations is done heavily, and because we are typically inte
 	\SetKwProg{Fn}{Function}{:}{}
 	
 	\Fn(\tcc*[h]{Returns the holes and particles created in an excitation, as bitstrings}){\FMain{$I$,$J$}}{
-	\KwData{ $I, J$ bitstring representations of determinants $\ket I$ and $\ket J = \hat T \ket I$}
-	\KwResult{ Returns a tuple $(P,H)$, $P$ and $H$ are respectively the sets of particles and holes created by $\hat T$, as $\alpha \beta$-bitstrings}
+	\KwData{ $I$ and $J$, the bitstring representations of determinants $\kI$ and $\kJ = \excdet{I}{J} \kI$}
+	\KwResult{ Returns a tuple $(P,H)$, where $P$ and $H$ are respectively the sets of particles and holes created by $\excdet{I}{j}$, as $\alpha \beta$-bitstrings}
 		\For{$\sigma \in \{\alpha, \beta\}$}{
 		\For{$i \gets 0, \Nint-1$}{
-			$C \gets IEOR(I_{\sigma}[i],  J_{\sigma}[i])$\;
-			$P_{\sigma}[i] \gets IAND(C, J_{\sigma}[i])$\;
-			$H_{\sigma}[i] \gets IAND(C, I_{\sigma}[i])$\;
+			$C \gets \IEOR{I_{\sigma}[i], J_{\sigma}[i]}$\;
+			$P_{\sigma}[i] \gets \IAND{C, J_{\sigma}[i]}$\;
+			$H_{\sigma}[i] \gets \IAND{C, I_{\sigma}[i]}$\;
 		}
 		}
 		\KwRet{ $(P,H)$}\;
@@ -374,17 +350,17 @@ Because computing excitations is done heavily, and because we are typically inte
 	
 	\Fn(\tcc*[h]{Returns the indices contained in a bitstring as a list of integers}){\FMain{$P$}}{
 		\KwData{ $P$ a bitstring }
-		\KwResult{ $L$ the list of indicies contained in $P$ in increasing order. $P$ is destroyed. }
+		\KwResult{ $L$ the list of indices of the bits set in $P$ in increasing order. $P$ is destroyed. }
 		$k \gets 0$ \;
 		\For{$i \gets 0, \Nint-1$}{
 		\While{$P[i] \neq 0$}{
-		$e \gets TRAILZ(P[i])$\;
-		$P[i] \gets IBCLR(P[i], e)$\;
+		$e \gets \TRAILZ{P[i]}$\;
+		$P[i] \gets \IBCLR{P[i]}{e}$\;
 		$L[k] \gets e + i \times 64$\;
-	    $k \gets k+1$\;
-		}
+                $k \gets k+1$\;
 		}
 		\KwRet{$L$}
+		}
 		}
 		
 \end{algorithm}
@@ -395,58 +371,49 @@ Because computing excitations is done heavily, and because we are typically inte
 
 
 
-A bit more complex is the computation of phase factors. The following explaination is limited to one spin part. More details will be given about why spin parts can be treated independently.
-As we have seen in chapter XXXX, our $\alpha \beta$-bitstring representation of determinants has an implied ordering for creation operators : sorted first by spin $\alpha$ before $\beta$, then by increasing orbital index.
-Whenever we build a new determinant by applying an excitation operator, we get a determinant that is initially expressed not just with a different ordering, but with a mix of creation and anihilation operators.
-
+The computation of phase factors is slightly more complex. The following explanation is limited to one spin part. More detail will be given later about why spin parts can be treated independently.
+As we have seen in section~\ref{sec:det_representation}, the $\alpha \beta$-bitstring representation of determinants implies an ordering of creation operators : first all the $\alpha$ operators, then all the $\beta$, both with increasing orbital indices.
+Whenever we build a new determinant by applying an excitation operator, we obtain a determinant that is initially expressed not just with a different ordering, but with a mix of creation and annihilation operators.
 In most cases, permuting contiguous operators will still just result in a sign change.
-
-$$a_j a_i = -a_i a_j$$
-$$a^\dagger_j a^i = -a_i a^\dagger_j ; i \neq j$$
-$$a^\dagger_i a_i = 1-a_i a^\dagger_i$$
-
-The special case is the permutation of a creation and an anihilation in the same spinorbital. Indeed
-
-$$a_l a^\dagger_l \ket I  = \ket I ; a^\dagger_l a_l \ket I = 0 ; l \notin \{i,j,k\}$$
-
-In the first case, a particle is created then anihilated, resulting in the same determinant. In the second case, there is an attempt at anihilating a particle that does not exist, resulting in $0$. This is of course reversed if $l \in \{i,j,k\}$.
-
-$$a_l a^\dagger_l \ket J  = 0 ; a^\dagger_l a_l \ket J  = \ket J; l \in \{i,j,k\}$$
-
-
-Equations ( les deux dernieres ) allow to remove anihilation operators from the expression of a determinant.
-
-
-
-Single excitation operators are defined as
-
-$$\hat T_j^l=a^\dagger_l a_j$$
-
-Be $\ket I$ and $\ket K$ two determinants directly representable as $\alpha \beta$-bitstrings, $i<j<k<l$.
-
-$$\ket I = a^\dagger_i a^\dagger_j a^\dagger_k \ket \ $$
-$$\ket K = a^\dagger_i a^\dagger_k a^\dagger_l \ket \  $$
+\begin{align*}
+\an{j} \an{i} & = -\an{i} \an{j} \\
+\ac{j} \an{i} & =
+  \begin{cases}
+  -\an{i} \ac{j} & i \ne j \\
+  1 - \an{i} \ac{i} & i = j
+  \end{cases}
+\end{align*}
+A particular case is the permutation of a creation and an annihilation operators with the same index.
+Indeed, if spinorbital $l$ is unoccupied in $\kI$,
+\begin{align}
+\label{eq:aa+}
+\an{l} \ac{l} \kI & = \kI  \\
+\ac{l} \an{l} \kI & = 0 .
+\end{align}
+In the first case, a particle is created then annihilated, resulting in the same determinant. In the second case, there is an attempt at annihilating a particle that does not exist, resulting in $0$. It is of course the opposite if $l$ is occupied in $\kI$.
+These formulas will be used to remove annihilation operators from the expression of a determinant.
 
 
-What happens if we apply the excitation operator $\hat T_j^l=a^\dagger_l a_j$ to $\ket I$?
+A single excitation operator exciting an electron from spinorbital $j$ to $l$ is defined as
+$$\excorb{j}{l} = \ac{l}\an{j}.$$
+Let $\kI$ and $\kK$ be two determinants with spin orbitals ordered as in the $\alpha \beta$-bitstring  representation:
+\begin{align*}
+\kI & = \ac{i}\ac{j}\ac{k} \vac \\
+\kK & = \ac{i}\ac{k}\ac{l} \vac
+\end{align*}
+with $i<j<k<l$.
+When one applies the excitation operator $\excorb{j}{l}$ to $\kI$,
+$$\excorb{j}{l} \kI = \ac{l} \an{j} \ac{i} \ac{j} \ac{k} \vac $$
+To build the corresponding $\alpha \beta$-bitstring, one needs to
+reorder the operators by permuting contiguous operators.
+It takes $n=1$ permutation to bring $\an{j}$ in front of $\ac{j}$:
+$$\excorb{j}{l} \kI = -\ac{l} \ac{i} \an{j} \ac{j} \ac{k} \vac.$$
+Using equation~\ref{eq:aa+},
+$$\excorb{j}{l} \kI = -\ac{l} \ac{i} \ac{k} \vac.$$
+Then, it takes $n$ permutations to bring $\ac{l}$ to the position formerly occupied by $\ac{j}$, and $x=1$ more permutation to bring it at its final position.
+$$\excorb{j}{l} \kI = -\ac{i} \ac{k} \ac{l} \vac = -\kJ.$$
 
-
-$$\hat T_j^l \ket I = a^\dagger_l a_j a^\dagger_i a^\dagger_j a^\dagger_k \ket \ $$
-
-We now have to re-order the operators to get something representable as a bitstring, by permuting contiguous operators. It takes $n=1$ permutation to bring $a^\dagger_j$ in front of $a_j$.
-
-
-$$\hat T_j^l \ket I = -a^\dagger_l a_j a^\dagger_j a^\dagger_i a^\dagger_k \ket \ $$
-
-Using equation (plus haut)
-
-$$\hat T_j^l \ket I = -a^\dagger_l a^\dagger_i a^\dagger_k \ket \ $$
-
-Then, it takes $n$ permutations to bring $a^\dagger_l$ to the position formerly occupied by $a^\dagger_j$, and $x=1$ more permutation to bring it at its final position.
-
-$$\hat T_j^l \ket I = -a^\dagger_i a^\dagger_k a^\dagger_l \ket \  = -\ket K$$
-
-The total number of permutations needed is $2n+x$. The parity of the number or permutations is the parity of $x$. As can be seen, $x$ is the number of particles between spinorbitals $j$ and $l$ in $\ket I$ ( regardless of whether $l>j$ or $l<j$ ). In our case, there was 1 occupied spinorbital $k$, so the number of needed permutation is odd, so we ended with a negative phase factor.
+The total number of permutations needed is $\Nperm = 2n+x$. The parity of the number or permutations is the parity of $x$. As can be seen, $x$ is the number of occupied spinorbitals with indices in the $]j, l[$ range in $\kI$ (regardless of whether $l>j$ or $l<j$). In our case, there was one occupied spinorbital $k$, so $\Nperm$ is odd and we ended with a negative phase factor.
 
 \begin{figure}[h!]
 	\begin{center}
@@ -455,7 +422,7 @@ The total number of permutations needed is $2n+x$. The parity of the number or p
 		\label{phasefactor}%
 		phasefactor
 		}
-		commentt
+		\alert{Refaire la fleche dans l'autre sens pour etre coherent avec le texte}.
 	\end{center}
 \end{figure}
 
@@ -479,7 +446,7 @@ $$\hat D_\beta^J = \pm \hat T_\beta \hat D_\beta^I$$
 
 As can be seen, the phase factor will be computed by independentely re-ordering $\hat T_\alpha \hat D_\alpha^I$ and $\hat T_\beta \hat D_\beta^I$.
 
-We could move $\hat T_\beta$ inbetween $D_\alpha^I$ and $D_\beta^I$, because this will always be done in an even number of permutations, and thus will not result in a sign change. Because $\hat T_\beta$ is an excitation operator, it involves as many creations as anihilations, and moving together an even number of operators results in an even number of permutations. We are guaranteed never to encounter the special case of permuting $a^\dagger_i$ with $a_i$ because of the different spins.
+We could move $\hat T_\beta$ inbetween $D_\alpha^I$ and $D_\beta^I$, because this will always be done in an even number of permutations, and thus will not result in a sign change. Because $\hat T_\beta$ is an excitation operator, it involves as many creations as annihilations, and moving together an even number of operators results in an even number of permutations. We are guaranteed never to encounter the special case of permuting $a^\dagger_i$ with $a_i$ because of the different spins.
 
 
 
@@ -724,7 +691,7 @@ $$phase(\hat T_{p \bar q}^{r \bar s}, \ket I) = phase(\hat T_{p}^{r}, \ket I) \t
 
 There is a slight complication for $\alpha \alpha$ or $\beta \beta$ excitations.
 
-As far as phase computation goes, it is irrelevant which index of an exciation operator is a creaion and which is an anihilation. So, for convenience, we can write single excitations without defining it
+As far as phase computation goes, it is irrelevant which index of an exciation operator is a creaion and which is an annihilation. So, for convenience, we can write single excitations without defining it
 
 $$\tilde T_{ab} \in \{\hat T_a^b, \hat T_b^a \}$$
 
@@ -743,7 +710,7 @@ $$phase(\hat T^2, \ket I) = phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_{
 \item
 It can be expressed as two single excitations that cross, i.e.
 $$\hat T^2=\tilde T_{pr} \tilde T_{qs};p<q<r<s$$
-As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ results in a particle being created or anihilated in the range $]p,r[$, resulting in a change of parity for the number of particles in that range. Therefore
+As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ results in a particle being created or annihilated in the range $]p,r[$, resulting in a change of parity for the number of particles in that range. Therefore
 $$phase(\tilde T_{pr}, \tilde T_{qs} \ket I) = -phase(\tilde T_{pr}, \ket I)$$ 
 $$phase(\hat T^2, \ket I) = -phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_{ qs}, \ket I) $$
 \end{itemize}
