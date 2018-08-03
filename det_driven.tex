@@ -653,9 +653,8 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 		\For{$\sigma \in \{\alpha, \beta\}$}{
 		$r \gets 0$ \;
 		\For{$i \gets 0, N_{int}-1$}{
-				%$P_\sigma[i] \gets \text{IEOR}(I_\sigma[i], \text{ISHFT}(I_\sigma[i], 1)$ \;
-				$P_\sigma[i] \gets I_\sigma[i]$ \;
-				$d \gets 1$ \;
+				$P_\sigma[i] \gets \text{IEOR}(I_\sigma[i], \text{ISHFT}(I_\sigma[i], 1)$ \;
+				$d \gets 2$ \;
 				\While{$d < bit\_kind\_size$}{
 					$P_\sigma[i] \gets \text{IEOR}(P_\sigma[i], \text{ISHFT}(P_\sigma[i], d)$ \;
 					$d \gets 2 \times d$ \;
