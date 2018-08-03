@@ -77,7 +77,7 @@ All the program is built such that the $\alpha$ and $\beta$ spinorbitals share t
 \label{sec:det_representation}
 
 Determinants can be written as a string of creation operators applying to the vacuum state $\vac$.
-$$\ac{i} \ac{j} \ac{k} \vac = \kI$$
+$$\ac{i} \ac{j} \ac{k} \vac = \hat{I} \vac = \kI$$
 Because of the fermionic nature of electrons, permutation of two contiguous creation operators results in a sign change, which makes their ordering relevant.
 $$\ac{j} \ac{i} = -\ac{i} \ac{j}$$
 $$\ac{j} \ac{i} \ac{k} \vac = -\kI$$
@@ -93,13 +93,18 @@ An unordered set of creation operators. Essentially, the set of occupied spinorb
 A sign, the so-called \emph{phase factor}, indicating whether the creation operators are ordered so as to refer to $\kI$ or $-\kI$.
 \end{itemize}
 
-Determinants are always associated with a coefficient, so we don't need to make the phase factor part of a determinant's internal representation ; the sign will simply be reported on the associated coefficient. Still, we have to make unambiguous to what exact determinant this coefficient applies to, so we need to define an ordering to which our ``phaseless'' representation implicitly refers. We choose the order where all the $\alpha$ spinorbitals are placed before the $\beta$ spinorbitals, and for each spin then orbitals are sorted with increasing indices.
-For instance, the set of spinorbitals $\{\bar i, i,j,k \}$ with $j>i$ and $k>j$ refers to
+Determinants are always associated with a coefficient, so we don't need to make the phase factor part of a determinant's internal representation ; the sign will simply be reported on the associated coefficient. Still, we have to make unambiguous to what exact determinant this coefficient applies to, so we need to define an ordering to which our ``phaseless'' representation implicitly refers. We choose the order where all the $\alpha$ spinorbitals are placed before the $\beta$ spinorbitals:
+\begin{equation}
+\label{eq:spinpack}
+\hat{I} \vac = \hat{I}_\alpha \hat{I}_\beta \vac = \kI
+\end{equation}
+and within each operator $\hat{I}_\alpha$ and $\hat{I}_\beta$, the creation operators are sorted with
+increasing indices.
+For instance, the determinant built from the set of spinorbitals $\{\bar i, i,j,k \}$ with $j>i$ and $k>j$ is
 $$\kJ = \ac{i} \ac{j} \ac{k} \ac{\bar i} \vac $$
-
 So if we happen to build a determinant initially expressed as
 $$\kJp = \ac{j} \ac{i} \ac{k} \ac{\bar i} \vac $$
-It will be translated to $-\kJ$.
+it will be translated to $-\kJ$.
 
 
 The occupations of the spinorbitals are stored using the so-called \emph{bitstring} encoding. A bitstring is an array of bits ; typically, the 64-bit binary representation of an integer is a bitstring of size 64.
@@ -428,36 +433,27 @@ The total number of permutations needed is $\Nperm = 2n+x$. The parity of the nu
 
 \subsection{Treating spin parts separately}
 
-It is not immediately obvious that $\alpha$ and $\beta$ spin parts can be treated independently. We can do it because we chose to sort creation operators firstly by spin.
+It is not immediately obvious that $\alpha$ and $\beta$ spin parts can be treated independently. It is  possible because we chose in the ordering to pack together creation operators with the same spin (Eq.\eqref{eq:spinpack}), and 
+also because we never consider excitations where the spin is changed (spin-flips). 
+Under these constraints, any excitation operator $\hat{T}$ can be expressed as 
+$$\hat{T} = \hat{T}_\alpha \hat{T}_\beta .$$
 
-Be $\hat D_\alpha^I$ the serie of creation operators that creates all $\alpha$ electrons for $\ket I$ by increasing orbital indices, and $\hat D_\beta^I$ the operator that creates all $\beta$ ones.
+\begin{align}
+\label{eq:spin1}
+\hat{T} \kI & = \hat{T}_\alpha \hat{T}_\beta \,  \hat{I}_\alpha \hat{I}_\beta \vac \\
+\label{eq:spin2}
+            & =  \qty(\hat{T}_\alpha \hat{I}_\alpha) \qty(\hat{T}_\beta  \hat{I}_\beta) \vac 
+              = \hat{J}_\alpha \hat{J}_\beta  \vac = \kJ.
+\end{align}
 
-$$\ket I = \hat D_\alpha^I \hat D_\beta^I \ket \ $$
-
-
-$\ket I$ is representable as an $\alpha \beta$ bitstring. Be $\hat T_\alpha$ and $\hat T_\beta$ excitation operators of any degree that only involve $\alpha$ or $\beta$ spinorbitals, respectively.
-
-$$\hat T_\alpha \hat T_\beta \ket I = \ket J = \hat T_\alpha \hat D_\alpha^I \hat T_\beta D_\beta^I \ket \ = \pm \hat D_\alpha^J \times \pm \hat D_\beta^J \ket \ $$
-
-with
-
-$$\hat D_\alpha^J = \pm \hat T_\alpha \hat D_\alpha^I$$
-$$\hat D_\beta^J = \pm \hat T_\beta \hat D_\beta^I$$
-
-As can be seen, the phase factor will be computed by independentely re-ordering $\hat T_\alpha \hat D_\alpha^I$ and $\hat T_\beta \hat D_\beta^I$.
-
-We could move $\hat T_\beta$ inbetween $D_\alpha^I$ and $D_\beta^I$, because this will always be done in an even number of permutations, and thus will not result in a sign change. Because $\hat T_\beta$ is an excitation operator, it involves as many creations as annihilations, and moving together an even number of operators results in an even number of permutations. We are guaranteed never to encounter the special case of permuting $a^\dagger_i$ with $a_i$ because of the different spins.
+The number of creation and annihilation operators in an excitation operator is always even. Hence, going from Eq.\eqref{eq:spin1} to Eq.\eqref{eq:spin2} by permuting $\hat{T}_\beta$ with $\hat{I}_\alpha$ always requires an even number of permutations.
+So the phase factors will be computed by reordering separately $\hat{T}_\alpha \hat{I}_\alpha$ and $\hat{T}_\beta  \hat{I}_\beta$.
 
 
+%TODO : J'en suis la.
 
 
-
-
-A phase factor depends on an excitation operator $\hat T$ and a determinant $\ket S$ it is applied to. We always assume $\hat T \ket S \neq 0$ with $\hat T$ at most a biexcitation. 
-
-
-
-\subsection{Monoexcitation}
+\subsection{Single excitation}
 
 %In the case of a monoexcitation, only one spin part is involved. All indices refer to spinorbitals of same, arbitrary spin $\sigma \in \{\alpha, \beta\}$
 
@@ -675,7 +671,7 @@ The algorithm for computing $P^S$ is show as algorithm \ref{alg:PHASEMASK}.
 With this method, the cost of computing a phase - after paying the overhead of computing $P$ - is accessing two integers and IEOR them together (and tests.......). Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the boundaries of 64-bit integers which are ANNOYING AS FUCK.
         
 
-\subsection{Biexcitation}
+\subsection{Double excitation}
 
 
 
