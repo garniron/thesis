@@ -142,7 +142,7 @@ The internal Fortran representation of a bitstring is an array of $\Nint$ \lstin
 The internal Fortran representation of an $\alpha \beta$-bitstring is a two dimensional array of \lstinline{integer*8}'s, the first dimension of size $\Nint$ and the second of size $2$, corresponding to the $\alpha$ and $\beta$ spin parts.
 
 
-\lstset{language=Fortran, morekeywords={assert}, frame=single}
+\lstset{frame=single}
 \begin{lstlisting}
   ! I is an ab-bitstring
   ! I_alpha and I_beta are bitstrings
@@ -154,6 +154,7 @@ The internal Fortran representation of an $\alpha \beta$-bitstring is a two dime
   I_alpha(:) = I(:,1)
   I_beta (:) = I(:,2)
 \end{lstlisting}
+\lstset{frame=none}
 
 
 In formulas or algorithms, depending on the level of detail desired, a bitstring can be treated as a single integer of infinite size. This hides some implementation details but is unambiguous. However, in algorithms we will usually try to stay closer to the actual implementation. $\bitI$ being the $\alpha \beta$-bitstring associated with $\kI$, we can explicitly refer to a single 64-bit integer
@@ -161,106 +162,71 @@ $$\bitI_{\sigma}[i]\; ;\; \sigma \in \{\alpha, \beta\}\; ;\; i \in [0, \Nint-1]$
 which is the bitstring representation of the $\sigma$ spinorbitals of determinant $\kI$ in the range $[1+i \times 64, \min \left( (i+1) \times 64, \Norb \right)]$, indexed from $0$ to $63$.
 
       
-%TODO : JE ME SUIS ARRETE ICI
-
 \section{Bit manipulation}
-\lstset{language=Fortran, morekeywords={assert}, frame=none, xleftmargin=.1\textwidth}
 
-The bitstring encoding is a compact way of storing determinants, but it is more than just a storage method. It allows to perform a variety of operations on determinants by taking advantage of CPU's hardware aptitude to perform bitwise operations on integers.
+The bitstring encoding is a compact way of storing determinants, but it is more than just a storage method. It allows to perform a variety of operations on determinants by taking advantage of CPU's hardware aptitude to perform efficiently bitwise operations on integers.
 
-In many of the presented algorithms, some Fortran intrinsics will be of use. Each of those maps to a CPU instruction that (introduit avec) (SSE4.2 instruction set?) available on modern CPUs. POPCNT, in particular, is a relatively recent instruction, and is standard starting from Fortran 2008.
+In many of the presented algorithms, some Fortran intrinsics will be of use. Each of those maps to a CPU instruction that is available on modern CPUs.
+%POPCNT, in particular, is a relatively recent instruction, and is standard starting from Fortran 2008.
+
+%The pseudo-instruction
+%\begin{lstlisting}
+%assert LOGICAL_EXPRESSION
+%\end{lstlisting}
+%means \texttt{LOGICAL\_EXPRESSION} is guaranteed to be true. The syntax is otherwise Fortran-style.
+
       
-The pseudo-instruction
 
-\begin{lstlisting}
-assert LOGICAL_EXPRESSION
-\end{lstlisting}
-means LOGICAL\_EXPRESSION is guaranteed to be true. The syntax is otherwise Fortran-style.
-      
-      
-
+\begin{sloppypar}
 \begin{itemize}
 	      
-	\item \textbf{POPCNT(I)}       
-	Returns the number of non-zero bits for a given integer I
-	\begin{lstlisting}
-assert POPCNT(b'00011000') == 2
-	\end{lstlisting}
-	
+	\item $\POPCNT{\bitI}$ :
+	Returns the number of non-zero bits for a given integer $\bitI$. \\
+        ${\POPCNT{\binary{00011000}} = 2}$.
 	      
-	\item \textbf{TRAILZ(I)}
-	            
-	Returns the number of trailing zero bits for a given integer I
-	\begin{lstlisting}
-assert TRAILZ(b'00000100') == 2
-	\end{lstlisting}
+	\item $\TRAILZ{\bitI}$ : Returns the number of trailing zero bits for a given integer \bitI. \\
+         ${\TRAILZ{\binary{00000100}} = 2}$.
 	      
 	      
-	\item \textbf{IBCLR(I,N)}
-	            
-	      Returns the value of I with the bit at position N set to zero
-	\begin{lstlisting}
-assert IBCLR(b'00001111', 2) == b'00001011'
-	\end{lstlisting}
+	\item $\IBCLR{\bitI}{n}$ : Returns the value of $\bitI$ with the bit at the $n$-th position set to zero (the rightmost bit is at position zero). \\
+        ${\IBCLR{\binary{00001111}}{2} = \binary{00001011}}$.
 	      
 	     
-   	\item \textbf{IOR(I,J)}
-	            
-	      Bitwise "or" logical operation
-	\begin{lstlisting}
-assert IOR(b'1100', b'1010') == b'1110'
-	\end{lstlisting}
+   	\item $\IOR{\bitI}{\bitJ}$ : Bitwise \texttt{OR} logical operation. \\
+        ${\IOR{\binary{1100}}{\binary{1010}} = \binary{1110}}$.
 
 	 
-	\item \textbf{IEOR(I,J)} ( a.k.a. XOR )
-	            
-	      Bitwise "exclusive-or" logical operation
-	\begin{lstlisting}
-assert IEOR(b'1100', b'1010') == b'0110'
-	\end{lstlisting}
+	\item $\IEOR{\bitI}{\bitJ}$ : Bitwise \texttt{XOR} (exclusive or) logical operation. \\
+        ${\IEOR{\binary{1100}}{\binary{1010}} = \binary{0110}}$.
 	      
 	      
-	\item \textbf{IAND(I,J)}
-	            
-	      Bitwise "and" logical operation
-	\begin{lstlisting}
-assert IAND(b'1100', b'1010') == b'1000'
-	\end{lstlisting}
+	\item $\IAND{\bitI}{\bitJ}$ : Bitwise \texttt{AND} logical operation. \\
+        ${\IAND{\binary{1100}}{\binary{1010}} = \binary{1000}}$.
 	      
 	      
-	\item \textbf{NOT(I)}
-	            
-	      Bitwise "not" logical operation
-	\begin{lstlisting}
-INTEGER(1) :: I = b'00001100'
-assert NOT(I) == b'11110011'
-	\end{lstlisting}
+	\item $\NOT{\bitI}$ : Bitwise \texttt{NOT} logical operation. \\
+        ${\NOT{\binary{00001100}} = \binary{11110011}}$.
 	      
+	\item $\ISHFT{\bitI}{n}$ : Returns $\bitI$ with bits shifted $|n|$ places to the left if $n>0$, otherwise to right. Bits shifted out of the range are lost. Zeros are shifted from the opposite end. \\
+        ${\ISHFT{\binary{01001110}}{2} = \binary{00111000}}$, \\
+        ${\ISHFT{\binary{01001110}}{-2} = \binary{00010011}}$.
 	      
-	\item \textbf{ISHFT(I,N)}
-	            
-	      Returns I with bits shifted $abs(N)$ places to left if $N>0$, otherwise to right. Bits shifted out are lost. Zeros are shifted from the opposite end.
-	\begin{lstlisting}
-INTEGER(1) :: I = b'01001110'
-assert ISHFT(I, 2) == b'00111000'
-assert ISHFT(I, -2) == b'00010011'
-	\end{lstlisting}
-	      
-	      
-	\item \textbf{BTEST(I,N)}
-	            
-	      Returns logical TRUE if bit of $I$ at position $N$ is non-null, otherwise FALSE
-	\begin{lstlisting}
-assert BTEST(b'00001000', 3)
-	\end{lstlisting}
+	\item $\BTEST{\bitI}{n}$ : Returns $\TRUE$ if the $n$-th bit of $\bitI$ is set, otherwise $\FALSE$. \\
+        $\BTEST{\binary{00001000}}{3} = \TRUE$.
 	      
 \end{itemize}
+\end{sloppypar}
       
       
-Those intrinsics apply to integers at most 64-bits. This however is a purely implementational limitation, so depending on the level of detail desired, this constraint can be unambiguously lifted in formulas or algorithms. Different notations need to be used as the 64-bit version and the infinite-size may not be strictly equivalent. $ishft$ being the infinite-size version of $ISHFT$ :
+Those intrinsics apply to integers at most 64-bits. This however is a purely implementational limitation, so depending on the level of detail desired, this constraint can be unambiguously lifted in formulas or algorithms. Different notations will be used for the 64-bit and the infinite size cases, as they are not always equivalent.
+For example, the 64-bit bit-shift intrinsic always returns zero for shifts greater than 64 bits:
 
-$$ishft(1, n) = 2^{n}$$
-$$ISHFT(1, n) = 0 ; n \geq 64$$
+$$ \ISHFT{1}{n} =
+\begin{cases}
+2^{n}, & 0 \le n < 64 \\
+0, & \text{otherwise}
+\end{cases}
+$$
 
 More convenient notations are also desired for some operators. All binary operators are of same precedence and left-associative.
 
@@ -270,39 +236,40 @@ More convenient notations are also desired for some operators. All binary operat
 		
 		\hline
 		\rule{0pt}{3ex}
-		$ISHFT(A,n)$ & $ishft(A,n)$  \\ 
+		$\ISHFT{\bitI}{n}$ & $\ishft{I}{n}$  \\ 
 		
 		\hline
 		\rule{0pt}{3ex}
-		$TRAILZ(A)$ & $trailz(A)$  \\ 
+		$\TRAILZ{\bitI}$ & $\trailz{I}$  \\ 
 		
 		\hline
 		\rule{0pt}{3ex}
-		$IBCLR(A,n)$ & $ibclr(A,n)$  \\ 
+		$\IBCLR{\bitI}{n}$ & $\ibclr{I}{n}$  \\ 
 		
 		\hline
 		\rule{0pt}{3ex}
-		$IBTEST(A,n)$ & $ibtest(A,n)$  \\ 
+		$\BTEST{\bitI}{n}$ & $\btest{I}{n}$  \\ 
 		
 		\hline
 		\rule{0pt}{3ex}
-		$NOT(A)$ & $not(A)$  \\ 
+		$\NOT{\bitI}$ & $\neg I $  \\ 
 		
 		\hline
 		\rule{0pt}{3ex}
-		$IAND(A,B)$ & $A \wedge B$ \\
+		$\IAND{\bitI}{\bitJ}$ & $\iand{I}{J}$ \\
 		
 		\hline
 		\rule{0pt}{3ex}
-		$IOR(A,B)$ & $A \vee B$ \\
+		$\IOR{\bitI}{\bitJ}$ & $\ior{I}{J}$ \\
 		
 		\hline
 		\rule{0pt}{3ex}
-		$IEOR(A,B)$ & $A \oplus B$ \\
+		$\IEOR{\bitI}{\bitJ}$ & $\ieor{I}{J}$ \\
 		
 		\hline
 		\rule{0pt}{3ex}
-		$POPCNT(A)$ & $|A|$ \\
+		$\POPCNT{\bitI}$ & $\popcnt{I}$ \\
+		\hline
 	\end{tabularx}
 \end{table}
 
@@ -311,9 +278,12 @@ Note that these notations apply to integers ; whether or not they are meant to b
 
 
        
-Some examples of how these instructions can be used are given below. They are key to understand how we can determine which holes and particles are created when exciting from $\ket I$ to $\ket J$.
-Let $I$ and $J$ be the bitstring representations of $\ket I$ and $\ket J$, and $P$ a bitstring with $\Nint=1$. 
+Some examples of how these instructions can be used are given below. They are key to understand how we can determine which holes and particles are created when exciting from $\kI$ to $\kJ$.
+Let $\bitI$ and $\bitJ$ be the bitstring representations of $\kI$ and $\kJ$, and $\bit{P}$ a bitstring with $\Nint=1$. 
 
+
+%TODO : Confusion entre sets et integers
+%TODO : Confusion entre sets et integers en dessous. Introduire notation curly pour les sets
       
       
 \begin{itemize}
@@ -343,6 +313,7 @@ Let $I$ and $J$ be the bitstring representations of $\ket I$ and $\ket J$, and $
 		$IBCLR(P,TRAILZ(P))$ :
 	      if $P$ is the empty set, the empty set. Otherwise, the set $P$ minus its orbital of lowest index.
 \end{itemize}
+
 
 \section{Computing Excitations}
 

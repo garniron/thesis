@@ -14,10 +14,15 @@
 \newcommand{\Ne}{{N_\text{elec}}}
 
 %bitmasks
+\newcommand{\bit}[1]{{\texttt{#1}}}
 \newcommand{\bitI}{{\texttt{I}}}
-\newcommand{\bitIsigma}{{\texttt{I}_\sigma}}
-\newcommand{\bitJ}{{\texttt{J}}}
-\newcommand{\bitK}{{\texttt{K}}}
+\newcommand{\bitJ}{{\bit{J}}}
+\newcommand{\bitK}{{\bit{K}}}
+\newcommand{\bitx}[2]{{\texttt{#1}_{#2}}}
+\newcommand{\bitIsigma}{{\bitx{I}{\sigma}}}
+\newcommand{\binary}[1]{{#1_{\mathtt{2}}}}
+\newcommand{\TRUE}{{\text{\lstinline{TRUE}}}}
+\newcommand{\FALSE}{{\text{\lstinline{FALSE}}}}
 
 
 %acronyms
@@ -34,7 +39,9 @@
 %operators
 \newcommand{\vac}{ {\ket{}} }
 \newcommand{\ac}[1]{a^\dagger_{#1}}
-%\newcommand{\a}[1]{a_{#1}}
+
+\newcommand{\an}[1]{a_{#1}}
+
 \newcommand{\hH}{\Hat{H}}
 
 %determinants
@@ -49,3 +56,27 @@
 %space
 \newcommand{\br}{{\mathbf{r}}}
 \newcommand{\bR}{{\mathbf{R}}}
+
+%Fortran
+\newcommand{\POPCNT}[1]{\text{\lstinline{POPCNT}}(#1)}
+\newcommand{\TRAILZ}[1]{\text{\lstinline{TRAILZ}}(#1)}
+\newcommand{\IBSET}[1]{\text{\lstinline{IBSET}}(#1)}
+\newcommand{\IBCLR}[2]{\text{\lstinline{IBCLR}}(#1,#2)}
+\newcommand{\BTEST}[2]{\text{\lstinline{BTEST}}(#1,#2)}
+\newcommand{\ISHFT}[2]{\text{\lstinline{ISHFT}}(#1,#2)}
+\newcommand{\IAND}[2]{\text{\lstinline{IAND}}(#1,#2)}
+\newcommand{\IEOR}[2]{\text{\lstinline{IEOR}}(#1,#2)}
+\newcommand{\IOR}[2]{\text{\lstinline{IOR}}(#1,#2)}
+\newcommand{\NOT}[1]{\text{\lstinline{NOT}}(#1)}
+
+\newcommand{\popcnt}[1]{\norm{#1}}
+\newcommand{\trailz}[1]{\text{trailing\_zeros}(#1)}
+\newcommand{\ibset}[1]{\text{bit\_set}(#1)}
+\newcommand{\ibclr}[2]{\text{bit\_clear}(#1,#2)}
+\newcommand{\btest}[2]{\text{bit\_test}(#1,#2)}
+\newcommand{\ishft}[2]{\text{shift\_left}(#1,#2)}
+\newcommand{\iand}[2]{#1 \wedge #2}
+\newcommand{\ieor}[2]{#1 \oplus #2}
+\newcommand{\ior}[2]{#1 \vee #2}
+%\newcommand{\not}[1]{{\neg #1}}
+
