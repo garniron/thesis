@@ -378,7 +378,22 @@ Because computing excitations is a hotspot of the program, and because we are ty
 
 The computation of phase factors is slightly more complex. The following explanation is limited to one spin part. More detail will be given later about why spin parts can be treated independently.
 As we have seen in section~\ref{sec:det_representation}, the $\alpha \beta$-bitstring representation of determinants implies an ordering of creation operators : first all the $\alpha$ operators, then all the $\beta$, both with increasing orbital indices.
+
 Whenever we build a new determinant by applying an excitation operator, we obtain a determinant that is initially expressed not just with a different ordering, but with a mix of creation and annihilation operators.
+
+First of all, we have to make this initial expression unambiguous by precisely defining excitation operators. We have defined an implicit ordering for the expression of determinants, we also need an implicit ordering for the expression of excitation operators. We use the same one, but we apply it separately on creation and anihilation operators, then interleave them starting with a creation. In other words, a multiple excitation is written as a product of single excitations, lowest particle with lowest hole, then second lowest particle with second lowest hole, etc... and it's arbitrarily chosen to put creation before anihilation.
+For example, the double excitation $ac \rightarrow bd$ with $a<b<c<d$ is expressed as
+
+$$\hat T_{ac}^{bd} = \ac{b} \an{a} \ac{d} \an{c} = \hat T_a^b \hat T_c^d$$
+
+Note that this ordering retains the packing of $\alpha$ and $\beta$ operators we have for determinants
+
+\begin{equation}
+\label{eq:spinpackexc}
+\hat T = \hat T_\alpha \hat T_\beta
+\end{equation}
+
+We now can express $\hat T \kI$ as a serie of operators.
 In most cases, permuting contiguous operators will still just result in a sign change.
 \begin{align*}
 \an{j} \an{i} & = -\an{i} \an{j} \\
@@ -399,8 +414,7 @@ In the first case, a particle is created then annihilated, resulting in the same
 These formulas will be used to remove annihilation operators from the expression of a determinant.
 
 
-A single excitation operator exciting an electron from spinorbital $j$ to $l$ is defined as
-$$\excorb{j}{l} = \ac{l}\an{j}.$$
+
 Let $\kI$ and $\kK$ be two determinants with spin orbitals ordered as in the $\alpha \beta$-bitstring  representation:
 \begin{align*}
 \kI & = \ac{i}\ac{j}\ac{k} \vac \\
@@ -427,13 +441,12 @@ The total number of permutations needed is $\Nperm = 2n+x$. The parity of the nu
 		\label{phasefactor}%
 		phasefactor
 		}
-		\alert{Refaire la fleche dans l'autre sens pour etre coherent avec le texte}.
 	\end{center}
 \end{figure}
 
 \subsection{Treating spin parts separately}
 
-It is not immediately obvious that $\alpha$ and $\beta$ spin parts can be treated independently. It is  possible because we chose in the ordering to pack together creation operators with the same spin (Eq.\eqref{eq:spinpack}), and 
+It is not immediately obvious that $\alpha$ and $\beta$ spin parts can be treated independently. It is possible because our ordering packs together operators of same spin in the expression of both determinants (Eq.\eqref{eq:spinpack}) and excitations (Eq.\eqref{eq:spinpackexc}), and 
 also because we never consider excitations where the spin is changed (spin-flips). 
 Under these constraints, any excitation operator $\hat{T}$ can be expressed as 
 $$\hat{T} = \hat{T}_\alpha \hat{T}_\beta .$$
@@ -685,13 +698,19 @@ In the case of an $\alpha \beta$ double excitation, the two single excitations a
 
 $$phase(\hat T_{p \bar q}^{r \bar s}, \ket I) = phase(\hat T_{p}^{r}, \ket I) \times phase(\hat T_{ \bar q}^{ \bar s}, \ket I) $$
 
-There is a slight complication for $\alpha \alpha$ or $\beta \beta$ excitations.
 
-As far as phase computation goes, it is irrelevant which index of an exciation operator is a creaion and which is an annihilation. So, for convenience, we can write single excitations without defining it
+There is a slight complication for $\alpha \alpha$ or $\beta \beta$ excitations. The ordering we defined for excitation operators is of importance. In order to write a double excitation as a product of two single ones, it must be ensured that the phase (ordering) matches the one we defined : lowest particle with lowest hole, highest particle with highest hole.
+
+As far as phase computation goes, it is irrelevant which index of an exciation operator is a creation and which is an annihilation. So, for convenience, we can write single excitations without defining it
 
 $$\tilde T_{ab} \in \{\hat T_a^b, \hat T_b^a \}$$
 
+
+
+
 Considering a double excitation $\hat T^2$ involving 4 spinorbitals $p,q,r,s$ of same spin, there are two possible situations, shown in figure \ref{fig:biphasefactor}. 
+
+
 
 %$$\hat T^2 = \hat T_{pr} \hat T_{qs}$$
 %$$\hat T_{pr} \in \{ T_p^r, T_r^p\} ; p<r; \hat T_{qs} \in \{ T_q^s, T_s^q\};q<s$$ 
@@ -706,9 +725,12 @@ $$phase(\hat T^2, \ket I) = phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_{
 \item
 It can be expressed as two single excitations that cross, i.e.
 $$\hat T^2=\tilde T_{pr} \tilde T_{qs};p<q<r<s$$
+
+
 As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ results in a particle being created or annihilated in the range $]p,r[$, resulting in a change of parity for the number of particles in that range. Therefore
 $$phase(\tilde T_{pr}, \tilde T_{qs} \ket I) = -phase(\tilde T_{pr}, \ket I)$$ 
 $$phase(\hat T^2, \ket I) = -phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_{ qs}, \ket I) $$
+
 \end{itemize}
 
 
@@ -718,9 +740,9 @@ $$phase(\hat T^2, \ket I) = -phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_
 		\includegraphics[width=0.4\columnwidth]{figures/determinant_driven/biphasefactor}
 		\caption{
 		\label{fig:biphasefactor}%
-		phasemask
+		Crossing of two single excitations
 		}
-		commentt
+		The third situation doesn't fit the ordering we imposed on excitation operators. $p \leftrightarrow s$ is either lowest electron to highest orbital, or highest electron to lowest orbital.
 	\end{center}
 \end{figure}
 
