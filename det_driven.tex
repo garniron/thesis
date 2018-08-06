@@ -77,40 +77,48 @@ All the program is built such that the $\alpha$ and $\beta$ spinorbitals share t
 \label{sec:det_representation}
 
 Determinants can be written as a string of creation operators applying to the vacuum state $\vac$.
-$$\ac{i} \ac{j} \ac{k} \vac = \hat{I} \vac = \kI$$
+\begin{equation}
+\ac{i} \ac{j} \ac{k} \vac = \kI
+\end{equation}
 Because of the fermionic nature of electrons, permutation of two contiguous creation operators results in a sign change, which makes their ordering relevant.
-$$\ac{j} \ac{i} = -\ac{i} \ac{j}$$
-$$\ac{j} \ac{i} \ac{k} \vac = -\kI$$
-This effectively allows to make any $\Nperm$ permutations (even of non-contiguous operators), and always get
-$$-1^{\Nperm} \kI$$
-
+\begin{align}
+\ac{j} \ac{i} & = -\ac{i} \ac{j} \\
+\ac{j} \ac{i} \ac{k} \vac &=  -\kI
+\end{align}
+This effectively allows to make any $\Nperm$ permutations (even of non-contiguous operators), and always get $-1^{\Nperm} \kI.$
 
 We see a determinant can be broken down into two pieces of information:
 \begin{itemize}
 \item
-An unordered set of creation operators. Essentially, the set of occupied spinorbitals.
+A set of creation operators, corresponding to the set of occupied spinorbitals in the determinant.
 \item
-A sign, the so-called \emph{phase factor}, indicating whether the creation operators are ordered so as to refer to $\kI$ or $-\kI$.
+An ordering of the creation operators, responsible for the sign of the determinant. Once a common ordering operator $\ordering$ is chosen, it is sufficient to store the sign change that will occur when this operator is applied to the string of creation operators. This sign will be referred to as the \emph{phase factor}.
 \end{itemize}
+Determinants are always associated with a coefficient, so
+if the determinants are always built after applying them the same common ordering operator,
+we don't need to make the phase factor part of the determinant's internal representation. The sign may simply be reported on the associated coefficient.
 
-Determinants are always associated with a coefficient, so we don't need to make the phase factor part of a determinant's internal representation ; the sign will simply be reported on the associated coefficient. Still, we have to make unambiguous to what exact determinant this coefficient applies to, so we need to define an ordering to which our ``phaseless'' representation implicitly refers. We choose the order where all the $\alpha$ spinorbitals are placed before the $\beta$ spinorbitals:
+In this thesis, all the determinants will be built using the order where all the $\alpha$ spinorbitals are placed before the $\beta$ spinorbitals:
 \begin{equation}
 \label{eq:spinpack}
-\hat{I} \vac = \hat{I}_\alpha \hat{I}_\beta \vac = \kI
+\ordering \kI = \hat{I} \vac = \hat{I}_\alpha \hat{I}_\beta \vac 
 \end{equation}
-and within each operator $\hat{I}_\alpha$ and $\hat{I}_\beta$, the creation operators are sorted with
-increasing indices.
-For instance, the determinant built from the set of spinorbitals $\{\bar i, i,j,k \}$ with $j>i$ and $k>j$ is
-$$\kJ = \ac{i} \ac{j} \ac{k} \ac{\bar i} \vac $$
-So if we happen to build a determinant initially expressed as
-$$\kJp = \ac{j} \ac{i} \ac{k} \ac{\bar i} \vac $$
-it will be translated to $-\kJ$.
+and within each operator $\hat{I}_\alpha$ and $\hat{I}_\beta$, the creation operators are sorted with increasing indices.
+For instance, consider the determinant built from the set of spinorbitals $\{i,j,k,{\bar i} \}$ with $i<j<k$,
+\begin{equation}
+\kJ = \ac{j} \ac{k} \ac{\bar i} \ac{i} \vac.
+\end{equation}
+If we happen to encounter such a determinant, our choice of representation imposes us to consider its re-ordered expression
+\begin{equation}
+\ordering \kJ = - \ac{i} \ac{j} \ac{k} \ac{\bar i} \vac 
+\end{equation}
+and the sign change (or \emph{phase factor}) will need to be handled.
 
-
-The occupations of the spinorbitals are stored using the so-called \emph{bitstring} encoding. A bitstring is an array of bits ; typically, the 64-bit binary representation of an integer is a bitstring of size 64.
+The indices of the creation operators (or equivalently the
+occupations of the spinorbitals), are stored using the so-called \emph{bitstring} encoding. A bitstring is an array of bits ; typically, the 64-bit binary representation of an integer is a bitstring of size 64.
 Quite simply, the idea is to map each spinorbital to a single bit, whose value is set to its occupation number. In other words \texttt{0} and \texttt{1} are associated with the \emph{unoccupied} and \emph{occupied} states.
 By this definition, bitstrings are essentially lists of occupation numbers, which is a convenient way to
-store the set of occupied spinorbitals in a determinant.
+store the set of occupied spinorbitals in a determinant, with the predefined ordering.
 
 For simplicity and performance considerations, the occupations of the $\alpha$ and $\beta$ spinorbitals are stored on different bitstrings, rather than interleaved or otherwise merged in the same one. This allows to straightforwardly map orbital index $n$ to bit index $n-1$ (orbitals are usually indexed from $1$, while bits are indexed from $0$), and makes a bitstring a set of orbitals.
 This makes the representation of a determinant a tuple of two bitstrings, associated with respectively $\alpha$ and $\beta$ spinorbitals. Such objects are refered to as \emph{$\alpha \beta$-bitstrings}, and generally define a set a spinorbitals. When used to define a determinant, they imply the previously defined ordering.
@@ -128,21 +136,14 @@ $\bitI_\beta$ is the bitstring representation of the set of occupied $\beta$ spi
 
 
 The storage space required for a single determinant is, in principle, one bit per spinorbital, or $2 \times \Norb$ bits. However, because CPUs are designed to handle efficiently 64-bit integers, each spin part is stored as an array of 64-bit integers, the unused space being padded with zeros. 
-The actual storage needed for a determinant is
-$$
-2 \times 64 \times  \left \lfloor \frac{\Norb-1}{64} + 1 \right \rfloor \, \text{bits}
-\label{determinantstoragespace}
-$$
-
-For a given system, we call $\Nint$ the number of 64-bits integers needed to store one spin part.
+The actual storage needed for a determinant is $2 \times 64 \times \Nint$ bits, where $\Nint$ is the number of 64-bits integers needed to store one spin part:
 \begin{equation}
-\Nint = \left \lfloor \frac{\Norb-1}{64} \right \rfloor + 1
+\Nint = \left \lfloor \frac{\Norb-1}{64} \right \rfloor + 1.
 \end{equation}
 
 
-The internal Fortran representation of a bitstring is an array of $\Nint$ \lstinline{integer*8}'s (64-bit integers).
-
-The internal Fortran representation of an $\alpha \beta$-bitstring is a two dimensional array of \lstinline{integer*8}'s, the first dimension of size $\Nint$ and the second of size $2$, corresponding to the $\alpha$ and $\beta$ spin parts.
+The Fortran representation of a bitstring is an array of $\Nint$ \lstinline{integer*8}'s (64-bit integers).  
+The Fortran representation of an $\alpha \beta$-bitstring is a two dimensional array of \lstinline{integer*8}'s, the first dimension of size $\Nint$ and the second of size $2$, corresponding to the $\alpha$ and $\beta$ spin parts.
 
 
 \lstset{frame=single}
@@ -160,8 +161,10 @@ The internal Fortran representation of an $\alpha \beta$-bitstring is a two dime
 \lstset{frame=none}
 
 
-In formulas or algorithms, depending on the level of detail desired, a bitstring can be treated as a single integer of infinite size. This hides some implementation details but is unambiguous. However, in algorithms we will usually try to stay closer to the actual implementation. $\bitI$ being the $\alpha \beta$-bitstring associated with $\kI$, we can explicitly refer to a single 64-bit integer
-$$\bitI_{\sigma}[i]\; ;\; \sigma \in \{\alpha, \beta\}\; ;\; i \in [0, \Nint-1]$$
+In formulas or algorithms, depending on the level of detail desired, a bitstring may also be treated as a single mathematical integer (in $\mathbb{Z}$), avoiding the cumbersome separation into 64-bit packs. However, in algorithms we will usually try to stay closer to the actual implementation. $\bitI$ being the $\alpha \beta$-bitstring associated with $\kI$, we can explicitly refer to a single element of the 64-bit integer array as
+\begin{equation}
+\bitI_{\sigma}[i]\; ;\; \sigma \in \{\alpha, \beta\}\; ;\; i \in [0, \Nint[
+\end{equation}
 which is the bitstring representation of the $\sigma$ spinorbitals of determinant $\kI$ in the range $[1+i \times 64, \min \left( (i+1) \times 64, \Norb \right)]$, indexed from $0$ to $63$.
 
       
@@ -214,17 +217,8 @@ In many of the presented algorithms, some Fortran intrinsics will be of use. Eac
       
       
 Those intrinsics apply to integers at most 64-bits. This however is a purely implementational limitation, so depending on the level of detail desired, this constraint can be unambiguously lifted in formulas or algorithms. Different notations will be used for the 64-bit and the infinite size cases, as they are not always equivalent.
-For example, the 64-bit bit-shift intrinsic always returns zero for shifts greater than 64 bits:
-
-$$ \ISHFT{1}{n} =
-\begin{cases}
-2^{n}, & 0 \le n < 64 \\
-0, & \text{otherwise}
-\end{cases}
-$$
-
-It is convenient to introduce functions and notations acting on sets 
-More convenient notations are also desired for some operators. All binary operators are of same precedence and left-associative.
+For example, the $\ISHFT{\_}{\_}$ Fortran intrinsic always returns zero for shifts greater than 64 bits, which is not the case for the $\ishft{\_}{\_}$ function over mathematical integers.
+So it is convenient to introduce functions and notations acting on mathematical integers. All binary operators are of same precedence and left-associative.
 
 \begin{table}[H]
 	\begin{tabularx}{\textwidth}{X|X}
@@ -269,29 +263,31 @@ More convenient notations are also desired for some operators. All binary operat
 	\end{tabularx}
 \end{table}
 
-Note that these notations apply to integers ; whether or not they are meant to be bitstrings.
 
-Some examples of how these instructions can be used are given below. They are key to understand how we can determine which holes and particles are created when exciting from $\kI$ to $\kJ$.
+Some examples of how these instructions can be used are given below. They are key to understand how we can determine the holes and particles involved in the $\excdet{I}{J}$ excitation operator defined as
+\begin{equation}
+\excdet{I}{J} \kI = \kJ.
+\end{equation}
 Let $\bitI$ and $\bitJ$ be the bitstring representations of $\kI$ and $\kJ$, and $\bit{P}$ a bitstring with $\Nint=1$. 
 
 
 \begin{itemize}
 	      
-	\item $\bitx{I}{\alpha}$ : bitstring representation of the set of $\alpha$ spinorbitals of $\kI$
+	\item $I_{\alpha}$ : bitstring representation of the set of $\alpha$ spinorbitals of $\kI$
 	            
-	\item $\popcnt{\bitx{I}{\alpha}}$ : number of spinorbitals in $\bitx{I}{\alpha}$ (equal to the number of $\alpha$ electrons).
+	\item $\popcnt{I_{\alpha}}$ : number of spinorbitals in $I_{\alpha}$ (equal to the number of $\alpha$ electrons).
 	            
-	\item $\ieor{\bitx{I}{\alpha}}{\bitx{J}{\alpha}}$ : bitstring representation of the set of $\alpha$ spinorbitals that are present in either $\bitx{I}{\alpha}$ or $\bitx{J}{\alpha}$, but not in both (exclusive disjunction).
+	\item $\ieor{I_{\alpha}}{J_{\alpha}}$ : bitstring representation of the set of $\alpha$ spinorbitals that are present in either $I_{\alpha}$ or $J_{\alpha}$, but not in both (exclusive disjunction).
         This operator identifies the $\alpha$ spinorbitals involved in the excitation from $\kI$ to $\kJ$. 
 	            
-	\item $\iand{\bitx{I}{\alpha}}{\qty(\ieor{\bitx{I}{\alpha}}{\bitx{J}{\alpha}})}$ : 
+	\item $\iand{I_{\alpha}}{\qty(\ieor{I_{\alpha}}{J_{\alpha}})}$ : 
         bitstring representation of the set of $\alpha$ spinorbitals of $\kI$ involved in the excitation from $\kI$ to $\kJ$. This corresponds to the indices of the holes in the excitation $\excdet{I}{J}$ or to the particles in $\excdet{J}{I}$. 
 	            
-	\item $\popcnt{\ieor{\bitx{I}{\alpha}}{\bitx{J}{\alpha}}}/2$ : because the excitation of an electron involves 2 spinorbitals (one hole and one particle), this is the $\alpha$ excitation degree between $\kI$ and $\kJ$.
+	\item $\popcnt{\ieor{I_{\alpha}}{J_{\alpha}}}/2$ : because the excitation of an electron involves 2 spinorbitals (one hole and one particle), this is the $\alpha$ excitation degree between $\kI$ and $\kJ$.
 	            
-	\item $\TRAILZ{\bit{P}}+1$ : the index of the lowest orbital in $P$. If $\bit{P}$ is $0$, returns $65$.
+	\item $\trailZ{\bit{P}}+1$ : the index of the lowest orbital in $\bit{P}$. If $\bit{P}$ is $0$, returns $65$.
 	            
-	\item $\IBCLR{\bit{P}}{\TRAILZ{P}}$ : $P$ without its orbital of lowest index.
+	\item $\IBCLR{\bit{P}}{\TRAILZ{\bit{P}}}$ : $\bit{P}$ without its orbital of lowest index.
 
 \end{itemize}
 
@@ -299,7 +295,7 @@ Let $\bitI$ and $\bitJ$ be the bitstring representations of $\kI$ and $\kJ$, and
 \section{Computing Excitations}
 
 An algorithm used to compute the excitation degree is presented as algorithm \ref{alg:EXC_DEGREE}, and one to compute the sets of created holes and particles as algorithm \ref{alg:EXC}. Algorithm \ref{alg:EXC}, however, returns the sets as bitstrings. Extracting the indices from a bitstring is another basic operation, presented as algorithm \ref{alg:LIST_FROM_BITSTRING}.
-Because computing excitations is a hotspot of the program, and because we are typically interested in double excitations at most, a more specialized algorithm can be used ( PAS ENCORE ECRIT/POMPÉ ).
+Because computing excitations is a hotspot of the program, and because we are typically interested in double excitations at most, a more specialized algorithm can be used (\alert{PAS ENCORE ECRIT/POMPÉ}).
 
 
 \begin{algorithm}[h!]
@@ -375,7 +371,6 @@ Because computing excitations is a hotspot of the program, and because we are ty
 \section{Computing phase factors}
 
 
-
 The computation of phase factors is slightly more complex. The following explanation is limited to one spin part. More detail will be given later about why spin parts can be treated independently.
 As we have seen in section~\ref{sec:det_representation}, the $\alpha \beta$-bitstring representation of determinants implies an ordering of creation operators : first all the $\alpha$ operators, then all the $\beta$, both with increasing orbital indices.
 
@@ -385,25 +380,25 @@ First of all, we have to make this initial expression unambiguous by precisely d
 Like for determinants, we pack together $\alpha$ and $\beta$ operators.
 \begin{equation}
 \label{eq:spinpackexc}
-\hat T = \hat T_\alpha \hat T_\beta
+\hat T = \hat T_\alpha \hat T_\beta.
+\end{equation}
+Within $\hat T_\alpha$ and $\hat T_\beta$, the creation and annihilation operators are separately sorted with increasing indices, then interleaved starting with a creation. In other words, $\hat T_\alpha$ and $\hat T_\beta$ are written as a products of single excitations, lowest particle with lowest hole, then second lowest particle with second lowest hole, \textit{etc}, and we arbitrarily chose to put creation before annihilation operators.
+For example, the double excitation $\excorb{ab}{cd}$ with $a<b<c<d$ is expressed as
+\begin{equation}
+\hat T_{ab}^{cd} = \ac{c} \an{a} \ac{d} \an{b} = \hat T_a^c \hat T_b^d.
 \end{equation}
 
-Within $\hat T_\alpha$ and $\hat T_\beta$, the creation and anihilation operators are separately sorted with increasing indices, then interleaved starting with a creation. In other words, $\hat T_\alpha$ and $\hat T_\beta$ are written as a products of single excitations, lowest particle with lowest hole, then second lowest particle with second lowest hole, etc... and it's arbitrarily chosen to put creation before anihilation.
-For example, the double excitation $ab \rightarrow cd$ with $a<b<c<d$ is expressed as
-
-$$\hat T_{ab}^{cd} = \ac{c} \an{a} \ac{d} \an{b} = \hat T_a^c \hat T_b^d$$
-
-We now can express $\hat T \kI$ as a serie of operators.
+We now can express $\hat T \kI$ as a series of operators.
 In most cases, permuting contiguous operators will still just result in a sign change.
-\begin{align*}
+\begin{align}
 \an{j} \an{i} & = -\an{i} \an{j} \\
 \ac{j} \an{i} & =
   \begin{cases}
   -\an{i} \ac{j} & i \ne j \\
-  1 - \an{i} \ac{i} & i = j
+  1 - \an{i} \ac{i} & i = j.
   \end{cases}
-\end{align*}
-A particular case is the permutation of a creation and an annihilation operators with the same index.
+\end{align}
+A particular case is the permutation of a creation and an annihilation operator with the same index.
 Indeed, if spinorbital $l$ is unoccupied in $\kI$,
 \begin{align}
 \label{eq:aa+}
@@ -416,21 +411,29 @@ These formulas will be used to remove annihilation operators from the expression
 
 
 Let $\kI$ and $\kK$ be two determinants with spin orbitals ordered as in the $\alpha \beta$-bitstring  representation:
-\begin{align*}
+\begin{align}
 \kI & = \ac{i}\ac{j}\ac{k} \vac \\
 \kK & = \ac{i}\ac{k}\ac{l} \vac
-\end{align*}
+\end{align}
 with $i<j<k<l$.
 When one applies the excitation operator $\excorb{j}{l}$ to $\kI$,
-$$\excorb{j}{l} \kI = \ac{l} \an{j} \ac{i} \ac{j} \ac{k} \vac $$
+\begin{equation}
+\excorb{j}{l} \kI = \ac{l} \an{j} \ac{i} \ac{j} \ac{k} \vac.
+\end{equation}
 To build the corresponding $\alpha \beta$-bitstring, one needs to
 reorder the operators by permuting contiguous operators.
 It takes $n=1$ permutation to bring $\an{j}$ behind $\ac{j}$:
-$$\excorb{j}{l} \kI = -\ac{l} \ac{i} \an{j} \ac{j} \ac{k} \vac.$$
+\begin{equation}
+\excorb{j}{l} \kI = -\ac{l} \ac{i} \an{j} \ac{j} \ac{k} \vac.
+\end{equation}
 Using equation~\ref{eq:aa+},
-$$\excorb{j}{l} \kI = -\ac{l} \ac{i} \ac{k} \vac.$$
+\begin{equation}
+\excorb{j}{l} \kI = -\ac{l} \ac{i} \ac{k} \vac.
+\end{equation}
 Then, it takes $n$ permutations to bring $\ac{l}$ to the position formerly occupied by $\ac{j}$, and $x=1$ more permutation to bring it at its final position.
-$$\excorb{j}{l} \kI = -\ac{i} \ac{k} \ac{l} \vac = -\kJ.$$
+\begin{equation}
+\excorb{j}{l} \kI = -\ac{i} \ac{k} \ac{l} \vac = -\kJ.
+\end{equation}
 
 The total number of permutations needed is $\Nperm = 2n+x$. The parity of the number or permutations is the parity of $x$. As can be seen, $x$ is the number of occupied spinorbitals with indices in the $]j, l[$ range in $\kI$ (regardless of whether $l>j$ or $l<j$). In our case, there was one occupied spinorbital $k$, so $\Nperm$ is odd and we ended with a negative phase factor.
 
@@ -439,7 +442,7 @@ The total number of permutations needed is $\Nperm = 2n+x$. The parity of the nu
 		\includegraphics[width=0.3\columnwidth]{figures/determinant_driven/phasefactor}
 		\caption{
 		\label{phasefactor}%
-		phasefactor
+		\alert{phasefactor}
 		}
 	\end{center}
 \end{figure}
@@ -449,7 +452,9 @@ The total number of permutations needed is $\Nperm = 2n+x$. The parity of the nu
 It is not immediately obvious that $\alpha$ and $\beta$ spin parts can be treated independently. It is possible because our ordering packs together operators of same spin in the expression of both determinants (Eq.\eqref{eq:spinpack}) and excitations (Eq.\eqref{eq:spinpackexc}), and 
 also because we never consider excitations where the spin is changed (spin-flips). 
 Under these constraints, any excitation operator $\hat{T}$ can be expressed as 
-$$\hat{T} = \hat{T}_\alpha \hat{T}_\beta .$$
+\begin{equation}
+\hat{T} = \hat{T}_\alpha \hat{T}_\beta .
+\end{equation}
 
 \begin{align}
 \label{eq:spin1}
@@ -460,38 +465,54 @@ $$\hat{T} = \hat{T}_\alpha \hat{T}_\beta .$$
 \end{align}
 
 The number of creation and annihilation operators in an excitation operator is always even. Hence, going from Eq.\eqref{eq:spin1} to Eq.\eqref{eq:spin2} by permuting $\hat{T}_\beta$ with $\hat{I}_\alpha$ always requires an even number of permutations.
-So the phase factors will be computed by reordering separately $\hat{T}_\alpha \hat{I}_\alpha$ and $\hat{T}_\beta  \hat{I}_\beta$.
+So the phase factors can be easily computed by reordering separately $\hat{T}_\alpha \hat{I}_\alpha$ and $\hat{T}_\beta  \hat{I}_\beta$.
 
 
-%TODO : J'en suis la.
 
-
-\subsection{Single excitation}
+\subsection{Single excitations}
 
 %In the case of a monoexcitation, only one spin part is involved. All indices refer to spinorbitals of same, arbitrary spin $\sigma \in \{\alpha, \beta\}$
 
-For a given determinant $\ket S$ and $\ket{\alpha}=a^\dagger_{j'} a_{i'}  \ket S$, the phase factor of the matrix element $\Hij{S}{\alpha}$ can be determined by the parity of
-$$N^{S}_{ij}=\sum_{i<k<j} occ^{S}_{k};i=min(i',j');j=max(i',j')$$
-With $occ^{S}_{k}$ the occupation number of spinorbital $k$ for $\ket S$ or $\ket \alpha$. Note that occupation numbers in $\ket S$ and $\ket \alpha$ are by construction equal for any spinorbital $k \neq i \neq j$, so while we will use $\ket S$ in the following, we could as well use $\ket \alpha$. This is obvious from the fact that $\Hij{S}{\alpha}=\Hij{\alpha}{S}$  
+For a given determinant $\kI$ and a singly excited determinant $\kalpha = \ordering \excorb{i'}{j'} \kI$ where both 
+use the ordering of spinorbitals defined previously, the phase factor can be determined by the parity of
+\begin{equation}
+N^{S}_{ij}=\sum_{k=i+1}^{j-1} \occ{k}{I}
+\end{equation}
+where $i=\min(i',j')$, $j=\max(i',j')$ and
+\begin{equation}
+\occ{k}{I} = \delta \qty(\ac{k}\an{k} \kI - \kI) = \begin{cases}
+ 1 & \text{if } \ac{k}\an{k} \kI = \kI \\
+ 0 & \text{otherwise}
+\end{case}
+\end{equation}
+is the occupation number of spinorbital $k$ in determinant $\kI$.\footnote{Note that occupation
+numbers in $\kI$ and $\kalpha$ are by construction equal for any spinorbital $k \neq i \neq j$, so while we will use $\kI$ in the following, we could as well use $\kalpha$.
+%This is obvious from the fact that $\Hij{I}{\alpha}=\Hij{\alpha}{I}$.
+}
+We will use the fact that the parity of an integer $X$ can be obtained by extracting the least significant bit of its binary representation: 
+\begin{equation}
+p(X)=\iand{X}{1} = \begin{cases}
+1 & \text{ if $X$ is odd  } \\
+0 & \text{ if $X$ is even.} 
+\end{cases}.
+\end{equation}
 
-Parity of an integer $X$ can be defined by $$p(X)=X \wedge 1$$
-        
-Indeed $p(X)=0$ if and only if X is even, $p(X)=1$ if and only if X is odd. $p(X)$ is of the same parity as $X$, so 
-$$-1^{N_{perm}} = -1^{p(N_{perm})}$$
-        
-        
 
-A bitstring $R_{ij}$, containing all orbitals in a given range $]i, j>i[$ can be built as follow
-$$R_{ij}=ishft(not(0),i) \oplus ishft(not(0),j-1)$$
+A bitstring $R_{ij}$, containing all orbitals in a given range $]i, j[$ can be built as 
+\begin{equation}
+R_{ij}=\ieor{\ishft{\neg{0}}{i}}{\ishft{\neg{0}}{j-1}}
+\end{equation}
+where $\neg{0}$ denotes the bitstring where all the bits are set to one.
 
-
-Be $S$ the bitstring reprensentation of $\ket S$, $N^{S}_{ij}$ The number of $\sigma$ electrons for $\ket S$ in the given orbital range can be evaluated as
-$$N^{S}_{ij} = |S_\sigma \wedge R_{ij}|$$
-
-Thus 
-
-$$phase(ij, \ket S) = -1^{p(N^S_{ij})}$$
-Using the above formulas and taking into account the bitstring's internal representation as arrays of integer*8 size $\Nint$, we get algorithm \ref{alg:PHASE_MONO}.   
+Let $I$ be the bitstring representation of $\kI$, the number of orbitals of spin $\sigma$ in $\kI$ in the given orbital range can be evaluated as
+\begin{equation}
+N^{I}_{ij} = \popcnt{\iand{I_{\sigma}}{R_{ij}}}.
+\end{equation}
+So the phase factor to be applied when going from $\kI$ to $\kalpha$ is 
+\begin{equation}
+\phase{I}{\alpha} = -1^{p(N^I_{ij})}.
+\end{equation}
+Using the above formulas and taking into account the bitstring's internal representation as arrays of $\Nint$ \lstinline{integer*8}'s, we get algorithm~\ref{alg:PHASE_MONO}.   
 
 
 \begin{algorithm}
@@ -500,31 +521,33 @@ Using the above formulas and taking into account the bitstring's internal repres
 				\SetKwFunction{FMain}{PHASE\_MONO}
 	\SetKwProg{Fn}{Function}{:}{}
 	
-	\Fn(\tcc*[h]{Compute phase factor of $\Hij{I}{I_a^b}$}){\FMain{$I_\sigma, a, b$}}{
+	\Fn(\tcc*[h]{Compute phase factor of $\ordering \excorb{a}{b} \kI$}){\FMain{$I_\sigma, a, b$}}{
 		\KwData{ $I_\sigma$ the bitstring representation of $\sigma \in \{\alpha, \beta\}$ spinorbitals of $\ket I$}
 		\KwData{ $a,b$ indices of a hole and a particle created in $\sigma$ spinorbitals of $\ket I$ }
-		\KwResult{ The phase factor associated with $\Hij{I}{I_a^b}$}
-		$high \gets max(a,b)-1$ \;
-		$low \gets min(a,b)-1$ \;
-		$il \gets \frac{low}{64} + 1$ \;
-		$ih \gets \frac{high}{64} + 1$ \;
-		$l \gets mod(low, 64)$ \;
-		$h \gets mod(high, 64)$ \; 
+		\KwResult{ The phase factor associated with $\ordering \excorb{a}{b} \kI$}
+		$\texttt{high} \gets \max(a,b)-1$ \;
+		$\texttt{low} \gets \min(a,b)-1$ \;
+		$il \gets \frac{\texttt{low}}{64} + 1$ \;
+		$ih \gets \frac{\texttt{high}}{64} + 1$ \;
+		$l \gets \texttt{low} \mod 64$ \;
+		$h \gets \texttt{high} \mod 64$ \; 
 		\For{$i \gets il, ih-1$}{
-			$mask[i] = NOT(0)$\;		
+			$\texttt{mask}[i] = \texttt{NOT}(0)$\;		
 		}
 
 		%$mask[ih] \gets ISHFT(NOT(0), h-63)$ \;
 		%$mask[il] \gets IAND(mask[il], ISHFT(NOT(0), l))$ \;
 		
-		$mask[ih] \gets ISHFT(NOT(0), h+1)$ \;
-		$mask[il] \gets IEOR(mask[il], ISHFT(NOT(0), l))$ \;
+		$\texttt{mask}[ih] \gets \texttt{ISHFT}(\texttt{NOT}(0), h+1)$ \;
+		$\texttt{mask}[il] \gets \texttt{IEOR}(\texttt{mask}[il], \texttt{ISHFT}(\texttt{NOT}(0), l))$ \;
 		
 		
-		$nperm \gets 0$ \;
+		$\Nperm \gets 0$ \;
 		\For{$i \gets il,ih$}{
-			$nperm \gets nperm + POPCNT(IAND(I_{i}, mask[i]))$ \;
+			$\Nperm \gets \Nperm + \texttt{POPCNT}(\texttt{IAND}(I_{i}, \texttt{mask}[i]))$ \;
 		}
+                $\texttt{phase}[0:1] = [ 1.0 \;;\; -1.0 ]$ \;
+                \KwRet \texttt{phase}[\texttt{IAND}(\Nperm,1)] \;
 		}
 \end{algorithm}
         
@@ -532,60 +555,68 @@ Using the above formulas and taking into account the bitstring's internal repres
 \subsection{Phasemasks}
 
 
-Algorithm \ref{alg:PHASE_MONO} is a general one, efficient for computing the phase factor for two arbitrary determinants. However, a phase computation is typically needed every time an integral is accessed, resulting in a vast amount of computational power being consumed. When only this method was used in the quantum package, it wasn't uncommon to find that most computational power was used on phase computations.
-Advantage can be taken of the fact that, in most cases, the considered determinants aren't actually arbitrary. Usually, phase computation will be performed repeatedly on a same determinant, or on determinants of the wavefunction. For a fairly modest computational price, it is possible to compress the phase information from a particular determinant and make it cheaper to extract. The underlying principle is little more than a cumulative sum. If, for a determinant $\ket S$ that is going to be used repeatedely for phase computation, we pre-compute
-        
-$$E^S_{i} = \sum_{k < i} occ^{S}_{k}$$
-        
-We can access $N^S_{ij}$ for any $i$ and $j>i$ with no need to loop over $occ^{S}_{k}$
-
-$$\tilde N^S_{ij} = E^S_j - E^S_{i+1} ; i \neq j$$
-$$N^S_{ij} = \tilde N^S_{ij} ; j>i$$
+Algorithm \ref{alg:PHASE_MONO} is a general one, efficient for computing the phase factor for two arbitrary determinants. However, a phase computation is typically needed every time two determinants are compared, resulting in a vast amount of computational power being consumed. When only this method was used in the quantum package, it was not uncommon to find that a large fraction of the computational time was spent in phase computations.
+Advantage can be taken of the fact that, in most cases, the considered determinants aren't actually arbitrary. Usually, the phase computation will be performed repeatedly with the same determinant. For a fairly modest computational price, it is possible to compress the phase information from a particular determinant and make it cheaper to extract. The underlying principle is little more than a cumulative sum. If, for a determinant $\ket{S}$ that is going to be used repeatedly for phase computations, we pre-compute
+\begin{equation}
+E^S(i) = \sum_{k=1}^{i-1} \occ{k}{S},
+\end{equation}
+we can access $N^S_{ij}$ for any $i$ and $j>i$ with no need to loop over $k$:
+\begin{align}
+\tilde N^S_{ij} &= E^S(j) - E^S(i+1) \; ; \; i \neq j \\
+N^S_{ij} &= \tilde N^S_{ij} \; ; \; j>i.
+\end{align}
 
 Note that $\tilde N^S_{ij}$ is still defined when $j<i$. The reason for this will be made clear later.
-This requires to store $E^S$ which is an integer array of size $2 \times (\Norb+1)$. Note that there is a slight waste as $E^S_1 = 0 \forall \ket S$ ( there is always $0$ electrons under the first orbital ) and $E^S_{\Norb+1} = N_{electron,\sigma} \forall \ket S$ ( there is always $N_{electron,\sigma}$ electrons in all orbitals ). Those values are still stored for convenience.
+This requires to store $E^S$ which is an integer array of size $2 \times (\Norb+1)$. 
+%Note that there is a slight waste as $E^S_1 = 0 \forall \ket S$ ( there is always $0$ electrons under the first orbital ) and $E^S_{\Norb+1} = N_{electron,\sigma} \forall \ket S$ ( there is always $N_{electron,\sigma}$ electrons in all orbitals ). Those values are still stored for convenience.
 
 
 
 
+%\begin{comment}
+%This requires to store $E^S$ which is an integer array of size $2 \times (\Norb+1)$.
+%Note that although only $2 \times \Norb$ integers are required to store the whole information, for practical reasons the actual size of the array is $2 \times (\Norb+1)$ because when the last orbital is involved, we need to access $E_{\Norb+1}$. The reason for this loss is that $E_1$ contains no information - there are always 0 electrons under the first orbital, $E^S_1 = 0 \forall \ket S$.
+%\end{comment}
 
-
-\begin{comment}
-This requires to store $E^S$ which is an integer array of size $2 \times (\Norb+1)$.
-Note that although only $2 \times \Norb$ integers are required to store the whole information, for practical reasons the actual size of the array is $2 \times (\Norb+1)$ because when the last orbital is involved, we need to access $E_{\Norb+1}$. The reason for this loss is that $E_1$ contains no information - there are always 0 electrons under the first orbital, $E^S_1 = 0 \forall \ket S$.
-\end{comment}
-
-This may be somewhat memory consuming if we want to pre-compute and store $E$ for each determinant. However, because the actual information needed isn't $N^S_{ij}$, but merely its parity, we only need to store the so-called "phasemask" vector $P^S$
-
-$$P^S_i = p(E^S_i)$$
-
-which is 1 bit of information per spinorbital, as opposed to an integer big enough to accomodate a number of electrons.
-       
-$$E^S_i = 2 \times  \lfloor \frac{E^S_i}2 \rfloor + P^S_i$$
-$$\tilde N^S_{ij} = E^S_j - E^S_{i+1} = 2 \times \big ( \lfloor \frac{E^S_j}2 \rfloor - \lfloor \frac{E^S_{i+1}}2 \rfloor \big ) + P^S_j - P^S_{i+1}$$
+This may be somewhat memory consuming if we want to pre-compute and store $E$ for each determinant. However, because the actual information needed isn't $N^S_{ij}$, but merely its parity, we only need to store the so-called ``phasemask'' array $P^S$
+\begin{equation}
+P^S(i) = p(E^S(i))
+\end{equation}
+which is 1 bit of information per spinorbital, as opposed to an integer big enough to accommodate a number of electrons.
+\begin{align}
+E^S(i) & = 2 \times  \lfloor \frac{E^S(i)}{2} \rfloor + P^S(i) \\
+\tilde N^S_{ij} & = E^S(j) - E^S(i+1) \\
+ & = 2 \times \qty( \lfloor \frac{E^S(j)}{2} \rfloor - \lfloor \frac{E^S(i+1)}{2} \rfloor ) + P^S(j) - P^S(i+1)
+\end{align}
 	    
 In the last equation, $\tilde N^S_{ij}$ is expressed as a sum of 3 terms. The first one being even by construction, the parity of $\tilde N^S_{ij}$ is the parity of the rest of the sum.
-$$p(\tilde N^S_{ij})=p(P^S_j - P^S_{i+1})$$
+\begin{equation}
+p(\tilde N^S_{ij})=p(P^S_j - P^S_{i+1})
+\end{equation}
 This can be rewritten in a slightly more efficent way as
-$$p(\tilde N^S_{ij}) = P^S_j \oplus P^S_{i+1}$$
+\begin{equation}
+p(\tilde N^S_{ij}) = P^S_j \oplus P^S_{i+1}
+\end{equation}
 
-Note that using $E^S$ instead of $P^S$ would require an extra ADD instruction ( totalement negligeable ? )
-$$p(\tilde N^S_{ij}) = (E^S_{i+1} - E^S_j) \wedge 1$$
+%Note that using $E^S$ instead of $P^S$ would require an extra ADD instruction ( totalement negligeable ? )
+%\begin{equation}
+%p(\tilde N^S_{ij}) = (E^S_{i+1} - E^S_j) \wedge 1
+%\end{equation}
 
-We have used sorted indices $i<j$. But just like for the general algorithm, if we consider $\hat T_{i'}^{j'}$, it looks like we need to sort $i'$ and $j'$ to get the $i$ and $j$ indices used for phase computation.
+We have used sorted indices $i<j$. But just like for the general algorithm, if we consider $\hat T_{i'}^{j'}$ we need to sort $i'$ and $j'$ to get the $i=\min(i', j')$ and $j=\max(i', j')$ indices used for the phase computation.
 
-$$i=min(i', j') ; j=max(i', j')$$
-
-This however doesn't need to be done explicitely. We can arbitrarily choose $i=i'$ and $j=j'$, and reverse the phase if $j<i$. We effectively have computed $p(N^S_{i'j'})$ instead of $p(N^S_{j'i'})$, and it can be proven they are always of diffrent parity.
-
-$$\tilde N^{S}_{i' j'} + \tilde N^{S}_{j'i'} = E^{S}_{j'} - E^S_{i'+1} + E^S_{i'} - E^S_{j'+1} = -(occ^S_{j'} + occ^S_{i'})$$
-
-Because $\hat T_{i'}^{j'} \ket S \neq 0$, we know that $occ^S_{j'} + occ^S_{i'} = 1$. 
-
-$$\tilde N^{S}_{j' i'} = -(\tilde N^{S}_{i'j'} + 1)$$
-
+This however doesn't need to be done explicitly. We can arbitrarily choose $i=i'$ and $j=j'$, and reverse the phase if $j<i$. We effectively have computed $p(N^S_{i'j'})$ instead of $p(N^S_{j'i'})$, and it can be proved they are always of different parity:
+\begin{align}
+\tilde N^{S}_{i' j'} + \tilde N^{S}_{j'i'} & = E^{S}_{j'} - E^S_{i'+1} + E^S_{i'} - E^S_{j'+1} \\
+& = -\qty( \occ{j'}{S} + \occ{i'}{S})
+\end{align}
+Because $\hat T_{i'}^{j'} \ket S \neq 0$, we know that $\occ{j'}{S} + \occ{i'}{S} = 1$. 
+\begin{equation}
+\tilde N^{S}_{j' i'} = -(\tilde N^{S}_{i'j'} + 1)
+\end{equation}
 This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of different parity.
 
+%TODO : J'en suis ici.
 
 \begin{algorithm}
 	\caption{PHASEMASK}	
@@ -696,14 +727,18 @@ A double excitation is a product of two single excitations.
 In the case of an $\alpha \beta$ double excitation, the two single excitations are independant, so the phase factor is merely the product of the phase factors computed for each spin part. 
 
 
-$$phase(\hat T_{p \bar q}^{r \bar s}, \ket I) = phase(\hat T_{p}^{r}, \ket I) \times phase(\hat T_{ \bar q}^{ \bar s}, \ket I) $$
+\begin{equation}
+phase(\hat T_{p \bar q}^{r \bar s}, \ket I) = phase(\hat T_{p}^{r}, \ket I) \times phase(\hat T_{ \bar q}^{ \bar s}, \ket I) 
+\end{equation}
 
 
 There is a slight complication for $\alpha \alpha$ or $\beta \beta$ excitations. The ordering we defined for excitation operators is of importance. In order to write a double excitation as a product of two single ones, it must be ensured that the phase (ordering) matches the one we defined : lowest particle with lowest hole, highest particle with highest hole.
 
 As far as phase computation goes, it is irrelevant which index of an exciation operator is a creation and which is an annihilation. So, for convenience, we can write single excitations without defining it
 
-$$\tilde T_{ab} \in \{\hat T_a^b, \hat T_b^a \}$$
+\begin{equation}
+\tilde T_{ab} \in \{\hat T_a^b, \hat T_b^a \}
+\end{equation}
 
 
 
@@ -712,24 +747,38 @@ Considering a double excitation $\hat T^2$ involving 4 spinorbitals $p,q,r,s$ of
 
 
 
-%$$\hat T^2 = \hat T_{pr} \hat T_{qs}$$
-%$$\hat T_{pr} \in \{ T_p^r, T_r^p\} ; p<r; \hat T_{qs} \in \{ T_q^s, T_s^q\};q<s$$ 
+%\begin{equation}
+%\hat T^2 = \hat T_{pr} \hat T_{qs}
+%\end{equation}
+%\begin{equation}
+%\hat T_{pr} \in \{ T_p^r, T_r^p\} ; p<r; \hat T_{qs} \in \{ T_q^s, T_s^q\};q<s$
+%\end{equation}
 
 \begin{itemize}
 \item
 It can be expressed as two single excitations that do not cross, i.e.
-$$\hat T^2=\tilde T_{pr} \tilde T_{qs};p<r<q<s$$
+\begin{equation}
+\hat T^2=\tilde T_{pr} \tilde T_{qs};p<r<q<s
+\end{equation}
 In this case, the numbers of particles in the ranges $]p, r[$ and $]q, s[$ remain unchanged, so we can write
-$$phase(\hat T^2, \ket I) = phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_{qs}, \ket I) $$
+\begin{equation}
+phase(\hat T^2, \ket I) = phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_{qs}, \ket I) 
+\end{equation}
 
 \item
 It can be expressed as two single excitations that cross, i.e.
-$$\hat T^2=\tilde T_{pr} \tilde T_{qs};p<q<r<s$$
+\begin{equation}
+\hat T^2=\tilde T_{pr} \tilde T_{qs};p<q<r<s
+\end{equation}
 
 
 As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ results in a particle being created or annihilated in the range $]p,r[$, resulting in a change of parity for the number of particles in that range. Therefore
-$$phase(\tilde T_{pr}, \tilde T_{qs} \ket I) = -phase(\tilde T_{pr}, \ket I)$$ 
-$$phase(\hat T^2, \ket I) = -phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_{ qs}, \ket I) $$
+\begin{equation}
+phase(\tilde T_{pr}, \tilde T_{qs} \ket I) = -phase(\tilde T_{pr}, \ket I)$
+\end{equation}
+\begin{equation}
+phase(\hat T^2, \ket I) = -phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_{ qs}, \ket I) 
+\end{equation}
 
 \end{itemize}
 
