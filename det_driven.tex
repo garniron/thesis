@@ -750,8 +750,87 @@ $$phase(\hat T^2, \ket I) = -phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_
 %$[(p-r) \oplus (p-s)] \vee [(q-r) \oplus (q-s)] > 0$
 
 
-\section{integrals}
-hashtable \\
+% BEGIN Section de TOTO
+%----------------------------------------------------------------
+\section{Storage of the two-electron integrals}
+%----------------------------------------------------------------
+
+In all what follows, all the needed two-electron integrals are kept in memory
+and require a fast random access.
+A hash table is the natural choice which allows the storage of only non-zero
+values with a retrieval of data in nearly constant time, but standard hashing
+algorithms tend to shuffle the data to limit the probability of collisions.
+Here, we favor instead the locality of the data over the probability of collision
+using the hash function given in Algorithm~\ref{alg:hash}.  It returns the same
+value for all the keys which are related by the permutation symmetry of the
+indices, keeps some locality in the storage of the data, and can be evaluated
+in the order of 10 CPU cycles if the integer division by two is replaced by a
+bit shift instruction.
+\begin{algorithm}[H]
+ \caption{HASH}
+ \label{alg:hash}
+	\SetKwFunction{FMain}{HASH}
+	\SetKwProg{Fn}{Function}{:}{}
+\Fn(\tcc*[h]{Hash function for two-electron integrals.}){\FMain{$i,j,k,l$}}{
+		\KwData{ $i,j,k,l$ are the orbital indices}
+		\KwResult{ The corresponding hash .}
+        $p \gets \min (i,k)$ \;
+        $r \gets \max (i,k)$ \;
+        $t \gets p + \frac{1}{2} r (r-1)$ \;
+        $q \gets \min (j,l)$ \;
+        $s \gets \max (j,l)$ \;
+        $u \gets q + \frac{1}{2} s (s-1)$ \;
+        $v \gets \min (t,u)$ \;
+        $w \gets \max (t,u)$ \;
+        \KwRet{$v + \frac{1}{2} w (w-1)$} \;
+}
+\end{algorithm}
+
+The hash table is such that each bucket can potentially store $2^{15}$
+consecutive key-value pairs. The 15 least significant bits of the hash value
+are removed to give the index of the bucket ($i_\text{bucket} =
+\text{hash}(i,j,k,l)/2^{15}$), and only those 15 bits need to be
+stored in the bucket for the storage of the key.
+Hence, the storage of the keys only require two bytes per key.
+The keys within a bucket are sorted in increasing order, enabling a binary
+search to resolve the conflicts. The binary search of the key is always fast
+since the binary search is bounded by 15 misses and the maximum size of the
+array of keys is 64~kiB, the typical size of the L1 cache.
+
+To accelerate the access to the most frequently used integrals, all the
+integrals involving the $128$ closest MOs (molecular orbitals) to the Fermi
+level are copied in a dense array of $128^4$ elements ($2$~GiB) enabling a
+direct access.
+
+% TODO: Voila les mesures, a mettre dans un tableau
+
+% H2O, cc-pVQZ, 115 MOs
+% Array:
+%         115 MOs
+% Random function :   4.999999950000000E-008
+% Random access :   1.299999987000000E-007
+% loop ijkl :   6.289285701523365E-009
+% loop ikjl :   6.289285701523365E-009
+% loop ijlk :   5.717532455930332E-009
+% loop lkji :   3.945097394591929E-008
+% loop lkij :   3.887922070032626E-008
+%Wall time : 4.15901m
+% CIPSI : Wall time : 1.54942m
+
+% 
+% Map:
+% Random function :   4.999999950000000E-008
+% Random access :   3.199999968000000E-007
+% loop ijkl :   8.233246736539678E-008
+% loop ikjl :   1.183529218377579E-007
+% loop ijlk :   7.547142841828039E-008
+% loop lkji :   8.233246736539678E-008
+% loop lkij :   7.547142841828039E-008
+%Wall time : 13.4311m
+% CIPSI : Wall time : 3.40127m
+
+% END Section de TOTO
+
 
 \section{generating a subspace}
 duplicates are avoided by checking connection to the past \\

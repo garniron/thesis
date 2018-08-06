@@ -1,0 +1,81 @@
+
+%-Necesssaires pour ce fichier. A merger avec macros.tex -----
+\newcommand{\Ndet}{N_\text{det}}
+\newcommand{\Nalpha}{N^\alpha}
+\newcommand{\Nbeta}{N^\beta}
+\newcommand{\Cdagval}{C^{\dagger \text{value}}}
+\newcommand{\Cdagrow}{C^{\dagger \text{row}}}
+\newcommand{\Cdagcol}{C^{\dagger \text{col}}}
+\newcommand{\Cval}{C^\text{value}}
+\newcommand{\Crow}{C^\text{row}}
+\newcommand{\Ccol}{C^\text{col}}
+\newcommand{\krow}{{k_\alpha}}
+\newcommand{\kcol}{{k_\beta}}
+\newcommand{\lrow}{{l_\alpha}}
+\newcommand{\lcol}{{l_\beta}}
+\newcommand{\excitation}[2]{\mathcal{E}(#1,#2)}
+\newcommand{\h}{\hat{H}}
+%------
+
+
+%----------------------------------------------------------------
+\section{Diagonalization}
+%----------------------------------------------------------------
+
+The $N$ lowest eigenstates of the Hamiltonian are obtained with Davidson's
+algorithm\cite{}. For the calculation of $\h \ket{\Psi}$ required in the
+iterations, we have implemented in parallel the Direct Selected Configuration
+Interaction Using Strings (DISCIUS) algorithm.\cite{povill_efficient_1995}
+At each iteration, one needs to compute the projection of $\h \ket{\Psi}$ on
+every determinant $\bra{k}$ as $\sum_l c_k c_l \mel{k}{\h}{l}$, and using 
+Slater-Condon's rules, one knows determinants differing by more that two
+substitutions will have a zero contribution. The purpose of the DISCIUS
+algorithm is, for a given determinant $\bra{k}$, to loop only on the 
+subset of selected determinants $\ket{l}$ which differ by no more than a double
+excitation. 
+
+The wave function,
+\begin{equation}
+\ket{\Psi} = \sum_{k=1}^{\Ndet} c_k \ket{k}
+\end{equation}
+is initially transformed in the following representation
+\begin{equation}
+\ket{\Psi} = \sum_{i=1}^{\Nalpha} \sum_{j=1}^{\Nbeta} C_{ij} \ket{\alpha_i \beta_j}
+\end{equation}
+using the procedure described in Ref~\onlinecite{scemama_quantum_2016}. The
+output of the transformation is a pair of arrays containing respectively
+a sorted list of unique $\alpha$ or $\beta$ strings, and a triplet of arrays 
+$(\Crow,\Ccol,\Cval)$ for the representation of the $C$ matrix in
+sparse coordinate format. We immediately compute the transposed $C^\dagger$
+by sorting $\Crow$ in $\Cdagrow$ and applying the ordering to $\Ccol$ and $\Cval$
+to obtain $\Cdagcol$ and $\Cdagval$.
+Note that the $\alpha$ and $\beta$ strings are the same at each iteration,
+so only $\Cval$ will change from one iteration to the next one, and the
+ordering to obtain $\Cdagval$ can be stored.
+
+
+
+
+\begin{algorithm}[H]
+ \caption{Computation of $\h \ket{\Psi}$}
+ \label{alg:discius}
+   \begin{algorithmic}[1]
+\Function{H\_psi}{} 
+  \For {$k \in \{1 \dots \Ndet\}$}
+     \State $\krow \gets \Crow_k$
+     \State $\kcol \gets \Ccol_k$
+     \ForAll{$\lcol \text{ such that } \excitation{\beta_\kcol}{\beta_\lcol} = 1$}
+      \State $l \gets k$
+      \While{$l \le \Ndet \text{ and } \Ccol_l = \Ccol_k$}
+        \State $\lrow \gets \Crow_l$
+        \If {$\excitation{\alpha_\krow}{\alpha_\lrow} = 1$}
+          \State $V_{k} \gets V_{k} + \mel{k}{\h}{l} \Cval_l$
+        \EndIf
+        \State $l \gets l+1$
+      \EndWhile
+     \EndFor
+  \EndFor
+\EndFunction
+   \end{algorithmic}
+\end{algorithm}
+
