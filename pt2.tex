@@ -36,11 +36,11 @@ For different reasons, the actual Monte-Carlo computation is significantly more 
 
 \paragraph{Individual $\epsilon(\alpha)$ are expensive to compute}
 In the CIPSI algorithm, each generator determinant creates a number of unique $\alpha$, and computes $\epsilon(\alpha)$ for each one of them.
-Essentially, $\ket \alpha$ are grouped in $N_{gen}$ disjoint batches, each associated with a generator determinant, as shown in figure \ref{fig:mu_sample}.
+Essentially, $\ket \alpha$ are grouped in $N_{gen}$ disjoint sets, each associated with a generator determinant, as shown in figure \ref{fig:mu_sample}.
 
 	$$\epsilon(\alpha) \in \mathcal{A}_i ; \Hij{\alpha}{\Psi_i} \neq 0 ; \Hij{\alpha}{\Psi_{j<i}} =0 $$
 
-Because of the numerous tricks used, computing all $\epsilon(\alpha)$ from a batch at the same time is considerably faster than computing each separately. Therefore, in order to access a larger chunk of data, the stochastic PT2 algorithm will not consider individual $\epsilon(\alpha)$, but instead sums of all $\epsilon(\alpha)$ from the same batch.
+Because of the numerous tricks used, computing all $\epsilon(\alpha)$ from one set at the same time is considerably faster than computing each separately. Therefore, in order to access a larger chunk of data, the stochastic PT2 algorithm will not consider individual $\epsilon(\alpha)$, but instead sums of all $\epsilon(\alpha)$ from the same set.
 The elementary contributions we are considering, aren't $\epsilon(\alpha)$, but
 	$$E(I) = \sum_{\alpha \in \mathcal{A}_I} \epsilon(\alpha)$$
 Indeed
@@ -65,7 +65,7 @@ Each elementary contribution is associated with a generator determiant. There ar
 It is not ideal for a Monte-Carlo computation to deal with sample values that span many orders of magnitude. A repartition function can alleviate the issue to some extent.
 The last reason given for the decrease of $E(I)$ is the most important one, and leads us to consider
 $$\tilde w_i = C_i^2$$
-as a repartition function for $E(I)$ (detailler un poil). This is however not the exact repartition function used in the Monte-Carlo scheme. We will later introduce some slight modifications to it, for algorithmic reasons. As can be seen in figure \ref{fig:eici2}, $$p_I = \frac{E(I)}{C_I^2}$$ is  still similar to $E(I)$ in that it span orders of magnitudes and decreases rapidly.
+as a repartition function for $E(I)$ (detailler un poil). This is however not the exact repartition function used in the Monte-Carlo scheme. We will later introduce some slight modifications to it, for algorithmic reasons. As can be seen in figure \ref{fig:eici2}, $$p_I = \frac{E(I)}{C_I^2}$$ is  still similar to $E(I)$ in that it span orders of magnitude and decreases rapidly.
 This can be taken advantage of in two ways
 \begin{itemize}
 \item
@@ -80,7 +80,7 @@ $E = E_D + E_S$
 
 with $E_D$ the exact energy for the deterministic part, and $E_S$ the estimated energy of the stochastic part. The error bar only applies to $E_S$, which is a fraction of the whole sum.
 We have to define the threshold between those two ranges. A simple solution would be to arbirarily define it based on $c_I$.
-But because we have already defined ranges as teeth, we take a dynamical, more flexible approach : given the first $E(I)$ that has not been computed yet by the Monte-Carlo scheme, and $P$ the tooth it belongs to, the deterministic range extends to $P$, exclusive.
+But because we have already defined ranges as teeth, we take a dynamical, more flexible approach : given the first $E(I)$ whose value is unknown (that has not been drawn yet by the Monte-Carlo scheme), and $P$ the tooth it belongs to, the deterministic range extends to $P$, exclusive.
 \end{itemize}
 
 So far, not all details have been dealt with, but this already makes if for a somewhat convoluted drawing scheme.
@@ -89,7 +89,7 @@ We are sampling combs, but we have defined a repartition function for $E(I)$. Wh
 
 $$w_I = \frac{\tilde w_I}{N_{teeth} \times \sum_{J \in P_x} \tilde w_J}$$
 
-To leave the repartition function unaltered, we need all teeth to actually weight $N_{teeth}^{-1}$, in other words
+To leave the repartition function unaltered, we need all teeth to actually weight $N_{teeth}^{-1}$
 
 $$\sum_{J \in P_x} \tilde w_J = N_{teeth}^{-1}$$
 

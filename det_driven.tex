@@ -113,7 +113,7 @@ By this definition, bitstrings are essentially lists of occupation numbers, whic
 store the set of occupied spinorbitals in a determinant.
 
 For simplicity and performance considerations, the occupations of the $\alpha$ and $\beta$ spinorbitals are stored on different bitstrings, rather than interleaved or otherwise merged in the same one. This allows to straightforwardly map orbital index $n$ to bit index $n-1$ (orbitals are usually indexed from $1$, while bits are indexed from $0$), and makes a bitstring a set of orbitals.
-This makes the representation of a determinant a tuple of two bitstrings, associated with respectively $\alpha$ and $\beta$ spinorbitals. Such objects are refered to as \emph{$\alpha \beta$-bitstrings}, and generally define a set a spinorbitals. When used to define a determinant, they imply the previously defined ordering.
+This makes the representation of a determinant a tuple of two bitstrings, associated with respectively $\alpha$ and $\beta$ spinorbitals. Such objects are refered to as \emph{$\alpha \beta$-bitstrings}, and generally define a set of spinorbitals. When used to define a determinant, they imply the previously defined ordering.
 
 
 \begin{itemize}
@@ -223,7 +223,7 @@ $$ \ISHFT{1}{n} =
 \end{cases}
 $$
 
-It is convenient to introduce functions and notations acting on sets 
+It is convenient to introduce functions and notations acting on sets. 
 More convenient notations are also desired for some operators. All binary operators are of same precedence and left-associative.
 
 \begin{table}[H]
@@ -388,7 +388,7 @@ Like for determinants, we pack together $\alpha$ and $\beta$ operators.
 \hat T = \hat T_\alpha \hat T_\beta
 \end{equation}
 
-Within $\hat T_\alpha$ and $\hat T_\beta$, the creation and anihilation operators are separately sorted with increasing indices, then interleaved starting with a creation. In other words, $\hat T_\alpha$ and $\hat T_\beta$ are written as a products of single excitations, lowest particle with lowest hole, then second lowest particle with second lowest hole, etc... and it's arbitrarily chosen to put creation before anihilation.
+Within $\hat T_\alpha$ and $\hat T_\beta$, the creation and anihilation operators are separately sorted with increasing indices, then interleaved starting with a creation. In other words, $\hat T_\alpha$ and $\hat T_\beta$ are written as products of single excitations, lowest particle with lowest hole, then second lowest particle with second lowest hole, etc... and it's arbitrarily chosen to put creation before anihilation.
 For example, the double excitation $ab \rightarrow cd$ with $a<b<c<d$ is expressed as
 
 $$\hat T_{ab}^{cd} = \ac{c} \an{a} \ac{d} \an{b} = \hat T_a^c \hat T_b^d$$
