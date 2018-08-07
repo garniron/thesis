@@ -285,7 +285,7 @@ Let $\bitI$ and $\bitJ$ be the bitstring representations of $\kI$ and $\kJ$, and
 	            
 	\item $\popcnt{\ieor{I_{\alpha}}{J_{\alpha}}}/2$ : because the excitation of an electron involves 2 spinorbitals (one hole and one particle), this is the $\alpha$ excitation degree between $\kI$ and $\kJ$.
 	            
-	\item $\trailZ{\bit{P}}+1$ : the index of the lowest orbital in $\bit{P}$. If $\bit{P}$ is $0$, returns $65$.
+	\item $\trailz{\bit{P}}+1$ : the index of the lowest orbital in $\bit{P}$. If $\bit{P}$ is $0$, returns $65$.
 	            
 	\item $\IBCLR{\bit{P}}{\TRAILZ{\bit{P}}}$ : $\bit{P}$ without its orbital of lowest index.
 
@@ -483,7 +483,7 @@ where $i=\min(i',j')$, $j=\max(i',j')$ and
 \occ{k}{I} = \delta \qty(\ac{k}\an{k} \kI - \kI) = \begin{cases}
  1 & \text{if } \ac{k}\an{k} \kI = \kI \\
  0 & \text{otherwise}
-\end{case}
+\end{cases}
 \end{equation}
 is the occupation number of spinorbital $k$ in determinant $\kI$.\footnote{Note that occupation
 numbers in $\kI$ and $\kalpha$ are by construction equal for any spinorbital $k \neq i \neq j$, so while we will use $\kI$ in the following, we could as well use $\kalpha$.
@@ -547,10 +547,10 @@ Using the above formulas and taking into account the bitstring's internal repres
 			$\Nperm \gets \Nperm + \texttt{POPCNT}(\texttt{IAND}(I_{i}, \texttt{mask}[i]))$ \;
 		}
                 $\texttt{phase}[0:1] = [ 1.0 \;;\; -1.0 ]$ \;
-                \KwRet \texttt{phase}[\texttt{IAND}(\Nperm,1)] \;
+                \KwRet $\texttt{phase}[\texttt{IAND}(\Nperm,1)]$ \;
 		}
 \end{algorithm}
-        
+
 
 \subsection{Phasemasks}
 
@@ -774,7 +774,7 @@ It can be expressed as two single excitations that cross, i.e.
 
 As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ results in a particle being created or annihilated in the range $]p,r[$, resulting in a change of parity for the number of particles in that range. Therefore
 \begin{equation}
-phase(\tilde T_{pr}, \tilde T_{qs} \ket I) = -phase(\tilde T_{pr}, \ket I)$
+phase(\tilde T_{pr}, \tilde T_{qs} \ket I) = -phase(\tilde T_{pr}, \ket I)
 \end{equation}
 \begin{equation}
 phase(\hat T^2, \ket I) = -phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_{ qs}, \ket I) 
