@@ -285,7 +285,7 @@ Let $\bitI$ and $\bitJ$ be the bitstring representations of $\kI$ and $\kJ$, and
 	            
 	\item $\popcnt{\ieor{I_{\alpha}}{J_{\alpha}}}/2$ : because the excitation of an electron involves 2 spinorbitals (one hole and one particle), this is the $\alpha$ excitation degree between $\kI$ and $\kJ$.
 	            
-	\item $\trailz{\bit{P}}+1$ : the index of the lowest orbital in $\bit{P}$. If $\bit{P}$ is $0$, returns $65$.
+	\item $\TRAILZ{\bit{P}}+1$ : the index of the lowest orbital in $\bit{P}$. If $\bit{P}$ is $0$, returns $65$.
 	            
 	\item $\IBCLR{\bit{P}}{\TRAILZ{\bit{P}}}$ : $\bit{P}$ without its orbital of lowest index.
 
@@ -450,11 +450,12 @@ The total number of permutations needed is $\Nperm = 2n+x$. The parity of the nu
 \subsection{Treating spin parts separately}
 
 It is not immediately obvious that $\alpha$ and $\beta$ spin parts can be treated independently. It is possible because our ordering packs together operators of same spin in the expression of both determinants (Eq.\eqref{eq:spinpack}) and excitations (Eq.\eqref{eq:spinpackexc}), and 
-also because we never consider excitations where the spin is changed (spin-flips). 
-Under these constraints, any excitation operator $\hat{T}$ can be expressed as 
-\begin{equation}
-\hat{T} = \hat{T}_\alpha \hat{T}_\beta .
-\end{equation}
+also because we never consider excitations where the spin is changed (spin-flips).
+% redondant avec l'eq 11
+%Under these constraints, any excitation operator $\hat{T}$ can be expressed as 
+%\begin{equation}
+%\hat{T} = \hat{T}_\alpha \hat{T}_\beta .
+%\end{equation}
 
 \begin{align}
 \label{eq:spin1}
@@ -476,7 +477,7 @@ So the phase factors can be easily computed by reordering separately $\hat{T}_\a
 For a given determinant $\kI$ and a singly excited determinant $\kalpha = \ordering \excorb{i'}{j'} \kI$ where both 
 use the ordering of spinorbitals defined previously, the phase factor can be determined by the parity of
 \begin{equation}
-N^{S}_{ij}=\sum_{k=i+1}^{j-1} \occ{k}{I}
+N^{I}_{ij}=\sum_{k=i+1}^{j-1} \occ{k}{I}
 \end{equation}
 where $i=\min(i',j')$, $j=\max(i',j')$ and
 \begin{equation}
@@ -558,7 +559,7 @@ Using the above formulas and taking into account the bitstring's internal repres
 Algorithm \ref{alg:PHASE_MONO} is a general one, efficient for computing the phase factor for two arbitrary determinants. However, a phase computation is typically needed every time two determinants are compared, resulting in a vast amount of computational power being consumed. When only this method was used in the quantum package, it was not uncommon to find that a large fraction of the computational time was spent in phase computations.
 Advantage can be taken of the fact that, in most cases, the considered determinants aren't actually arbitrary. Usually, the phase computation will be performed repeatedly with the same determinant. For a fairly modest computational price, it is possible to compress the phase information from a particular determinant and make it cheaper to extract. The underlying principle is little more than a cumulative sum. If, for a determinant $\ket{S}$ that is going to be used repeatedly for phase computations, we pre-compute
 \begin{equation}
-E^S(i) = \sum_{k=1}^{i-1} \occ{k}{S},
+E^S(i) = \sum_{k=1}^{i-1} \occ{k}{S}
 \end{equation}
 we can access $N^S_{ij}$ for any $i$ and $j>i$ with no need to loop over $k$:
 \begin{align}
