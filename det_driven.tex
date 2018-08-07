@@ -580,6 +580,7 @@ This requires to store $E^S$ which is an integer array of size $2 \times (\Norb+
 
 This may be somewhat memory consuming if we want to pre-compute and store $E$ for each determinant. However, because the actual information needed isn't $N^S_{ij}$, but merely its parity, we only need to store the so-called ``phasemask'' array $P^S$
 \begin{equation}
+\label{eq:phasemask}
 P^S(i) = p(E^S(i))
 \end{equation}
 which is 1 bit of information per spinorbital, as opposed to an integer big enough to accommodate a number of electrons.
@@ -593,7 +594,7 @@ In the last equation, $\tilde N^S_{ij}$ is expressed as a sum of 3 terms. The fi
 \begin{equation}
 p(\tilde N^S_{ij})=p(P^S_j - P^S_{i+1})
 \end{equation}
-This can be rewritten in a slightly more efficent way as
+This can be rewritten in a slightly more efficient way as
 \begin{equation}
 p(\tilde N^S_{ij}) = P^S_j \oplus P^S_{i+1}
 \end{equation}
@@ -616,8 +617,6 @@ Because $\hat T_{i'}^{j'} \ket S \neq 0$, we know that $\occ{j'}{S} + \occ{i'}{S
 \end{equation}
 This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of different parity.
 
-%TODO : J'en suis ici.
-
 \begin{algorithm}
 	\caption{PHASEMASK}	
 	\label{alg:PHASEMASK}	
@@ -626,16 +625,16 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 	
 	\Fn(\tcc*[h]{Compute a phasemask}){\FMain{$I$}}{
 		\KwData{ $I$ the bitstring representation of $\ket I$}
-		\KwResult{ $P$ is the phasemask vector associated with $\ket I$, as described in section XXXXX}
+		\KwResult{ $P$ is the phasemask vector associated with $\ket I$, as described in Eq.~\eqref{eq:phasemask}}
 		   
 		\For{$\sigma \in \{\alpha, \beta\}$}{
 		 $p \gets 0$ \;
 		\For{$i \gets 0, \Nint-1$}{
-		 $n \gets min(64, \Norb - i \times 64)$ \;
+		 $n \gets \min(64, \Norb - i \times 64)$ \;
 		\For{$j \gets 0,n-1$}{
 		 $P_\sigma[i \times 64 + j] \gets p$ \;
-		\If{$BTEST(I, j)$}{
-		 $p \gets IEOR(p, 1)$ \;
+		\If{$\texttt{BTEST}(I, j)$}{
+		 $p \gets \texttt{IEOR}(p, 1)$ \;
 		%\Comment flips the first bit
 		}
 		}
@@ -653,22 +652,22 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 	\SetKwFunction{FMain}{PHASEMASK\_bit}
 	\SetKwProg{Fn}{Function}{:}{}
 	
-	\Fn(\tcc*[h]{Compute a phasemask}){\FMain{$I$}}{
-		\KwData{ $I$ the bitstring representation of $\ket I$}
-		\KwResult{ $P$ is the phasemask vector associated with $\ket I$, as described in section XXXXX}
+	\Fn(\tcc*[h]{Compute a phasemask}){\FMain{$\bitI$}}{
+		\KwData{ $\bitI$ the bitstring representation of $\kI$}
+		\KwResult{ $\bitP$ is the phasemask vector associated with $\kI$, as described in Eq.~\eqref{eq:phasemask}}
 		   
 		\For{$\sigma \in \{\alpha, \beta\}$}{
 		$r \gets 0$ \;
 		\For{$i \gets 0, N_{int}-1$}{
-				$P_\sigma[i] \gets \text{IEOR}(I_\sigma[i], \text{ISHFT}(I_\sigma[i], 1)$ \;
+				$\bitPsigma[i] \gets \texttt{IEOR}(\bitIsigma[i], \text{ISHFT}(\bitIsigma[i], 1)$ \;
 				$d \gets 2$ \;
-				\While{$d < bit\_kind\_size$}{
-					$P_\sigma[i] \gets \text{IEOR}(P_\sigma[i], \text{ISHFT}(P_\sigma[i], d)$ \;
+				\While{$d < \texttt{bit\_kind\_size}$}{
+					$\bitPsigma[i] \gets \text{IEOR}(\bitPsigma[i], \text{ISHFT}(P_\sigma[i], d)$ \;
 					$d \gets 2 \times d$ \;
 				}
-				$P_\sigma[i] \gets \text{IEOR}(P_\sigma[i], r)$ \;
-				\If{$IAND(\text{POPCNT}(I_\sigma[i]), 1) == 1$}{
-					$r \gets \text{NOT}(r)$ \;			
+				$\bitPsigma[i] \gets \texttt{IEOR}(\bitPsigma[i], r)$ \;
+				\If{$\texttt{IAND}(\texttt{POPCNT}(\bitIsigma[i]), 1) == 1$}{
+					$r \gets \texttt{NOT}(r)$ \;			
 				}
 			}
 		}
@@ -685,8 +684,8 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 	\SetKwProg{Fn}{Function}{:}{}
 	
 	\Fn(\tcc*[h]{Compute phase from phasemask}){\FMain{$P^I$, $i$, $j$}}{
-		\KwData{ $P^I$ is the phasemask vector associated with $\ket I$, as described in section XXXXX. $i$ and $j$ spinorbitals of spin $\sigma \in \{\alpha, \beta \}$ so that $\hat T_i^j \ket I \neq 0 $}
-		\KwResult{ The phase factor of  $\Hij{I}{a_i a^\dagger_j \ket I}$.}
+		\KwData{ $P^I$ is the phasemask vector associated with $\kI$, as described in Eq.~\eqref{eq:phasemask}. $i$ and $j$ spinorbitals of spin $\sigma \in \{\alpha, \beta \}$ so that $\excorb{i}{j} \kI \neq 0 $.}
+		\KwResult{ The phase factor associated with $\ordering \excorb{i}{j} \kI$.}
 
 		\uIf{$j < i$}{
 			$c \gets 1$ \;
@@ -694,9 +693,14 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 		\Else{
 			$c \gets 0$ \;		
 		}
-		\KwRet{$-1^{(c \oplus P^I_\sigma[i+1] \oplus P^I_\sigma[j])}$} \;
+		\uIf{$\qty(c \oplus P^I_\sigma[i+1] \oplus P^I_\sigma[j]) = 1$}{
+		\KwRet{ $-1$}\;}
+                \Else{\KwRet{ $1$} \; }
 		}
 \end{algorithm}
+
+
+%TODO : J'en suis ici.
 
                 
 \begin{figure}[h!]
