@@ -163,59 +163,6 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 
 
 \begin{algorithm}
-	\caption{COMPUTE\_TEETH}
-	\label{COMPUTE_TEETH}
-	\SetKwFunction{FMain}{COMPUTE\_TEETH}
-	\SetKwProg{Fn}{Function}{:}{}
-	
-	
-	\Fn(\tcc*[h]{Computes teeth thresholds, and $rDetI[1]$ the number or samples in the initial deterministic part}){\FMain{$minDetInTeeth$, $N_{teeth}$}}{
-		\KwData{$1 \leq minDetInTeeth \leq N_{det}$}
-		\KwData{$N_{teeth} \geq 1$}
-		
-		$rDetI[1] \gets 0$ \;
-		$rcw \gets cw[minDetInTeeth]$ \;
-		$lcm \gets 0$ \;
-		\While{}{
-			$teeth\_width = \frac{1 - lcm}{N_{teeth}}$ \;
-			\If{$teeth\_width < rcm - lcm$}{
-				break \;
-			}
-			
-			$rDetI[1] \gets rDetI[1] + 1$ \;
-			\If{$N_{det} - rDetI[1] < minDetInTeeth \times N_{teeth}$}{
-				STOP cannot compute with those parameters \;
-			}
-			$rcw \gets cw[rDetI[1]+minDetInTeeth]$ \;
-			$lcw \gets  cw[rDetI[1]]$\;
-		}
-		$lTeethI[1] = rDetI[1]+1$ \;
-		$lTeeth[1] = lcw$ \;
-		$rTeeth[1] = lcw + teeth\_width$ \;
-		\For{$i=2,N_{teeth}$}{
-			$rTeeth[i] = lcw + teeth\_width \times i$ \;
-			$lTeeth[i] = rTeeth[i-1]$ \;
-		}
-		\tcc{ensure there is no numerical precision error}
-		$rTeeth[N_{teeth}] \gets 1$ \;
-		
-		$t \gets 1$\;
-		\For{$i=rDetI[1]+1, N_{det}$}{
-			\If{$cw[i] \geq rTeeth[t]$}{
-				$rTeethI[t] = i$ \;
-				$t \gets t + 1$ \;
-			}
-		}
-		$teethSize[1] = cw[rTeethI[1]] - lcw$ \;
-		\For{$t=2,N_{teeth}$}{
-			$lTeethI[t] \gets rTeethI[t-1] + 1$ \;
-			$toothSize[t] = rTeeth[t] - lTeeth[t]$ \;
-		}
-	}
-\end{algorithm}
-
-
-\begin{algorithm}
 	\caption{PRECOMPUTE\_MONTECARLO}
 	\label{PRECOMPUTE_MONTECARLO}
 	\tcc*[h]{Computes $J$ the array so that $J_i$ is the $i^{th}$ sample that must be computed to perform the Monte-Carlo computation, and $n[m,i]$ the total number of times sample $i$ has been drawn at checkpoint $m$, regardless of which teeth are in the deterministic part.}
@@ -264,61 +211,6 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 	
 \end{algorithm}
 
-
-\begin{algorithm}
-	\label{ADD_COMB}
-	\caption{ADD\_COMB}
-	\SetKwFunction{FAddComb}{ADD\_COMB}
-	\SetKwProg{Fn}{Function}{:}{}
-	
-	\Fn(\tcc*[h]{Add a comb to the Monte-Carlo by updating $N_{jobs}$, $J$ and $d$}){\FAddComb{$rand, N_{jobs}, J, d,m$}}{
-		\KwData{$rand \in [0, 1[$ value associated with the comb to be added}
-		\KwData{$N_j$ : number of unique samples computed so far.}
-		\KwData{$J_i$ : index of the $i^{th}$ unique sample computed. Will be used as the list of jobs for the actual computation.}
-		\KwData{$d_i=TRUE$ if sample $i$ has been computed, $FALSE$ otherwise.}
-		\KwData{$m$ : index of current checkpoint}
-		
-		%$rand \gets RANDOM(0,1)$ \;
-		\For{$t=1,N_{teeth}$}{
-			$v=lTeeth[t] + rand \times toothSize[t]$ \;
-			$i=FIND\_SAMPLE(rand, lTeethI[t], rTeethI[t])$ \;
-			$n(curcp, i) += 1$ \;			
-			\If{$not\ d_i$}{
-				$N_{jobs} \gets N_{jobs} + 1$ \;
-				$J_{N_{jobs}} \gets i$ \;
-				$d_i \gets TRUE$ \;
-			}
-		}
-	}
-\end{algorithm}
-
-
-\begin{algorithm}
-\label{FIND_SAMPLE}
-\caption{FIND\_SAMPLE}
-\SetKwFunction{FFind}{FIND\_SAMPLE}
-	\SetKwProg{Fn}{Function}{:}{}
-	
-	\Fn(\tcc*[h]{Finds sample index associated with drawing random value $v$. An initial range $[l,r]$ is given.}){\FFind{$v$,$l$,$r$}}{
-		\KwData{$cw[l-1] \leq v < cw[r] ; cw[0] = 0$}
-		\KwResult{Returns $i$ so that $cw[i-1] \leq v < cw[i]; cw[0] = 0$}
-		\uIf{$v < cw[l]$}{
-			\KwRet $l$ \;
-		}\ElseIf{$l-r \leq 1$}{
-			\KwRet $r$ \;
-		}
-		\While{$r-l > 1$}{
-			$i \gets int((r-l) / 2)$ \;
-			\uIf{$cw[i] < v$}{
-				$l \gets i$ \;
-			}
-			\Else{
-				$r \gets i$ \;
-			}
-		}
-		\KwRet $r$ \;
-	}
-\end{algorithm}
 
 
 \begin{algorithm}
@@ -498,6 +390,33 @@ Even in the more realistic case where half of double excitations involving the h
         }
 \end{algorithm}
 
+
+\begin{algorithm}
+	\label{ADD_COMB}
+	\caption{ADD\_COMB}
+	\SetKwFunction{FAddComb}{ADD\_COMB}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+	\Fn(\tcc*[h]{Add a comb to the Monte-Carlo by updating $N_{jobs}$, $J$ and $d$}){\FAddComb{$rand, N_{jobs}, J, d,m$}}{
+		\KwData{$rand \in [0, 1[$ value associated with the comb to be added}
+		\KwData{$N_j$ : number of unique samples computed so far.}
+		\KwData{$J_i$ : index of the $i^{th}$ unique sample computed. Will be used as the list of jobs for the actual computation.}
+		\KwData{$d_i=TRUE$ if sample $i$ has been computed, $FALSE$ otherwise.}
+		\KwData{$m$ : index of current checkpoint}
+		
+		%$rand \gets RANDOM(0,1)$ \;
+		\For{$t=1,N_{teeth}$}{
+			$v=lTeeth[t] + rand \times toothSize[t]$ \;
+			$i=FIND\_SAMPLE(rand, lTeethI[t], rTeethI[t])$ \;
+			$n(curcp, i) += 1$ \;			
+			\If{$not\ d_i$}{
+				$N_{jobs} \gets N_{jobs} + 1$ \;
+				$J_{N_{jobs}} \gets i$ \;
+				$d_i \gets TRUE$ \;
+			}
+		}
+	}
+\end{algorithm}
 
 \section{Alpha-factory (rename?)}
 

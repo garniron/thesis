@@ -26,7 +26,7 @@ Fully computing the sum has to be more costly than just identifying the greatest
 
 Unfortunately, a partial computation of PT2 results in a biased value. Since $\epsilon(\alpha)$ is an energy contribution, it's necessarily negative, and PT2 is a sum of same-sign contributions. Therefore, truncating it inevitably results in a bias, some energy is missing but there is little clue how much exactly. The $t_g$ and $t_s$ thresholds used in CIPSI can be seen as ways of minimizing this truncation's amplitude for a given computational cost.
 
-Before the stochastic computation of PT2 was set up, our best choice was to set low thresholds for $t_g$ and $t_s$ while performing CIPSI and accept very approximated values for PT2 of intermediary wavefunctions ; then, once the selection was completed, we would highen them just for a final, very costly ``PT2 only'' iteration. In fact, an exact computation with $t_g=N_{gen}$ and $t_s=N_{det}$ was often prohibitively long, so the final PT2 was still biased. 
+Before the stochastic computation of PT2 was set up, our best choice was to set low $t_g$ and $t_s$ thresholds while performing CIPSI, and accept very approximated values for PT2 of intermediate wavefunctions ; then, once the selection was completed, we would highen them just for a final, very costly ``PT2 only'' iteration. In fact, an exact computation with $t_g=N_{gen}$ and $t_s=N_{det}$ was often prohibitively long, so the final PT2 was still biased. 
 
 
 We eventually solved this problem by turning the bias into an error bar. The base idea is that, instead of trying to get the largest possible chunk of contribution, we can randomly pick $\epsilon(\alpha)$ contributions and make a Monte-Carlo estimate for the sum over all $\ket \alpha$. In this case, to avoid any bias we must set
@@ -47,31 +47,31 @@ For different reasons, the actual Monte-Carlo computation is significantly more 
 
 
 \paragraph{Initial note : ``Sample'' and ``Comb''}
-Because of its original nature, this algorithm casts some ambiguity on what should be refered to as a ``sample''. We are going to estimate a sum of elementary contributions $E(I)$, compute and store them individually, and draw them based on a repartition function ; therefore they will be refered to as the \emph{samples}. But the values actually treated as samples in the statistical sense, are sums over several $E(I)$, refered to as \emph{combs}.
+Because of its original nature, this algorithm casts some ambiguity on what should be refered to as a ``sample''. We are going to estimate a sum of elementary contributions $e_I$, compute and store them individually, and draw them based on a repartition function ; therefore they will be refered to as the \emph{samples}. But the values actually treated as samples in the statistical sense, are sums over several $e_I$, refered to as \emph{combs}.
 
 
 
 
-\paragraph{$\epsilon(\alpha)$ are packed into elementary contributions $E(I)$}
+\paragraph{$\epsilon(\alpha)$ are packed into elementary contributions $e_I$}
 Individual $\epsilon(\alpha)$ are expensive to compute. In the CIPSI algorithm, each generator determinant creates a number of unique $\alpha$, and computes $\epsilon(\alpha)$ for each one of them.
 Essentially, $\ket \alpha$ are grouped in $N_{gen}$ disjoint sets, each associated with a generator determinant, as shown in figure \ref{fig:mu_sample}.
 
 	$$\epsilon(\alpha) \in \mathcal{A}_i ; \Hij{\alpha}{\Psi_i} \neq 0 ; \Hij{\alpha}{\Psi_{j<i}} =0 $$
 
-Because of the numerous tricks used, we can compute all $\epsilon(\alpha)$ from one set considerably faster than if we had to compute each one separately. Therefore, in order to access a larger chunk of data, the stochastic PT2 algorithm will not consider individual $\epsilon(\alpha)$, but instead sums of all $\epsilon(\alpha)$ from the same set.
+Because of the numerous tricks used, we could compute all $\epsilon(\alpha)$ from one set considerably faster than if we had to compute each one separately. Therefore, in order to access a larger chunk of data, the stochastic PT2 algorithm will not consider individual $\epsilon(\alpha)$, but instead sums of all $\epsilon(\alpha)$ from the same set.
 The elementary contributions we are considering, aren't $\epsilon(\alpha)$, but
-	$$E(I) = \sum_{\alpha \in \mathcal{A}_I} \epsilon(\alpha)$$
+	$$e_I = \sum_{\alpha \in \mathcal{A}_I} \epsilon(\alpha)$$
 Indeed
-    $$E_{PT2} = \sum_{I} E(I)$$
+    $$E_{PT2} = \sum_{I} e_I$$
     
-$E(I)$ are already explicitely computed by our CIPSI implementation, which returned the aggregated values of $\epsilon(\alpha)$ for one job, one job being essentially a generator determinant.
+$e_I$ are already explicitely computed by our CIPSI implementation, which returned the aggregated values of $\epsilon(\alpha)$ for one job, one job being essentially a generator determinant.
 
-\paragraph{$E(I)$ can be stored to avoid re-computation}
-Each elementary contribution is associated with a generator determinant, so there are only $N_{gen}$ elementary contributions. This is small enough so, when a $E(I)$ contribution is computed, its value can be stored and simply re-used if the same sample is drawn again. This, in turn, means the exact result will eventually be known once every sample has been computed. The cost for this will essentially be the same as that of the purely deterministic computation, with a negligible additional cost due to the Monte-Carlo related computations ( drawing random numbers, finding the associated samples... ).
+\paragraph{$e_I$ can be stored to avoid re-computation}
+Each elementary contribution is associated with a generator determinant, so there are only $N_{gen}$ elementary contributions. This is small enough so, when a $e_I$ contribution is computed, its value can be stored and simply re-used if the same sample is drawn again. This, in turn, means the exact result will eventually be known once every sample has been computed. The cost for this will essentially be the same as that of the purely deterministic, full computation, with a negligible additional cost due to the Monte-Carlo related computations ( drawing random numbers, finding the associated samples... ).
 
-\paragraph{The sample space is divided in $N_{teeth}$ \emph{teeth}}
-	Generator determinants are sorted with decreasing absolute values of $C_I$.
-	As can be seen in figure (pas mise dans le git), the values of $E(I)$ span many orders of magnitude and decrease rapidly with $I$, in an exponential-ish way. Smoothed values for $E(I)$ are shown in figure \ref{fig:p_i}. There are a few reasons for that.
+\paragraph{$C_I^2$ is used as a repartition function}
+Generator determinants are sorted with decreasing absolute values of $C_I$.
+	As can be seen in figure \ref{fig:ei}, the values of $e_I$ span many orders of magnitude and decrease rapidly with $I$, in an exponential-looking way. Smoothed values for $e_I$ are shown in figure \ref{fig:p_i}. There are a few reasons for that.
 \begin{itemize}
 	\item
 	The values for the denominator $\Delta E_\alpha$ used in the computation of $\epsilon(\alpha)$ tend to increase, as variational determinants tend to be more and more excited and to populate higher orbitals ( detailler ? )
@@ -80,16 +80,39 @@ Each elementary contribution is associated with a generator determinant, so ther
 	\item
 	Unique $\ket \alpha$ are, by construction, disconnected from all previous generators, which mean they connect to a smaller and smaller norm of $\Psi$ ( see figure \ref{fig:a_con} ). 
 \end{itemize}
-It is not ideal for a Monte-Carlo computation to deal with sample values that span many orders of magnitude. A repartition function can alleviate the issue to some extent.
-The last reason given for the decrease of $E(I)$ is the most important one, and leads us to consider
-$$\tilde w_i = C_i^2$$
-as a repartition function for $E(I)$ (detailler un poil). This is however not the exact repartition function used in the Monte-Carlo scheme. We will later introduce some slight modifications to it, for algorithmic reasons.
 
-As can be seen in figure \ref{fig:eici2}, $$p_I = \frac{E(I)}{C_I^2}$$ is  still similar to $E(I)$ in that it spans orders of magnitude and overall decreases.
-It follows that values in a small range of $p_I$ are relatively close. The entire space of $p_I$ is split in $N_{teeth}$ ranges refered to as \emph{teeth}. In figure \ref{fig:p_i}, the space of $p_I$ has been split in four teeth $P_1$ to $P_4$. The variance inside each tooth is expected to be, quite clearly, much smaller than the variance for the whole space.
+==== pourri, a reecrire?
 
-As a matter of fact, the values actually sampled, are sums of 1 sample taken in each subspace, so-called ``combs''.
-Essentially, the sum of ``one large, one average and one small'' has a lower variance than the sum of ``three at random''.
+In a Monte-Carlo computation, the smaller the variance, the faster the convergence ; in our case, sample values span many orders of magnitude. Using a probability distribution $w$, refered to as a \emph{repartition function}, it is possible to alleviate the issue to some extent.
+Instead of sampling $e_I$ with a uniform probability, we can sample $\frac{e_I}{w_I}$ with a $w_I$ probability. We are in fact re-writing $E_{PT2}$
+
+\begin{equation}
+E_{PT2} = \sum_{I} w_I \frac{e_I}{w_I}
+\end{equation}
+
+Providing we know a function $w_I$ that is even remotely proportional to $e_I$, the variance of $\frac{e_I}{w_I}$ will be lower than that of $e_I$, and thus its value will converge faster.
+=========
+
+The last reason given for the decrease of $e_I$ is the most important one, and tells us that the most significant $\alpha$ are those connecting to $\kI$, so the dominant terms of $e_I$ are 
+
+\begin{equation}
+\frac{C_I^2 \Hij{I}{\alpha}\Hij{\alpha}{I}}{\Delta E_{\alpha}}
+\end{equation}
+
+Consequently we chose
+
+\begin{equation}
+\tilde w_I = C_I^2
+\end{equation}
+
+as a repartition function for $e_I$. This is however not the exact repartition function used in the Monte-Carlo scheme. We will later introduce some slight modifications to it, for algorithmic reasons.
+As can be seen in figure \ref{fig:eici2}, $\frac{e_I}{C_I^2}$, which is very close to our sample space, indeed has a lower variance than $e_I$ but is still similar in that it spans orders of magnitude and overall decreases.
+
+\paragraph{The sample space is divided in $N_{teeth}$ \emph{teeth}}
+
+Because $\frac{e_I}{C_I^2}$ overall decreases, it follows that small ranges have a lower variance than the whole set. The entire space of $\frac{e_I}{C_I^2}$ is split in $N_{teeth}$ ranges refered to as \emph{teeth}. In figure \ref{fig:eici2comb}, the space of $\frac{e_I}{C_I^2}$ has been split in five teeth. The variance inside each tooth is expected to be, quite clearly, much smaller than the variance for the whole space.
+
+As a matter of fact, the values actually sampled, are sums of 1 sample taken in each subspace, so-called ``combs''. Essentially, the sum of ``one large, one average and one small'' has a lower variance than the sum of ``three at random''.
 
 <formule qui permet de tout parfaitement comprendre un un clin d'oeil>
 
@@ -97,13 +120,13 @@ Essentially, the sum of ``one large, one average and one small'' has a lower var
 \paragraph{fully-computed teeth are moved to a ``deterministic'' part}
 
 
-Because $E(I)$ decreases rapidly, most of the contribution is contained in the first samples. We can entierely compute the first samples, and only make a stochastic estimation for the sum of the smaller ones. This effectively splits $E(I)$ in two ranges, a deterministic one, then a stochastic one (hence the hybrid characteristic of this method), and our estimated energy
+Because $e_I$ decreases rapidly, most of the contribution is contained in the first samples. We can entierely compute the first samples, and only make a stochastic estimation for the sum of the smaller ones. This effectively splits $e_I$ in two ranges, a deterministic one, then a stochastic one (hence the hybrid characteristic of this method), and our estimated energy
 
-$E = E_D + E_S$
+$E_{PT2} = E_D + E_S$
 
 with $E_D$ the exact energy for the deterministic part, and $E_S$ the estimated energy of the stochastic part. The error bar only applies to $E_S$, which is a fraction of the whole sum.
 We have to define the threshold between those two ranges. A simple solution would be to arbirarily define it based on $c_I$.
-But because we have already defined ranges as teeth, we take a dynamical, more flexible approach : given the first $E(I)$ whose value is unknown (that has not been drawn yet by the Monte-Carlo scheme), and $P$ the tooth it belongs to, the deterministic range extends to $P$, exclusive.
+But because we have already defined ranges as teeth, we take a dynamical, more flexible approach : given the first $e_I$ whose value is unknown (that has not been drawn yet by the Monte-Carlo scheme), and $P$ the tooth it belongs to, the deterministic range extends to $P$, exclusive.
 
 \section{Practical considerations}
 
@@ -111,7 +134,7 @@ There are a few more practical details that must be dealt with.
 
 \subsection*{initial deterministic part}
 
-For each comb, we draw a sample $E(I)$ in each teeth. When a tooth is entirely computed, it is moved to the deterministic part. Thus, it is immediately obvious that a tooth containing a single sample makes no sense, as it will be instantly moved to the deterministic part ; it can as well be considered part of it. Because it's usually accepted (???) that it takes at least 30 samples to estimate a variance, we can go further and consider that a tooth with fewer than 5-10 samples will be moved to the deterministic part too fast to be of real interest. In fact because of the "tooth filling" mechanism described later on, we know the first tooth has to contain at least 31 samples to ever be non-deterministic.
+For each comb, we draw a sample $e_I$ in each teeth. When a tooth is entirely computed, it is moved to the deterministic part. Thus, it is immediately obvious that a tooth containing a single sample makes no sense, as it will be instantly moved to the deterministic part ; it can as well be considered part of it. Because it's usually accepted (???) that it takes at least 30 samples to estimate a variance, we can go further and consider that a tooth with fewer than 5-10 samples will be moved to the deterministic part too fast to be of real interest. In fact because of the "tooth filling" mechanism described later on, we know the first tooth has to contain at least 31 samples to ever be non-deterministic.
 
 
 
@@ -120,7 +143,7 @@ For each comb, we draw a sample $E(I)$ in each teeth. When a tooth is entirely c
 
 \subsection*{building teeth}
 
-We are sampling combs, but we have defined a repartition function for $E(I)$. What does this mean? Since we impose that the same number of $E(I)$ are drawn in each tooth - one per comb - we effectively give all teeth the same weight $N_{teeth}^{-1}$ in the Monte-Carlo scheme. Therefore, the actual weight given to $E(I) \in P_x$ is
+We are sampling combs, but we have defined a repartition function for $e_I$. What does this mean? Since we impose that the same number of $e_I$ are drawn in each tooth - one per comb - we effectively give all teeth the same weight $N_{teeth}^{-1}$ in the Monte-Carlo scheme. Therefore, the actual weight given to $e_I \in P_x$ is
 
 $$w_I = \frac{\tilde w_I}{N_{teeth} \times \sum_{J \in P_x} \tilde w_J}$$
 
@@ -128,9 +151,9 @@ To leave the repartition function unaltered, we need all teeth to actually weigh
 
 $$\sum_{J \in P_x} \tilde w_J = N_{teeth}^{-1}$$
 
-Clearly this is not acheivable for any reartition function $\tilde w$. Schematically, it would require the threshold between two teeth to exactly match the threshold between two $E(I)$. It is possible to artificially split a $E(I)$ to get a matching threshold, but this adds some complexity algorithmically speaking.
+Clearly this is not acheivable for any reartition function $\tilde w$. Schematically, it would require the threshold between two teeth to exactly match the threshold between two $e_I$. It is possible to artificially split a $e_I$ to get a matching threshold, but this adds some complexity algorithmically speaking.
 
-We have enforced that all teeth contain at least 5-10 samples - and often a lot more, up to hundreds of thousands. Therefore, a simpler solution is to ``round'' the teeth thresholds to the $E(I)$ threshold directly above, which will result in teeth with weights close to $N_{teeth}^{-1}$, and thus the actual repartition function will be little different from the one we initially defined. Since our repartition function is an extremely rough estimation of $E(I)$, to say the least, it is unlikely to cause any significant change in convergence speed.
+We have enforced that all teeth contain at least 5-10 samples - and often a lot more, up to hundreds of thousands. Therefore, a simpler solution is to ``round'' the teeth thresholds to the $e_I$ threshold directly above, which will result in teeth with weights close to $N_{teeth}^{-1}$, and thus the actual repartition function will be little different from the one we initially defined. Since our repartition function is an extremely rough estimation of $e_I$, to say the least, it is unlikely to cause any significant change in convergence speed.
 Essentially, we will use $\tilde w$ only to define which sample goes in which tooth, then use $w$ as the actual repartition function. This gives us, by definition, teeth weighting exactly $N_{teeth}^{-1}$.
 
 \subsection*{tooth filling}
@@ -139,13 +162,204 @@ This is an empirical mechanism to balance the stochastic and deterministic aspec
 
 $$\sum_{i=0}^{n-1} \frac{n}{n-i}$$
 
-combs are drawn. Thus, teeth containing thousands of determinants are very hard to move to the deterministic part. A tooth containing 10000 samples with a single uncomputed one, only needs computation of a single sample to be moved to the deterministic part, but one has to wait ~10000 more combs are drawn until by chance the right sample is computed.
+combs are drawn. Thus, teeth containing thousands of determinants are very hard to move to the deterministic part. A tooth containing 10000 samples with a single uncomputed one, only needs computation of a single sample to be moved to the deterministic part, but one has to wait on average 10000 more combs are drawn until by chance the right sample is computed.
 A convenient way to avoid this frustrating situation is, everytime a comb is drawn, to additionally compute the first uncomputed sample of the whole space. This ensures smooth filling of teeth, and that that the full deterministic computation will be achieved before $N_{det}$ combs are drawn.
 
 \section{implementation}
 
+\newcommand{\minDetInTeeth}{\text{minDetInTeeth}}
+\newcommand{\Nteeth}{N_\text{teeth}}
+\newcommand{\lTeethI}{\text{lTeethI}}
 
-Essentially, we want all teeth to have at least $n$ samples, but we want them to have similar weights. To acheive this, we are going iteratively move the first determinants to an "initial" deterministic part, until the first tooth contains 
+\subsection{drawing}
+
+
+
+\begin{algorithm}
+\label{FIND_SAMPLE}
+\caption{FIND\_SAMPLE}
+\SetKwFunction{FFind}{FIND\_SAMPLE}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+	\Fn(\tcc*[h]{Finds sample index associated with drawing random value $v$ in a cumulative probability distribution $p$}){\FFind{$v$,$p$}}{
+		\KwData{$0 \leq v < 1$}
+		%\KwData{$cw[l-1] \leq v < cw[r] ; cw[0] = 0$}
+		\KwResult{Returns $i$ so that $p[i-1] \leq v < p[i]$. It's implied $p[0] = 0$}
+		\tcc {The result must be in the range $[l,r]$. We set them for the most general case}
+		$l \gets 1$ \;
+		$r \gets \text{size of array } p$ \;
+		
+		\uIf{$v < p[l]$}{
+			\KwRet $l$ \;
+		}\ElseIf{$l-r \leq 1$}{
+			\KwRet $r$ \;
+		}
+		\While{$r-l > 1$}{
+			$i \gets \lfloor (r-l) / 2 \rfloor$ \;
+			\uIf{$p[i] < v$}{
+				$l \gets i$ \;
+			}
+			\Else{
+				$r \gets i$ \;
+			}
+		}
+		\KwRet $r$ \;
+	}
+\end{algorithm}
+
+\begin{equation}
+B_t(u) = \sum_{i=t}^{\Nteeth} e[u_0+ W_{teeth}(u+i-1)]
+\end{equation}
+
+For each tooth $t$, we store
+\begin{align}
+ S_t = \sum_{u \in {U}} B_t(u) \\
+ S^2_t = \sum_{u \in {U}} B_t(u)^2
+\end{align}
+
+
+\subsection{building teeth}
+
+\begin{itemize}
+
+\item
+\emph{input}
+\begin{description}
+\item[$\tilde w$]
+The initial repartition function, which we chose to be $C_I^2$.
+\item[$\Nteeth$]
+A desired number of teeth
+\item[$\minDetInTeeth$]
+A desired minimal number of samples per teeth
+\end{description}
+
+\item
+\emph{output}
+\begin{description}
+\item[$w$]
+The repartition function
+\item[$\lTeethI, $]
+An array of size $\Nteeth$, with $\Nteeth[i+1]$ being the index of the first sample of teeth $P_i$. For algorithmic convenience, $\lTeethI[\Nteeth+1] = \Ndet+1$  
+\end{description}
+\end{itemize}
+
+
+There is no trivial way to ensure teeth building will succeed with a given set of parameters. 
+With $n_0$ the size of the initial deterministic set, teeth building is sure to fail if $N_{det} - n_0 < \minDetInTeeth \times \Nteeth$. However, it may not succeed as there is no guarantee the first tooth will contain $\minDetInTeeth$ samples. Because samples are sorted with decreasing $\tilde w_I$, each tooth is guaranteed to contains as many or fewer samples than the next one.
+Relying on the fact that $\tilde w_i$ get more and more balanced, we increment $n_0$ until either the first tooth contains enough samples, or the impossibility condition is reached.
+
+\begin{algorithm}
+	$\tilde W_I = \sum_{i \leq I} {\tilde w_i}$ \;
+	$n_0 \gets 0$ \;
+	$l \gets 0$ \;
+	$r \gets \tilde W[\minDetInTeeth]$ \;	
+	\While{}{
+		$\text{teeth\_width} = \frac{1 - l}{N_{teeth}}$ \;
+		\If{$\text{teeth\_width} < r - l$}{
+			break \;
+		}
+		
+		$s \gets s + 1$ \;
+		\If{$N_{det} - n_0 < \minDetInTeeth \times \Nteeth$}{
+			STOP cannot compute with those parameters \;
+		}
+		$r \gets \tilde W[n_0+\minDetInTeeth]$ \;
+		$l \gets \tilde W[n_0]$\;
+	}
+	%$\lTeethI[1] = s+1$ \;
+\end{algorithm}
+
+Then, $\lTeethI$ can be fully computed
+
+\begin{algorithm}
+	\caption{COMPUTE\_TEETH}
+	$\lTeethI[1] = s+1$ \;
+	\For{$t=2,N_{teeth}$}{
+		$r = l + teeth\_width \times t$ \;
+		$\lTeethI[t] = FIND\_SAMPLE(r, \tilde W)$ \;
+	}
+	$\lTeethI[\Nteeth+1] = \Ndet+1$ \;
+\end{algorithm}
+
+And the actual repartition function $w$
+
+\begin{algorithm}
+	\caption{COMPUTE\_TEETH}
+	
+	\For{$t=1,N_{teeth}$}{
+		$\text{tooth\_width} = \tilde W_{\lTeethI[t+1]-1} - \tilde W_{\lTeethI[t]-1}$ \;
+		\For{$i=\lTeethI[t], \lTeethI[t+1]-1$}{
+		$w_{i} = \tilde w_{i} \times (\Nteeth \times \text{tooth\_width})^{-1}$ \;
+		}
+	}
+	
+\end{algorithm}
+
+
+
+\subsection{building job queue}
+
+For a massively parallel implementation, we need to create a job queue. Because values for $e_I$ are stored, quite clearly, we need 1 job per generator determinant. Because of the tooth filling mechanism, we know we will need at most $N_{gen}$ combs.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{comment}
+\begin{algorithm}
+	\caption{COMPUTE\_TEETH}
+	\label{COMPUTE_TEETH}
+	\SetKwFunction{FMain}{COMPUTE\_TEETH}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+	
+	\Fn(\tcc*[h]{Computes teeth thresholds, and $rDetI[1]$ the number or samples in the initial deterministic part}){\FMain{$minDetInTeeth$, $N_{teeth}$}}{
+		\KwData{$1 \leq minDetInTeeth \leq N_{det}$}
+		\KwData{$N_{teeth} \geq 1$}
+		
+		$rDetI[1] \gets 0$ \;
+		$rcw \gets cw[minDetInTeeth]$ \;
+		$lcm \gets 0$ \;
+		\While{}{
+			$teeth\_width = \frac{1 - lcm}{N_{teeth}}$ \;
+			\If{$teeth\_width < rcm - lcm$}{
+				break \;
+			}
+			
+			$rDetI[1] \gets rDetI[1] + 1$ \;
+			\If{$N_{det} - rDetI[1] < minDetInTeeth \times N_{teeth}$}{
+				STOP cannot compute with those parameters \;
+			}
+			$rcw \gets cw[rDetI[1]+minDetInTeeth]$ \;
+			$lcw \gets  cw[rDetI[1]]$\;
+		}
+		$lTeethI[1] = rDetI[1]+1$ \;
+		$lTeeth[1] = lcw$ \;
+		$rTeeth[1] = lcw + teeth\_width$ \;
+		\For{$i=2,N_{teeth}$}{
+			$rTeeth[i] = lcw + teeth\_width \times i$ \;
+			$lTeeth[i] = rTeeth[i-1]$ \;
+		}
+		\tcc{ensure there is no numerical precision error}
+		$rTeeth[N_{teeth}] \gets 1$ \;
+		
+		$t \gets 1$\;
+		\For{$i=rDetI[1]+1, N_{det}$}{
+			\If{$cw[i] \geq rTeeth[t]$}{
+				$rTeethI[t] = i$ \;
+				$t \gets t + 1$ \;
+			}
+		}
+		$teethSize[1] = cw[rTeethI[1]] - lcw$ \;
+		\For{$t=2,N_{teeth}$}{
+			$lTeethI[t] \gets rTeethI[t-1] + 1$ \;
+			$toothSize[t] = rTeeth[t] - lTeeth[t]$ \;
+		}
+	}
+\end{algorithm}
+\end{comment}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 
 
@@ -156,17 +370,34 @@ Essentially, we want all teeth to have at least $n$ samples, but we want them to
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/move_to_deterministic}
 		\caption{A REFAIRE NOTATION.............}
 		\label{fig:move_to_deterministic}
-		$E(I)$
+		$e_I$
 	\end{center}
 \end{figure}
 
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.9\columnwidth]{figures/pt2/eI}
+		\caption{A REFAIRE NOTATION.............}
+		\label{fig:ei}
+		$e_I$
+	\end{center}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.9\columnwidth]{figures/pt2/eici2comb}
+		\caption{A REFAIRE NOTATION.............}
+		\label{fig:eici2comb}
+		$e_I$
+	\end{center}
+\end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/comb}
 		\caption{A REFAIRE NOTATION.............}
 		\label{fig:comb}
-		$E(I)$
+		$e_I$
 	\end{center}
 \end{figure}
 
@@ -176,7 +407,7 @@ Essentially, we want all teeth to have at least $n$ samples, but we want them to
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/eici2}
 		\caption{A REFAIRE NOTATION.............}
 		\label{fig:eici2}
-		$E(I)$
+		$e_I$
 	\end{center}
 \end{figure}
 
@@ -186,7 +417,7 @@ Essentially, we want all teeth to have at least $n$ samples, but we want them to
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/P_i}
 		\caption{A REFAIRE NOTATION.............}
 		\label{fig:p_i}
-		$E(I)$
+		$e_I$
 	\end{center}
 \end{figure}
 
