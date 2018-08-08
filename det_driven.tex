@@ -804,7 +804,7 @@ indices, keeps some locality in the storage of the data, and can be evaluated
 in the order of 10 CPU cycles if the integer division by two is replaced by a
 bit shift instruction.
 
-\begin{algorithm}[H]
+\begin{algorithm}
  \caption{HASH}
  \label{alg:hash}
 	\SetKwFunction{FMain}{HASH}
@@ -887,45 +887,50 @@ level are copied in a dense array of $128^4$ elements ($2$~GiB).
 
 %TODO : J'en suis la
 
-\section{generating a subspace}
+\section{Generating a subspace of determinants}
+\alert{
 duplicates are avoided by checking connection to the past \\
 ******** (ptet exemple avec generator\_CAS versus generator\_full PSI is filtered with different function and supplied to the module using cas\_sd ( cas\_sd, mrcc ) or full\_ci ( pt2 stoch ) )?? \\
 ================
+}
 
-Generally speaking, a subspace is defined by a reference and a class of excitation applied to it. Because of the determinant-driven approach, it may not be possible to store all the determinants of the considered subspace. 
+Generally speaking, a subspace of determinants is defined by a reference and a class of excitation applied to it.
+\alert{
+Because of the determinant-driven approach, it may not be possible to store all the determinants of the considered subspace. \textbf{Pourquoi c'est lie au determinant-driven?}
+}
 
 % - as a matter of fact there is no algorithm to systematically generate all determinants for a defined subspace. The idea to 
 
 
-\paragraph{reference}
+\paragraph{Reference space}
+The \QP allows to define either a determinants of a CAS (Complete Active Space) or the full-CI space as the reference.\footnote{Although the full-CI space is a particular CAS, it is treated differently at the code level.}
 
-The \QP allows to define either a CAS or the full-CI as the reference ( although the full-CI is a particular CAS, it is treated differently at the code level ).
-
-\paragraph{excitation class}
-The excitations to be applied to the reference are defined by 6 sets of spinorbitals
+\paragraph{Excitation class}
+The excitations to be applied to determinants of the reference space are defined by six sets of spinorbitals. For each 
 \begin{itemize}
 \item
-Holes and particles allowed for single excitations (2 sets)
+single excitation,
 \item
-Holes and particles allowed for the first of a double excitation (2 sets)
+the first excitation of a double excitation
 \item
-Holes and particles allowed for the second of a double excitation (2 sets)
+the second excitation of a double excitation
 \end{itemize}
+there is one set for the allowed holes and one set for the allowed particles.
+This defines the rules used to generate determinants of the external space from the reference determinants.
 
-This allows to accurately define a subspace. Typically, to define a CAS-SD
-
-\begin{itemize}
-\item
-\emph{core orbitals} : part of no sets
-\item
-\emph{inactive orbitals} : part of all "hole" sets
-\item
-\emph{active orbitals} : part of all sets
-\item
-\emph{virtual orbitals} : part of all "particle" sets
-\item
-\emph{deleted orbitals} : part of no set
-\end{itemize}
+Typically, to define a CAS-SD (CAS augmented with all single and double excitations applied to all the determinants of the CAS), one defines:
+\begin{description}
+\item [Core orbitals:]
+Orbitals always doubly occupied. They are not part of any of the sets.
+\item [Inactive orbitals:]
+Orbitals in which one or two holes may be created. They are part of the all the \emph{hole} sets.
+\item [Active orbitals:]
+Orbitals defining the CAS. They are part of all the sets.
+\item [Virtual orbitals:]
+Orbitals in which one or two particles may be created. They are part of the all the \emph{particle} sets.
+\item [Deleted orbitals:]
+Orbitals removed from the calculation, always unoccupied. They are not part of any set.
+\end{description}
 
 
  As will be seen later, determinants are selected iteratively. The general procedure is shown 
@@ -935,23 +940,34 @@ This allows to accurately define a subspace. Typically, to define a CAS-SD
 \begin{algorithm}
 	\caption{GENERAL\_SELECTION}	
 	\label{alg:GENERAL_SELECTION}	
-	$\ket {\Psi} \gets \ket {HF}$\;
-	add CAS spinorbitals to $H_0, H_1, H_2, P_0, P_1, P_2$ \;
-	$\hat T$ the list of excitations allowed on the reference based on $H_0, H_1, H_2, P_0, P_1, P_2$ \;
+	$\ket{\Psi} \gets \ket{\HF}$\;
+	Build the sets $\set{H}_0, \set{H}_1, \set{H}_2, \set{P}_0, \set{P}_1, \set{P}_2$ \;
+	$\set{T}$: the set of excitations allowed on the reference based on $\set{H}_0, \set{H}_1, \set{H}_2, \set{P}_0, \set{P}_1, \set{P}_2$ \;
 	
 	\While{some condition}{
-		$C$ the list of determinants of $\Psi$ that are part of the CAS reference \;
-		\ForAll{$C_i \in C$}{
-			\ForAll{$T_j \in T ; T_j \ket {C_i} \neq 0$}{
-				$\ket \alpha \gets T_j \ket {C_i}$ \;
-				\If{$not(T_k \ket {C_{l<j}} = \ket \alpha) \&\ Selection\_criterion$}{
-					add $\ket \alpha$ to $\Psi '$ \;			
+                $\set{D}$: the set of determinants in $\ket{\Psi}$ \;
+                $\set{D}' \gets \{\}$ \;
+		\For{$i \gets 1, \Ndet$}{
+			\ForAll{$\hat{T}_j \in \set{T}$}{
+				$\kalpha \gets \ordering \hat{T}_j \ket {D_i}$ \;
+                \If{$\kalpha \neq 0$}{
+                \Comment{ /* Check if $\kalpha$ was not already generated before */} \;
+                \textit{found} $\gets$ False \;
+		\For{$l \gets 1, i-1$}{
+			\ForAll{$\hat{T}_k \in \set{T}$}{
+				\textit{found} \gets $\ior{\textit{found}}
+            {\qty(\ordering \hat{T}_k \ket{D_{l}} \ne \kalpha)}$ \;
+				}
+				}
+                \If{$\iand{(\neg \textit{found})}{\textit{Selection\_criterion}}$ }{
+		$\set{D}' \gets \set{D}' \cup \kalpha $ \;			
+}
 				}
 			}
 		}
-		do some selection in $\Psi'$ \;
-		add selected determinants to $\Psi$ \;
-		diagonalize $\Psi$ \;
+		do some selection in $\set{D}'$ \;
+		add selected determinants to $\set{D}$ \;
+		diagonalize $\hat{H}$ in $\set{D}$ to obtain $\ket{\Psi}$ \;
 	}
 \end{algorithm}
 
