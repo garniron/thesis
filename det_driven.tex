@@ -947,22 +947,22 @@ Orbitals removed from the calculation, always unoccupied. They are not part of a
 	
 	\While{some condition}{
                 $\set{D}$: the set of determinants in $\ket{\Psi}$ \;
-                $\set{D}' \gets \{\}$ \;
+                $\set{D}' \gets \{ \}$ \;
 		\For{$i \gets 1, \Ndet$}{
 			\ForAll{$\hat{T}_j \in \set{T}$}{
 				$\kalpha \gets \ordering \hat{T}_j \ket {D_i}$ \;
                 \If{$\kalpha \neq 0$}{
-                \Comment{ /* Check if $\kalpha$ was not already generated before */} \;
+                /* Check if $\kalpha$ was not already generated before */ \;
                 \textit{found} $\gets$ False \;
 		\For{$l \gets 1, i-1$}{
 			\ForAll{$\hat{T}_k \in \set{T}$}{
-				\textit{found} \gets $\ior{\textit{found}}
-            {\qty(\ordering \hat{T}_k \ket{D_{l}} \ne \kalpha)}$ \;
+				$\textit{found} \gets \ior{\textit{found}}
+            {(\ordering \hat{T}_k \ket{D_{l}} \neq \kalpha)}$ \;
 				}
 				}
                 \If{$\iand{(\neg \textit{found})}{\textit{Selection\_criterion}}$ }{
 		$\set{D}' \gets \set{D}' \cup \kalpha $ \;			
-}
+                }
 				}
 			}
 		}
