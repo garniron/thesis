@@ -391,32 +391,7 @@ Even in the more realistic case where half of double excitations involving the h
 \end{algorithm}
 
 
-\begin{algorithm}
-	\label{ADD_COMB}
-	\caption{ADD\_COMB}
-	\SetKwFunction{FAddComb}{ADD\_COMB}
-	\SetKwProg{Fn}{Function}{:}{}
-	
-	\Fn(\tcc*[h]{Add a comb to the Monte-Carlo by updating $N_{jobs}$, $J$ and $d$}){\FAddComb{$rand, N_{jobs}, J, d,m$}}{
-		\KwData{$rand \in [0, 1[$ value associated with the comb to be added}
-		\KwData{$N_j$ : number of unique samples computed so far.}
-		\KwData{$J_i$ : index of the $i^{th}$ unique sample computed. Will be used as the list of jobs for the actual computation.}
-		\KwData{$d_i=TRUE$ if sample $i$ has been computed, $FALSE$ otherwise.}
-		\KwData{$m$ : index of current checkpoint}
-		
-		%$rand \gets RANDOM(0,1)$ \;
-		\For{$t=1,N_{teeth}$}{
-			$v=lTeeth[t] + rand \times toothSize[t]$ \;
-			$i=FIND\_SAMPLE(rand, lTeethI[t], rTeethI[t])$ \;
-			$n(curcp, i) += 1$ \;			
-			\If{$not\ d_i$}{
-				$N_{jobs} \gets N_{jobs} + 1$ \;
-				$J_{N_{jobs}} \gets i$ \;
-				$d_i \gets TRUE$ \;
-			}
-		}
-	}
-\end{algorithm}
+
 
 \section{Alpha-factory (rename?)}
 

@@ -441,8 +441,8 @@ The total number of permutations needed is $\Nperm = 2n+x$. The parity of the nu
 	\begin{center}
 		\includegraphics[width=0.3\columnwidth]{figures/determinant_driven/phasefactor}
 		\caption{
-		\label{phasefactor}
-		phasefactor
+		\label{phasefactor}%
+		\alert{phasefactor}
 		}
 	\end{center}
 \end{figure}
@@ -511,7 +511,7 @@ N^{I}_{ij} = \popcnt{\iand{I_{\sigma}}{R_{ij}}}.
 \end{equation}
 So the phase factor to be applied when going from $\kI$ to $\kalpha$ is 
 \begin{equation}
-\phase{\kI}{\kalpha} = -1^{p(N^I_{ij})}.
+\phase{I}{\alpha} = -1^{p(N^I_{ij})}.
 \end{equation}
 Using the above formulas and taking into account the bitstring's internal representation as arrays of $\Nint$ \lstinline{integer*8}'s, we get algorithm~\ref{alg:PHASE_MONO}.   
 
@@ -581,7 +581,6 @@ This requires to store $E^S$ which is an integer array of size $2 \times (\Norb+
 
 This may be somewhat memory consuming if we want to pre-compute and store $E$ for each determinant. However, because the actual information needed isn't $N^S_{ij}$, but merely its parity, we only need to store the so-called ``phasemask'' array $P^S$
 \begin{equation}
-\label{eq:phasemask}
 P^S(i) = p(E^S(i))
 \end{equation}
 which is 1 bit of information per spinorbital, as opposed to an integer big enough to accommodate a number of electrons.
@@ -595,7 +594,7 @@ In the last equation, $\tilde N^S_{ij}$ is expressed as a sum of 3 terms. The fi
 \begin{equation}
 p(\tilde N^S_{ij})=p(P^S_j - P^S_{i+1})
 \end{equation}
-This can be rewritten in a slightly more efficient way as
+This can be rewritten in a slightly more efficent way as
 \begin{equation}
 p(\tilde N^S_{ij}) = P^S_j \oplus P^S_{i+1}
 \end{equation}
@@ -618,6 +617,8 @@ Because $\hat T_{i'}^{j'} \ket S \neq 0$, we know that $\occ{j'}{S} + \occ{i'}{S
 \end{equation}
 This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of different parity.
 
+%TODO : J'en suis ici.
+
 \begin{algorithm}
 	\caption{PHASEMASK}	
 	\label{alg:PHASEMASK}	
@@ -626,16 +627,16 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 	
 	\Fn(\tcc*[h]{Compute a phasemask}){\FMain{$I$}}{
 		\KwData{ $I$ the bitstring representation of $\ket I$}
-		\KwResult{ $P$ is the phasemask vector associated with $\ket I$, as described in Eq.~\eqref{eq:phasemask}}
+		\KwResult{ $P$ is the phasemask vector associated with $\ket I$, as described in section XXXXX}
 		   
 		\For{$\sigma \in \{\alpha, \beta\}$}{
 		 $p \gets 0$ \;
 		\For{$i \gets 0, \Nint-1$}{
-		 $n \gets \min(64, \Norb - i \times 64)$ \;
+		 $n \gets min(64, \Norb - i \times 64)$ \;
 		\For{$j \gets 0,n-1$}{
 		 $P_\sigma[i \times 64 + j] \gets p$ \;
-		\If{$\texttt{BTEST}(I, j)$}{
-		 $p \gets \texttt{IEOR}(p, 1)$ \;
+		\If{$BTEST(I, j)$}{
+		 $p \gets IEOR(p, 1)$ \;
 		%\Comment flips the first bit
 		}
 		}
@@ -653,22 +654,22 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 	\SetKwFunction{FMain}{PHASEMASK\_bit}
 	\SetKwProg{Fn}{Function}{:}{}
 	
-	\Fn(\tcc*[h]{Compute a phasemask}){\FMain{$\bitI$}}{
-		\KwData{ $\bitI$ the bitstring representation of $\kI$}
-		\KwResult{ $\bitP$ is the phasemask vector associated with $\kI$, as described in Eq.~\eqref{eq:phasemask}}
+	\Fn(\tcc*[h]{Compute a phasemask}){\FMain{$I$}}{
+		\KwData{ $I$ the bitstring representation of $\ket I$}
+		\KwResult{ $P$ is the phasemask vector associated with $\ket I$, as described in section XXXXX}
 		   
 		\For{$\sigma \in \{\alpha, \beta\}$}{
 		$r \gets 0$ \;
 		\For{$i \gets 0, N_{int}-1$}{
-				$\bitPsigma[i] \gets \texttt{IEOR}(\bitIsigma[i], \text{ISHFT}(\bitIsigma[i], 1)$ \;
+				$P_\sigma[i] \gets \text{IEOR}(I_\sigma[i], \text{ISHFT}(I_\sigma[i], 1)$ \;
 				$d \gets 2$ \;
-				\While{$d < \texttt{bit\_kind\_size}$}{
-					$\bitPsigma[i] \gets \text{IEOR}(\bitPsigma[i], \text{ISHFT}(P_\sigma[i], d)$ \;
+				\While{$d < bit\_kind\_size$}{
+					$P_\sigma[i] \gets \text{IEOR}(P_\sigma[i], \text{ISHFT}(P_\sigma[i], d)$ \;
 					$d \gets 2 \times d$ \;
 				}
-				$\bitPsigma[i] \gets \texttt{IEOR}(\bitPsigma[i], r)$ \;
-				\If{$\texttt{IAND}(\texttt{POPCNT}(\bitIsigma[i]), 1) == 1$}{
-					$r \gets \texttt{NOT}(r)$ \;			
+				$P_\sigma[i] \gets \text{IEOR}(P_\sigma[i], r)$ \;
+				\If{$IAND(\text{POPCNT}(I_\sigma[i]), 1) == 1$}{
+					$r \gets \text{NOT}(r)$ \;			
 				}
 			}
 		}
@@ -685,86 +686,99 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 	\SetKwProg{Fn}{Function}{:}{}
 	
 	\Fn(\tcc*[h]{Compute phase from phasemask}){\FMain{$P^I$, $i$, $j$}}{
-		\KwData{ $P^I$ is the phasemask vector associated with $\kI$, as described in Eq.~\eqref{eq:phasemask}. $i$ and $j$ spinorbitals of spin $\sigma \in \{\alpha, \beta \}$ so that $\excorb{i}{j} \kI \neq 0 $.}
-		\KwResult{ The phase factor associated with $\ordering \excorb{i}{j} \kI$.}
+		\KwData{ $P^I$ is the phasemask vector associated with $\ket I$, as described in section XXXXX. $i$ and $j$ spinorbitals of spin $\sigma \in \{\alpha, \beta \}$ so that $\hat T_i^j \ket I \neq 0 $}
+		\KwResult{ The phase factor of  $\Hij{I}{a_i a^\dagger_j \ket I}$.}
 
 		\uIf{$j < i$}{
-			$c \gets 0$ \;
+			$c \gets 1$ \;
 		}
 		\Else{
-			$c \gets 1$ \;		
+			$c \gets 0$ \;		
 		}
-		\uIf{$\qty(P^I_\sigma[i+1] \oplus P^I_\sigma[j]) = c$}{
-		\KwRet{ $-1$}\;}
-                \Else{\KwRet{ $1$} \; }
+		\KwRet{$-1^{(c \oplus P^I_\sigma[i+1] \oplus P^I_\sigma[j])}$} \;
 		}
 \end{algorithm}
-
-
 
                 
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=0.6\columnwidth]{figures/determinant_driven/phase}
 		\caption{
-		\label{generators_selectors}
+		\label{generators_selectors}%
 		phasemask
 		}
+		commentt
 	\end{center}
 \end{figure}
         
-Currently, the \QP does not store the $\bitP$ vector for each determinant of the wavefunction, but recomputes it whenever needed before a loop. The memory cost being negligible this way, for a CPU performance reason each bit is stored on a separate 32-bit integer.
-The algorithm for computing $P^S$ is shown as algorithm \ref{alg:PHASEMASK}. 
-With this method, the cost of computing a phase --- after paying the overhead of computing $P$ --- is accessing two integers and applying the \lstinline{IEOR} function to them, in addition to the tests. Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the cumbersome boundaries of 64-bit integers.
+Currently, the quantum package does not store the $P$ vector for each variational determinant, but re-computes it whenever needed before a loop. The memory cost being negligible this way, for CPU performance reason, each bit is stored on a separate 32-bit integer.
+The algorithm for computing $P^S$ is show as algorithm \ref{alg:PHASEMASK}. 
+With this method, the cost of computing a phase - after paying the overhead of computing $P$ - is accessing two integers and IEOR them together (and tests.......). Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the boundaries of 64-bit integers which are ANNOYING AS FUCK.
+        
+
+\subsection{Double excitation}
 
 
 
-\subsection{Double excitations}
 
 
-A double excitation ca be expressed as a product of two single excitations.
+
+
+A double excitation is a product of two single excitations.
 In the case of an $\alpha \beta$ double excitation, the two single excitations are independant, so the phase factor is merely the product of the phase factors computed for each spin part. 
+
+
 \begin{equation}
-\phase{\kI}{\ordering \excorb{p \bar q}{r \bar s} \kI} = 
-\phase{\kI}{\ordering \excorb{p}{r} \kI} \times
-\phase{\kI}{\ordering \excorb{\bar q}{\bar s} \kI} 
+phase(\hat T_{p \bar q}^{r \bar s}, \ket I) = phase(\hat T_{p}^{r}, \ket I) \times phase(\hat T_{ \bar q}^{ \bar s}, \ket I) 
 \end{equation}
 
 
-There is a slight complication for $\alpha \alpha$ or $\beta \beta$ excitations. The ordering we defined for excitation operators is of importance. In order to write a double excitation as a product of two singles, it must be ensured that the ordering matches the one we defined : lowest particle with lowest hole, highest particle with highest hole.
+There is a slight complication for $\alpha \alpha$ or $\beta \beta$ excitations. The ordering we defined for excitation operators is of importance. In order to write a double excitation as a product of two single ones, it must be ensured that the phase (ordering) matches the one we defined : lowest particle with lowest hole, highest particle with highest hole.
 
-As far as phase computation goes, it is irrelevant which index of an excitation operator is a creation and which is an annihilation. So, for convenience, we can define
+As far as phase computation goes, it is irrelevant which index of an exciation operator is a creation and which is an annihilation. So, for convenience, we can write single excitations without defining it
+
 \begin{equation}
 \tilde T_{ab} \in \{\hat T_a^b, \hat T_b^a \}
 \end{equation}
 
 
-Considering a double excitation $\tilde T^2$ involving 4 spinorbitals $p,q,r,s$ of same spin, there are two possible situations, shown in figure \ref{fig:biphasefactor}. 
+
+
+Considering a double excitation $\hat T^2$ involving 4 spinorbitals $p,q,r,s$ of same spin, there are two possible situations, shown in figure \ref{fig:biphasefactor}. 
+
+
+
+%\begin{equation}
+%\hat T^2 = \hat T_{pr} \hat T_{qs}
+%\end{equation}
+%\begin{equation}
+%\hat T_{pr} \in \{ T_p^r, T_r^p\} ; p<r; \hat T_{qs} \in \{ T_q^s, T_s^q\};q<s$
+%\end{equation}
 
 \begin{itemize}
 \item
 It can be expressed as two single excitations that do not cross, i.e.
 \begin{equation}
-\tilde T^2=\tilde T_{pr} \tilde T_{qs} \; ; \; p<r<q<s
+\hat T^2=\tilde T_{pr} \tilde T_{qs};p<r<q<s
 \end{equation}
 In this case, the numbers of particles in the ranges $]p, r[$ and $]q, s[$ remain unchanged, so we can write
 \begin{equation}
-\phase{\kI}{\ordering \tilde T^2 \kI} =
-\phase{\kI}{\ordering \tilde T_{pr} \ket I} \times
-\phase{\kI}{\ordering \tilde T_{qs} \ket I}
+phase(\hat T^2, \ket I) = phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_{qs}, \ket I) 
 \end{equation}
 
 \item
 It can be expressed as two single excitations that cross, i.e.
 \begin{equation}
-\tilde T^2=\tilde T_{pr} \tilde T_{qs} \; ; \; p<q<r<s
+\hat T^2=\tilde T_{pr} \tilde T_{qs};p<q<r<s
 \end{equation}
-As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ results in a particle being created or annihilated in the range $]p,r[$, resulting in a change of parity for the number of particles in that range. Therefore,
+
+
+As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ results in a particle being created or annihilated in the range $]p,r[$, resulting in a change of parity for the number of particles in that range. Therefore
 \begin{equation}
-\phase{\ordering \tilde T_{qs} \kI}{\ordering \tilde T_{pr} \tilde T_{qs} \kI} = -\phase{\kI}{\ordering \tilde T_{pr} \kI}
+phase(\tilde T_{pr}, \tilde T_{qs} \ket I) = -phase(\tilde T_{pr}, \ket I)
 \end{equation}
 \begin{equation}
-\phase{\kI}{\ordering \tilde T^2 \kI} = -\phase{\kI}{\ordering \tilde T_{pr} \kI} \times \phase{\kI}{\ordering \tilde T_{ qs} \kI} 
+phase(\hat T^2, \ket I) = -phase(\tilde T_{pr}, \ket I) \times phase(\tilde T_{ qs}, \ket I) 
 \end{equation}
 
 \end{itemize}
@@ -782,18 +796,16 @@ As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ resul
 	\end{center}
 \end{figure}
 
-So we add an extra permutation if
-\begin{equation}
-\ior{[\ieor{(p-r)}{(p-s)}]}{[\ieor{(q-r)}{(q-s)}]} > 0
-\end{equation}
+%extra permut si:
+%$[(p-r) \oplus (p-s)] \vee [(q-r) \oplus (q-s)] > 0$
 
 
-
+% BEGIN Section de TOTO
 %----------------------------------------------------------------
 \section{Storage of the two-electron integrals}
 %----------------------------------------------------------------
 
-In all the algorithms presented, all the needed two-electron integrals are kept in memory
+In all what follows, all the needed two-electron integrals are kept in memory
 and require a fast random access.
 A hash table is the natural choice which allows the storage of only non-zero
 values with a retrieval of data in nearly constant time, but standard hashing
@@ -804,15 +816,14 @@ value for all the keys which are related by the permutation symmetry of the
 indices, keeps some locality in the storage of the data, and can be evaluated
 in the order of 10 CPU cycles if the integer division by two is replaced by a
 bit shift instruction.
-
-\begin{algorithm}
+\begin{algorithm}[H]
  \caption{HASH}
  \label{alg:hash}
 	\SetKwFunction{FMain}{HASH}
 	\SetKwProg{Fn}{Function}{:}{}
 \Fn(\tcc*[h]{Hash function for two-electron integrals.}){\FMain{$i,j,k,l$}}{
 		\KwData{ $i,j,k,l$ are the orbital indices}
-		\KwResult{ The corresponding hash}
+		\KwResult{ The corresponding hash .}
         $p \gets \min (i,k)$ \;
         $r \gets \max (i,k)$ \;
         $t \gets p + \frac{1}{2} r (r-1)$ \;
@@ -828,110 +839,88 @@ bit shift instruction.
 The hash table is such that each bucket can potentially store $2^{15}$
 consecutive key-value pairs. The 15 least significant bits of the hash value
 are removed to give the index of the bucket ($i_\text{bucket} =
-\ishft{\text{hash}(i,j,k,l)}{-15}$), and only those 15 bits need to be
-stored in the bucket for the storage of the key ($\iand{\text{key}}{(2^{16}-1)}$).
-Hence, the storage of the keys only requires two bytes per key.
+\text{hash}(i,j,k,l)/2^{15}$), and only those 15 bits need to be
+stored in the bucket for the storage of the key.
+Hence, the storage of the keys only require two bytes per key.
 The keys within a bucket are sorted in increasing order, enabling a binary
-search within the bucket. The search of the key is always fast
+search to resolve the conflicts. The binary search of the key is always fast
 since the binary search is bounded by 15 misses and the maximum size of the
 array of keys is 64~kiB, the typical size of the L1 cache.
 
-\begin{table}
-\caption{Time to access the integrals (in ns/integral) with different access patterns. The time to generate random numbers (measured as 67~ns/integral) was not counted in the random access results.}
-\begin{center}
-  \begin{tabular}{lrr}
-    \hline
-   Access  & Array  & Hash table  \\ 
-\hline
- $i,j,k,l$ &  9.72  &  125.79     \\ 
- $i,j,l,k$ &  9.72  &  120.64     \\ 
- $i,k,j,l$ & 10.29  &  144.65     \\ 
- $l,k,j,i$ & 88.62  &  125.79     \\ 
- $l,k,i,j$ & 88.62  &  120.64     \\ 
-   Random  & 170.00 &  370.00     \\ 
-    \hline
-  \end{tabular}
-\end{center}
-\end{table}
-
-% Random function :   6.999999930000001E-008
-% Random access :   1.699999983000000E-007
-% loop ijkl :   9.719805175081564E-009
-% loop ikjl :   1.029155842067460E-008
-% loop ijlk :   9.719805175081564E-009
-% loop lkji :   8.862175306692014E-008
-% loop lkij :   8.862175306692014E-008
-%Wall time : 6.72291m
-
-% Random function :   6.999999930000001E-008
-% Random access :   3.699999963000001E-007
-% loop ijkl :   1.257857140304673E-007
-% loop ikjl :   1.446535711350374E-007
-% loop ijlk :   1.206399348201300E-007
-% loop lkji :   1.257857140304673E-007
-% loop lkij :   1.206399348201300E-007
-%Wall time : 19.6351m
-
-The efficiency of the storage as a hash table was measured on a dual socket Intel Xeon E5-2680 v2 @ 2.80GHz processor, taking the water molecule with the cc-pVQZ basis set (115 molecular orbitals). The time to access all the integrals was measured by looping over all integrals using different loop orderings. The results are given in table~\ref{tab:integrals}, the reference being the storage as a plain four-dimensional array.
-
-In the array storage,
-the value of $170$~ns/integral in the random access case is typical of the latency to fetch a value in the RAM modules when the data is not in any level of cache.
-When the data is accessed with a stride of one (the $i,j,l,k$ storage) the cache levels accelerate the access by a factor of $18 \times$, down to $9.71$~ns/integral, corresponding mostly to the overhead of the function call, the retrieval of the data being negligible.
-
-With the hash table, the random access is only $2.18\times$ slower than the random access in the array. Indeed, two random accesses are required: one for the first element of the bucket of keys one for the corresponding value. The rest of the extra time corresponds to the binary search. The locality of the data can be exploited: when the access is done with a regular access pattern, the data is fetched $\sim 3\times$ faster than using a random access.
-
-A CIPSI calculation was run with the array storage and with the hash table storage. With the hash storage, the total wall clock time was increased by a factor of two.
-
-So to accelerate the access to the most frequently used integrals, all the
+To accelerate the access to the most frequently used integrals, all the
 integrals involving the $128$ closest MOs (molecular orbitals) to the Fermi
-level are copied in a dense array of $128^4$ elements ($2$~GiB).
+level are copied in a dense array of $128^4$ elements ($2$~GiB) enabling a
+direct access.
 
-%TODO : J'en suis la
+% TODO: Voila les mesures, a mettre dans un tableau
 
-\section{Generating a subspace of determinants}
-\alert{
+% H2O, cc-pVQZ, 115 MOs
+% Array:
+%         115 MOs
+% Random function :   4.999999950000000E-008
+% Random access :   1.299999987000000E-007
+% loop ijkl :   6.289285701523365E-009
+% loop ikjl :   6.289285701523365E-009
+% loop ijlk :   5.717532455930332E-009
+% loop lkji :   3.945097394591929E-008
+% loop lkij :   3.887922070032626E-008
+%Wall time : 4.15901m
+% CIPSI : Wall time : 1.54942m
+
+% 
+% Map:
+% Random function :   4.999999950000000E-008
+% Random access :   3.199999968000000E-007
+% loop ijkl :   8.233246736539678E-008
+% loop ikjl :   1.183529218377579E-007
+% loop ijlk :   7.547142841828039E-008
+% loop lkji :   8.233246736539678E-008
+% loop lkij :   7.547142841828039E-008
+%Wall time : 13.4311m
+% CIPSI : Wall time : 3.40127m
+
+% END Section de TOTO
+
+
+\section{generating a subspace}
 duplicates are avoided by checking connection to the past \\
 ******** (ptet exemple avec generator\_CAS versus generator\_full PSI is filtered with different function and supplied to the module using cas\_sd ( cas\_sd, mrcc ) or full\_ci ( pt2 stoch ) )?? \\
 ================
-}
 
-Generally speaking, a subspace of determinants is defined by a reference and a class of excitation applied to it.
-\alert{
-Because of the determinant-driven approach, it may not be possible to store all the determinants of the considered subspace. \textbf{Pourquoi c'est lie au determinant-driven?}
-}
+Generally speaking, a subspace is defined by a reference and a class of excitation applied to it. Because of the determinant-driven approach, it may not be possible to store all the determinants of the considered subspace. 
 
 % - as a matter of fact there is no algorithm to systematically generate all determinants for a defined subspace. The idea to 
 
 
-\paragraph{Reference space}
-The \QP allows to define either a determinants of a CAS (Complete Active Space) or the full-CI space as the reference.\footnote{Although the full-CI space is a particular CAS, it is treated differently at the code level.}
+\paragraph{reference}
 
-\paragraph{Excitation class}
-The excitations to be applied to determinants of the reference space are defined by six sets of spinorbitals. For each 
+The quantum package allows to define either a CAS or the full-CI as the reference ( although the full-CI is a particular CAS, it is treated differently at the code level ).
+
+\paragraph{excitation class}
+The excitations to be applied to the reference are defined by 6 sets of spinorbitals
 \begin{itemize}
 \item
-single excitation,
+Holes and particles allowed for single excitations (2 sets)
 \item
-the first excitation of a double excitation
+Holes and particles allowed for the first of a double excitation (2 sets)
 \item
-the second excitation of a double excitation
+Holes and particles allowed for the second of a double excitation (2 sets)
 \end{itemize}
-there is one set for the allowed holes and one set for the allowed particles.
-This defines the rules used to generate determinants of the external space from the reference determinants.
 
-Typically, to define a CAS-SD (CAS augmented with all single and double excitations applied to all the determinants of the CAS), one defines:
-\begin{description}
-\item [Core orbitals:]
-Orbitals always doubly occupied. They are not part of any of the sets.
-\item [Inactive orbitals:]
-Orbitals in which one or two holes may be created. They are part of the all the \emph{hole} sets.
-\item [Active orbitals:]
-Orbitals defining the CAS. They are part of all the sets.
-\item [Virtual orbitals:]
-Orbitals in which one or two particles may be created. They are part of the all the \emph{particle} sets.
-\item [Deleted orbitals:]
-Orbitals removed from the calculation, always unoccupied. They are not part of any set.
-\end{description}
+This allows to accurately define a subspace. Typically, to define a CAS-SD
+
+\begin{itemize}
+\item
+\emph{core orbitals} : part of no sets
+\item
+\emph{inactive orbitals} : part of all "hole" sets
+\item
+\emph{active orbitals} : part of all sets
+\item
+\emph{virtual orbitals} : part of all "particle" sets
+\item
+\emph{deleted orbitals} : part of no set
+\end{itemize}
 
 
  As will be seen later, determinants are selected iteratively. The general procedure is shown 
@@ -941,34 +930,23 @@ Orbitals removed from the calculation, always unoccupied. They are not part of a
 \begin{algorithm}
 	\caption{GENERAL\_SELECTION}	
 	\label{alg:GENERAL_SELECTION}	
-	$\ket{\Psi} \gets \ket{\HF}$\;
-	Build the sets $\set{H}_0, \set{H}_1, \set{H}_2, \set{P}_0, \set{P}_1, \set{P}_2$ \;
-	$\set{T}$: the set of excitations allowed on the reference based on $\set{H}_0, \set{H}_1, \set{H}_2, \set{P}_0, \set{P}_1, \set{P}_2$ \;
+	$\ket {\Psi} \gets \ket {HF}$\;
+	add CAS spinorbitals to $H_0, H_1, H_2, P_0, P_1, P_2$ \;
+	$\hat T$ the list of excitations allowed on the reference based on $H_0, H_1, H_2, P_0, P_1, P_2$ \;
 	
 	\While{some condition}{
-                $\set{D}$: the set of determinants in $\ket{\Psi}$ \;
-                $\set{D}' \gets \{\}$ \;
-		\For{$i \gets 1, \Ndet$}{
-			\ForAll{$\hat{T}_j \in \set{T}$}{
-				$\kalpha \gets \ordering \hat{T}_j \ket {D_i}$ \;
-                \If{$\kalpha \neq 0$}{
-                \Comment{ /* Check if $\kalpha$ was not already generated before */} \;
-                \textit{found} $\gets$ False \;
-		\For{$l \gets 1, i-1$}{
-			\ForAll{$\hat{T}_k \in \set{T}$}{
-				\textit{found} \gets $\ior{\textit{found}}
-            {\qty(\ordering \hat{T}_k \ket{D_{l}} \ne \kalpha)}$ \;
-				}
-				}
-                \If{$\iand{(\neg \textit{found})}{\textit{Selection\_criterion}}$ }{
-		$\set{D}' \gets \set{D}' \cup \kalpha $ \;			
-}
+		$C$ the list of determinants of $\Psi$ that are part of the CAS reference \;
+		\ForAll{$C_i \in C$}{
+			\ForAll{$T_j \in T ; T_j \ket {C_i} \neq 0$}{
+				$\ket \alpha \gets T_j \ket {C_i}$ \;
+				\If{$not(T_k \ket {C_{l<j}} = \ket \alpha) \&\ Selection\_criterion$}{
+					add $\ket \alpha$ to $\Psi '$ \;			
 				}
 			}
 		}
-		do some selection in $\set{D}'$ \;
-		add selected determinants to $\set{D}$ \;
-		diagonalize $\hat{H}$ in $\set{D}$ to obtain $\ket{\Psi}$ \;
+		do some selection in $\Psi'$ \;
+		add selected determinants to $\Psi$ \;
+		diagonalize $\Psi$ \;
 	}
 \end{algorithm}
 
