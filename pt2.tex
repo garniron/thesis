@@ -241,13 +241,21 @@ B_t(u) = \sum_{i=0}^{N_{teeth}-t} e_{w[u_0(t)+ W_T(u+i)]}
 \end{equation}
 %B_t(u) = \sum_{i=t}^{N_{teeth}} e[u_0+ W_{teeth}(u+i-1)]
 
-To be able to compute average and standard error 
+To be able to compute average and standard error after $n$ samples are drawn, we need to compute
 
 \begin{align}
- S_t = \sum_{u \in {U}} B_t(u) \\
- S^2_t = \sum_{u \in {U}} B_t(u)^2
+ S_{t_n} = \sum_{u \in \{\mathcal{U}\}_n} B_{t_n}(u) \\
+ S^{(2)}_{t_n} = \sum_{u \in \{\mathcal{U}\}_n} B_{t_n}(u)^2
 \end{align}
 
+with $\{\mathcal{U}\}_n$ the set of random number drawn, and $t_n$ the first non-deterministic tooth. The estimated error is
+
+\alert{A VERIFIERXXXXXXXXXXXXXXXXXXXXXXXX}
+\begin{equation}
+\sqrt{(S_{t_n}^{(2)} - S_{t_n}) n^{-1} }
+\end{equation}		
+
+with 
 
 \section{Practical considerations}
 
@@ -403,7 +411,7 @@ For a massively parallel implementation, we need to create a task queue. Because
 
 
 \begin{algorithm}
-	$M \gets $ array size $N_{gen}$ initialized to 0 \;
+	$R \gets $ array size $N_{gen}$ initialized to 0 \;
 	$N_c \gets 0$ \;
 	$F \gets 0$ \;
 	$N_j \gets n_0(1)$ \;
@@ -414,35 +422,52 @@ For a massively parallel implementation, we need to create a task queue. Because
 	}
 	
 	\For{$i=1,N_{gen}$}{
-		$comb[i] \gets $ random value in $[0,1)_\mathbb{R}$ \;	
+		$u[i] \gets $ random value in $[0,1)_\mathbb{R}$ \;	
 	}
 	
 	\While{$N_j < N_{gen}$}{
+  	ADD\_COMB  shown as algorithm \ref{alg:ADD_COMB}\;
+	$R[N_j] \gets N_c$ \;
+	FILL\_TOOTH shown as algorithm \ref{alg:FILL_TOOTH} \;
+	}
+	
+\end{algorithm}
+
+\begin{algorithm}
+	\caption{ADD\_COMB}
+	\label{alg:ADD_COMB}
+		\KwData{$N_c,u_{N_c},F,d,N_j,J$ as in the namespace of the calling function}
+		\KwData{$\tilde M$ as in the namespace of the calling function if defined, otherwise ignored}
 		$N_c \gets N_c + 1$ \;
   		\For{$t=0,N_{teeth}-1$}{
 		%$v \gets lTeeth[t] + rand \times toothSize[t]$ \;
-		$v \gets u_0(t) + comb[N_c] \times W_T$ \;
+		$v \gets u_0(t) + u_{N_c} \times W_T$ \;
 		
 		%$i=FIND\_SAMPLE(rand, lTeethI[t], rTeethI[t])$ \;
 		$i=FIND\_SAMPLE(v, W)$ \;
+		$\tilde M_i \gets \tilde M_i + 1$ \;
 		\If{$not\ d_i$}{
 			$N_j \gets N_j + 1$ \;
 			$J_{N_j} \gets i$ \;
 			$d_i \gets TRUE$ \;
 		}
 	}
-	$M_{N_j} \gets N_c$ \;
-   \While{$F < N_{gen}$}{
-    	$F \gets F + 1$ \;
-        \If{$not\ d_F$}{
-          $d_F \gets TRUE$ \;
-           $N_j \gets N_j+1$ \;
-           $J_{N_j} \gets F$ \;
-           break \;
-         }
-	  }
-	}
+\end{algorithm}
+
+\begin{algorithm}
+	\caption{FILL\_TOOTH}
+	\label{alg:FILL_TOOTH}
+	\KwData{$F$,$d$,$N_j$,$J$ as in the namespace of the calling function}
 	
+	\While{$F < N_{gen}$}{
+   	$F \gets F + 1$ \;
+       \If{$not\ d_F$}{
+         $d_F \gets TRUE$ \;
+          $N_j \gets N_j+1$ \;
+          $J_{N_j} \gets F$ \;
+          break \;
+        }
+	}
 \end{algorithm}
 
 \subsection{computing estimation and error}
@@ -460,9 +485,9 @@ For a massively parallel implementation, we need to create a task queue. Because
 				\If{$n \geq n_0(t)$}{
 					$t \gets t+1$ \;
 				}
-				\If{$M[n] \neq 0$}{
-					$S_* \gets S_* + B_*(comb[M[n]])$ \;
-					$S^{(2)}_* \gets S^{(2)}_* + B_*(comb[M[n]])^2$ \;				
+				\If{$R[n] \neq 0$}{
+					$S_* \gets S_* + B_*(u[R[n]])$ \;
+					$S^{(2)}_* \gets S^{(2)}_* + B_*(u[R[n]])^2$ \;				
 				}
 			}
 			$n \gets n+1$ \;
@@ -607,6 +632,43 @@ toothSize[t] = rTeeth[t] - lTeeth[t]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ALGO ARCHIVES
 \begin{comment}
+
+\begin{algorithm}
+	\label{COMPUTE_EPSILON}
+	\caption{COMPUTE\_EPSILON}
+		\KwResult{ $\tilde \epsilon$}
+		$\epsilon^*_* \gets 0$ \;
+		$U \gets 1$ \;		
+		\For{$m=1,N_{cp}$}{
+			$lastTeeth[m] = 0$ \;
+			$rDetI[m] = lTeeth[1]-1$ \;
+			\While{$U \leq N_{gen}$}{
+				\uIf{$n[m,U] \neq 0$}{
+					$U \gets U+1$ \;
+				}\Else{
+					break \;
+				}
+		  	}
+			\For{$t=N_{teeth},1,step=-1$}{
+				\If{$U-1 \leq rTeethI[t]$}{
+					$lastTeeth[m] = t$ \;
+					$rDetI[m] =rTeethI[t]$ \;
+					break loop \;
+				}
+			}
+			
+			
+			\For{$t=lastTeeth[m]+1,N_{teeth}$}{
+				\For{$i=lTeethI[t],rTeethI[t]$}{
+					$\tilde \epsilon^m_i \gets \frac{toothSize[t] \times n[m,i]}{w[i]}$ \;
+				}
+			}
+		}
+		\For{$m=N_{cp},2,step=-1$}{
+			$\tilde \epsilon^m_* \gets \tilde \epsilon^m_* - \tilde \epsilon^{m-1}_*$ \;
+		}
+\end{algorithm}
+
 
 \begin{algorithm}
 	\label{ADD_COMB}
