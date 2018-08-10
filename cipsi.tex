@@ -2,6 +2,7 @@
 
  
 \begin{document}
+\label{chap:CIPSI}
 
 Need to have a list of reasonable size = need a general way to select determinants. 
 
@@ -262,9 +263,9 @@ This method performs an exact CIPSI. However, given the qualitative nature of th
 Determinants $D_I$ being sorted by decreasing absolute values of $C_I$. Two assumptions are made :
 \begin{itemize}
 \item
-It is very unlikely $\ket \alpha$ will be selected if it's not connected to any $D$ of great coefficient. This approximation is achieved by setting threshold $t_g$ and limiting the generator loop to $D_{I \leq t_g}$.
+It is very unlikely $\ket \alpha$ will be selected if it's not connected to any $D$ with a large coefficient. This approximation is achieved by setting threshold $t_g$ and limiting the generator loop to $D_{I \leq t_g}$.
 \item
-Connections to $D$ of small coefficient can be neglected. We do not need accurate values for $\epsilon(\alpha)$, small differences are unlikely to substantially change the subset of the greatest ones. This approximation is achieved in a similar way by limiting the selector loop to $D_{J \leq t_s}$ with $t_s \geq t_g$.
+Connections to $D$ of small coefficient can be neglected. We do not need accurate values for $\epsilon(\alpha)$, small differences are unlikely to substantially change the subset of the largest ones. This approximation is achieved in a similar way by limiting the selector loop to $D_{J \leq t_s}$ with $t_s \geq t_g$.
 \end{itemize}
 
 Note that generator determinants are a subset of selector determinants.
@@ -331,7 +332,7 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
 \section{Filtering and loop breaking}
 A great deal of processing power is lost, because every doubly ionized generator $G_{pq}$ is compared to all selector determinants. In the vast majority of cases, it will show no connection can be made and the selector will be ignored. Thus, it's interesting to filter selector determinants in more outer loops ( generator loop, and loop over first ionization ).
 
-This can be done using the distance $f_A^B = f_B^A$, defined as the minimal number of operations - moving, anihilating or creating an electron - that must be done to go from a determinant $A$ to a determinant $B$ with ionization degrees of respectively $a$ and $b$. Beware of the $|x|$ notation being used for both absolute value and cardinality ( POPCNT ).
+This can be done using the distance $f_A^B = f_B^A$, defined as the minimal number of operations - moving, annihilating or creating an electron - that must be done to go from a determinant $A$ to a determinant $B$ with ionization degrees of respectively $a$ and $b$. Beware of the $|x|$ notation being used for both absolute value and cardinality ( POPCNT ).
 %
 %\begin{equation}
 %f_B^A = f_A^B = popcnt(iand(ieor(A,B),A)) ; popcnt(A) \geq popcnt(B)

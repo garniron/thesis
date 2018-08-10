@@ -8,92 +8,105 @@
 
 \section{def}
 
-\section{PT2 vs CIPSI}
+\section{$\EPT$ \textit{vs} selection}
 
-CIPSI and PT2, all approximations aside, both imply computation of $\epsilon(\alpha)$ for all $\ket \alpha$, so both can be computed at the same time. CIPSI is about identifying the set of the largest ones, PT2 is about computing the sum over all of them. There are two main consequences to this
-\paragraph{PT2 is one iteration behind CIPSI}
-In a practical sense, CIPSI is ahead of PT2. A iteration $n$, identifiying the most significant $\ket \alpha$ is about building $\Psi^{n+1}$ while summing them is about estimating the cost of truncation for $\Psi^{n}$. Computing PT2 for a "final" wavefunction therefore requiers an extra iteration, which applies to a larger $\Psi$ and thus is more costly. ( autres implementation de PT2 possible ).
+The selection of determinants and the calculation of $\EPT$, all approximations aside, both imply computation of $\epsilon(\alpha)$ for all $\ket \alpha$, so both can be computed at the same time. The selection is about identifying the set of the largest ones, $\EPT$ is about computing the sum over all of them. There are two main consequences to this
+\paragraph{$\EPT$ is one iteration behind the selection}
+In a practical sense, the selection is ahead of $\EPT$. At iteration $n$, identifiying the most significant $\ket \alpha$ is about building $\Psi^{n+1}$ while summing them is about estimating the cost of truncation for $\Psi^{n}$. Computing $\EPT$ for a "final" wavefunction therefore requiers an extra iteration, which applies to a larger $\Psi$ and thus is more costly. \alert{(autres implementation de $\EPT$ possibles)}.
 
-\paragraph{CIPSI can take more approximations}
-Fully computing the sum has to be more costly than just identifying the greatest terms. As was said in SELECTION, the CIPSI algorithm can take pretty drastic approximations%, because we only try to identify the set of $\ket \alpha$ with the largest contributions $\epsilon(\alpha)$.
+\paragraph{The selection can take more approximations}
+Fully computing the sum has to be more costly than just identifying the largest terms. As was said in~\ref{sec:SELECTION}, the CIPSI algorithm can take pretty drastic approximations%, because we only try to identify the set of $\ket \alpha$ with the largest contributions $\epsilon(\alpha)$.
 	\begin{itemize}
 		\item{$t_g$}
 		allows to explore a reduced subset of $\ket \alpha$ in which we are almost sure to find those of interest.
-		\item{$t_s$}
+		\item{$t_s < t_g$}
 		allows for a less accurate and less expensive computation of $\epsilon(\alpha)$, which is unlikely to significantly change the identified set.
 	\end{itemize}
-	These approximations do not apply when computing PT2. The very large number of smaller contributions makes them much harder to neglect. Unfortunately, increasing $t_g$ and $t_s$ thresholds dramatically increases the computational cost.
+	These approximations do not apply when computing $\EPT$. The very large number of smaller contributions makes them impossible to neglect without introducing a bias. Unfortunately, increasing $t_g$ and $t_s$ thresholds dramatically increases the computational cost.
 
 
 \paragraph{}
 
-Unfortunately, a partial computation of PT2 results in a biased value. Since $\epsilon(\alpha)$ is an energy contribution, it's necessarily negative, and PT2 is a sum of same-sign contributions. Therefore, truncating it inevitably results in a bias, some energy is missing but there is little clue how much exactly. The $t_g$ and $t_s$ thresholds used in CIPSI can be seen as ways of minimizing this truncation's amplitude for a given computational cost.
+Unfortunately, a partial computation of $\EPT$ always results in a biased result. Since $\epsilon(\alpha)$ is an energy contribution, it is necessarily negative, and $\EPT$ is a sum of same-sign contributions. Therefore, when $\EPT$ is truncated some energy is missing but there is little clue how much exactly. The $t_g$ and $t_s$ thresholds used in CIPSI can be seen as ways of adjusting this truncation for a given computational cost.
 
-Before the stochastic computation of PT2 was set up, our best choice was to set low $t_g$ and $t_s$ thresholds while performing CIPSI, and accept very approximated values for PT2 of intermediate wavefunctions ; then, once the selection was completed, we would highen them just for a final, very costly ``PT2 only'' iteration. In fact, an exact computation with $t_g=N_{gen}$ and $t_s=N_{det}$ was often prohibitively long, so the final PT2 was still biased. 
+Before the stochastic computation of $\EPT$ was implemented, our best choice was to set low $t_g$ and $t_s$ thresholds while performing the selection, and accept very approximate values for $\EPT$ for intermediate wavefunctions. Then, once the selection was completed, we would raise them just for a final, very expensive ``$\EPT$ only'' iteration. In fact, an exact computation with $t_g=\Ngen$ and $t_s=\Ndet$ was often prohibitively long, so the final $\EPT$ was still biased, and the biases were not well controlled. The effect was particularly important when computing atomization energies, where the $\EPT$ values were much larger on the molecule than on the atoms.
+A practical way to circumvent this problem was already proposed 20 years ago, by giving an extrapolation of $\EPT$ when $t_g$ goes to zero.\cite{Angeli_1997} However, the algorithm we propose here has the advantage of giving an unbiased result within a statistical confidence interval.
 
-\section{Stochastic estimation of PT2}
+\section{Stochastic estimation of $\EPT$}
 
-We eventually solved the previously discussed problem by turning the bias into an error bar. The base idea is that, instead of trying to get the largest possible chunk of contribution, we can randomly pick $\epsilon(\alpha)$ contributions and make a Monte-Carlo estimate for the sum over all $\ket \alpha$. In this case, to avoid any bias we must set
-
+We eventually solved the previously discussed problem by turning the bias into an error bar. The basic idea is that, instead of trying to get the largest possible chunk of contribution, we can randomly pick $\epsilon(\alpha)$ contributions and make a Monte-Carlo estimate for the sum over all $\ket \alpha$. In this case, to avoid any bias we must set
 \begin{equation}
-t_g = N_{gen} ; t_s = N_{det}
+t_g = \Ngen \; ; \; t_s = \Ndet.
 \end{equation}
 
-
-Not only the estimate will be unbiased and much closer to the actual PT2, but we will have an estimate for the error. Because PT2 is itself used as an approximation
-
+Not only the estimate will be unbiased and much closer to the actual $\EPT$, but we will have an estimate for the error. Because $\EPT$ is itself used as an approximation
 \begin{equation}
-E_{var} + E_{PT2} \simeq E_{fullCI}
+\Evar + \EPT \simeq \EFCI
 \end{equation}
+An error significantly smaller than the typical accuracy of $\Evar + \EPT$ \textit{vs} $\EFCI$ is certainly acceptable.
 
-An error significantly smaller than the typical accuracy of $E_{var} + E_{PT2}$ VS $E_{fullCI}$ is certainly acceptable.
 
-
-For different reasons, the actual Monte-Carlo computation is significantly more convoluted than simply drawing random $\ket \alpha$. 
+The actual Monte-Carlo computation is significantly more convoluted than simply drawing random $\kalpha$.
 
 \paragraph{$\epsilon(\alpha)$ are packed into elementary contributions $e_I$}
-Individual $\epsilon(\alpha)$ are expensive to compute. In the CIPSI algorithm, each generator determinant creates a number of unique $\alpha$, and computes $\epsilon(\alpha)$ for each one of them.
-Essentially, $\ket \alpha$ are grouped in $N_{gen}$ disjoint sets, each associated with a generator determinant, as shown in figure \ref{fig:mu_sample}.
-
+Individual $\epsilon(\alpha)$ are expensive to compute. In the CIPSI algorithm, each generator determinant creates a number of unique $\kalpha$, and computes $\epsilon(\alpha)$ for each one of them.
+Essentially, the set of $\kalpha$ can be grouped in $\Ngen$ disjoint sets, each associated with a generator determinant, as shown in figure \ref{fig:mu_sample}.
 \begin{equation}
-\epsilon(\alpha) \in \mathcal{A}_i ; \Hij{\alpha}{\Psi_i} \neq 0 ; \Hij{\alpha}{\Psi_{j<i}} =0 
+\epsilon(\alpha) \in \mathcal{A}_I \; ; \; \Hij{\alpha}{I} \neq 0 \; ; \;   \forall J < I, \Hij{\alpha}{J} = 0.
 \end{equation}
-
-Because of the numerous tricks used, we could compute all $\epsilon(\alpha)$ from one set considerably faster than if we had to compute each one separately. Therefore, in order to access a larger chunk of data, the stochastic PT2 algorithm will not consider individual $\epsilon(\alpha)$, but instead sums of all $\epsilon(\alpha)$ from the same set.
-The elementary contributions we are considering, aren't $\epsilon(\alpha)$, but
+Because of the numerous tricks described in chapter~\ref{chap:CIPSI}, we are able to compute all the $\epsilon(\alpha)$ of a set considerably faster than if we had to compute each contribution separately. Therefore, in order to access a larger chunk of data, the stochastic PT2 algorithm will not consider individual $\epsilon(\alpha)$, but instead sums of all $\epsilon(\alpha)$ from the same set:
 \begin{equation}
 e_I = \sum_{\alpha \in \mathcal{A}_I} \epsilon(\alpha)
 \end{equation}
 Indeed
 \begin{equation}
-E_{PT2} = \sum_{I} e_I
+\EPT = \sum_{I} e_I
 \end{equation}
 
-$e_I$ are already explicitely computed by our CIPSI implementation, which returned the aggregated values of $\epsilon(\alpha)$ for one job, one job being essentially a generator determinant.
+The $e_I$'s are already explicitly computed by our CIPSI implementation, which returns the aggregated values of $\epsilon(\alpha)$ for one task, one task being essentially associated with a generator determinant.
 
-\paragraph{$e_I$ can be stored to avoid re-computation}
-Each elementary contribution is associated with a generator determinant, so there are only $N_{gen}$ elementary contributions. This is small enough so, when a $e_I$ contribution is computed, its value can be stored and simply re-used if the same sample is drawn again. This, in turn, means the exact result will eventually be known once every sample has been computed. The cost for this will essentially be the same as that of the purely deterministic, full computation, with a negligible additional cost due to the Monte-Carlo related computations ( drawing random numbers, finding the associated samples... ).
+\paragraph{The $e_I$'s can be stored to avoid re-computation}
+Each elementary contribution is associated with a generator determinant, so there are only $\Ngen$ elementary contributions. Tis number is small enough to make all the $e_I$'s fit in memory, so when a $e_I$ contribution is computed, its value is stored and simply re-used if the same sample is drawn again. This, in turn, means the exact result will eventually be known in finite time, once every sample has been computed. The cost for this will essentially be the same as that of the purely deterministic, full computation, with a negligible additional cost due to the Monte-Carlo related computations (drawing random numbers, finding the associated samples\dots).
 
 \section{Monte-Carlo sampling}
 
-We generally want to estimate the value of a sum over $N$ samples $s_i$
+We generally want to compute a quantity $F$ which may be expressed as the expected value of a function $f(x)$ with respect to a probability distribution function $p(x)$:
 \begin{equation}
-S = \sum_{i=1}^N {s_i}
+F = \int_{-\infty}^\infty f(x) p(x) \text{d} x
+\end{equation}
+with 
+\begin{equation}
+\int_{-\infty}^\infty p(x) \text{d} x = 1.
+\end{equation}
+When $X_i$ are samples randomly distributed according to $p$, 
+\begin{equation}
+\label{eq:sum_mc}
+F = \langle f \rangle_p =  \lim_{M\rightarrow \infty} \frac{1}{M} \sum_{i=1}^{M} f(X_i)
+\end{equation}
+So if one is able to draw $M$ samples $X_i$ with probability $p(X_i)$, $F$ may be approximated as
+\begin{equation}
+\bar{F} = \frac{1}{M} \sum_{i=1}^{M} f(X_i)
 \end{equation}
 
-After randomly drawing $n$ sample indices (the same one can be drawn several times) forming the set $\{\mathcal{S}\}$, we can estimate $S$ as
-
+The \emph{Central Limit Theorem} states that when independent random variables are added together, their normalized sum tends to a normal distribution. The variance of this normal distribution, 
 \begin{equation}
-\tilde S = \frac{N}{n} \sum_{i \in \{\mathcal{S}\}} {s_i}
+\sigma^2(F) = \lim_{M\rightarrow \infty} \frac{1}{M} \sum_{i=1}^{M} \qty( f(X_i) - F)^2,
 \end{equation}
-
-with an estimated error (A VERIFIER XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)
-
+reflects the dispersion of the $X_i$.
+For a finite number of samples, the variance can be estimated as
 \begin{equation}
-\sqrt{ \Big ((\sum_{i \in \{\mathcal{S}\}} {s_i})^2 - \sum_{i \in \{\mathcal{S}\}} {s^2_i} \Big )n^{-1} }
+\bar{\sigma}^2(F) = \frac{1}{M-1} \sum_{i=1}^{M} \qty( f(X_i) - \bar{F})^2,
 \end{equation}
+and the 68.2\% confidence interval (statistical error) is $\bar{F} \pm \sqrt{\frac{\bar{\sigma}^2(F)}{M}}$.
 
-The greatest the variance of $s_i$, the slowest the convergence. It is common to use a probability distribution $w$ as a convergence accelerator. We rewrite $S$ as 
+The simplest way to compute $\EPT$ with a Monte Carlo algorithm is to express $\EPT$ as
+\begin{equation}
+\EPT = \sum_{\alpha = 1}^{N_\alpha} \frac{ \Hij{\alpha}{\Psi}^2 }{\Evar - H_{\alpha \alpha} } = \sum_{\alpha = 1}^{N_\alpha} \epsilon(\alpha) = \frac{1}{N_\alpha} \sum_{\alpha = 1}^{N_\alpha} p(\alpha) N_\alpha \epsilon(\alpha) = \langle N_\alpha\, \epsilon(\alpha) \rangle,
+\end{equation}
+with $p(\alpha) = 1 / N_\alpha$.
+%TODO : J'en suis la
+
+The largest the variance of $s_i$, the slowest the convergence. It is common to use a probability distribution $w$ as a convergence accelerator. We rewrite $S$ as 
 
 \begin{equation}
 S = \sum_{i=1}^N {w_i \times \frac{s_i}{w_i}}
@@ -173,7 +186,7 @@ As can be seen in figure \ref{fig:eici2}, $\frac{e_I}{C_I^2}$, which is very clo
 Because $e_I$ decreases rapidly, most of the contribution is contained in the first samples. We can entierely compute the first samples, and only make a stochastic estimation for the sum of the smaller ones. This effectively splits the sample space in two ranges, a deterministic one, then a stochastic one (hence the hybrid characteristic of this method), and our estimated energy
 
 \begin{equation}
-E_{PT2} = E_D + E_S
+\EPT = E_D + E_S
 \end{equation}
 
 with $E_D$ the exact energy for the deterministic part, and $E_S$ the estimated energy of the stochastic part. The error bar only applies to $E_S$, which is a fraction of the whole sum.
@@ -384,9 +397,9 @@ And the actual repartition function $w$
 
 
 
-\subsection{building job queue}
+\subsection{Building task queue}
 
-For a massively parallel implementation, we need to create a job queue. Because values for $e_I$ are stored, quite clearly, we need 1 job per generator determinant. Because of the tooth filling mechanism, we know we will need at most $N_{gen}$ combs.
+For a massively parallel implementation, we need to create a task queue. Because values for $e_I$ are stored, quite clearly, we need one task per generator determinant. Because of the tooth filling mechanism, we know we will need at most $N_{gen}$ combs.
 
 
 \begin{algorithm}

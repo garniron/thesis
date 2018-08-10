@@ -216,7 +216,7 @@ In many of the presented algorithms, some Fortran intrinsics will be of use. Eac
       
       
 Those intrinsics apply to integers at most 64-bits. This however is a purely implementational limitation, so depending on the level of detail desired, this constraint can be unambiguously lifted in formulas or algorithms. Different notations will be used for the 64-bit and the infinite size cases, as they are not always equivalent.
-For example, the $\ISHFT{\_}{\_}$ Fortran intrinsic always returns zero for shifts greater than 64 bits, which is not the case for the $\ishft{\_}{\_}$ function over mathematical integers.
+For example, the $\ISHFT{\_}{\_}$ Fortran intrinsic always returns zero for shifts larger than 64 bits, which is not the case for the $\ishft{\_}{\_}$ function over mathematical integers.
 So it is convenient to introduce functions and notations acting on mathematical integers. All binary operators are of same precedence and left-associative.
 
 \begin{table}[H]
