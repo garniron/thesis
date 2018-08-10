@@ -12,6 +12,16 @@ Davidson : connections inside a given set \\
 
 \section{def}
 
+\alert{
+\begin{itemize}
+\item Expliquer que la diagonalisation est en $\order{N^3}$, et donc pas viable pour des millions de determinants. On n'est interesse que par les plus basses valeurs propres de $H$, donc on peut utiliser une methode iterative pour les obtenir.
+\item Raconter ce qu'il y a dans le papier original : [ E.R.  Davidson, J.  Comput.  Phys.  17 (1975) 87 ].
+\item Mettre le pseudocode de l'algorithme.
+\item Parler de quelques ameliorations depuis : [ J.  Olsen, P.  Joregensen and J.  Simons, Chem.  Phys.  Letters 169 (1990) 463 ], [F.X.  Gadea /Chemical Physics Letters 227 (1994) 201-210] 
+\item Dire qu'on utilise l'algorithme original parce qu'on a toujours un bon guess (CIPSI)
+\item Pour etre fonction propre de $S^2$ on utilise une penalty method, comme dans [10.1021/acs.jctc.7b00466]. (D'ailleurs dans ce papier il y a un pseudocode pour Davidson). Et tu peux ajouter qu'on calcule $S^2c$ en meme temps que $Hc$.
+\end{itemize}
+}
 
     
 \section{general approach}
@@ -132,7 +142,7 @@ $n \geq 3$ is a parameter of the method.
 	\item
 $\mathcal{T}$ is a set of $n \geq 3$ electrons. 
 	\item
-$C(D)$ returns the set of the $n$ highest occupied spinorbitals of $D$. To make this unambiguous, it is arbitrarily decided that $\alpha$ spinorbitals are considere higher than their $\beta$ counterpart of same index.
+$C(D)$ returns the set of the $n$ highest occupied spinorbitals of $D$. To make this unambiguous, it is arbitrarily decided that $\alpha$ spinorbitals are considered higher than their $\beta$ counterpart of same index.
 	\item
 $p(x, y) = n - |x \wedge y)| \leq 2$
 \end{itemize}
@@ -155,7 +165,7 @@ $p(x, y) = max (|x|, |y|) - |x \wedge y| \leq 2$
 \end{itemize}
 
 Matrix $M$ for that method is shown in figure \ref{fig:xor_subspace}.
-This method has one interesting property. If we compare determinants only with those contained in the same set - which is a tiny fraction of the total number of comparisons to be performed - we are guaranteed to find all excitations of the form $\hat T_{a \bar a}^{b \bar b}$ and $\hat T_{a \bar b}^{b \bar a}$, which are typically the greatest non-diagonal matrix elements. Indeed, those excitations imply there was no change in singly occupied orbitals. And since they are the only one to do so, we are also guaranteed not to find any other type of excitation within a set.
+This method has one interesting property. If we compare determinants only with those contained in the same set - which is a tiny fraction of the total number of comparisons to be performed - we are guaranteed to find all excitations of the form $\hat T_{a \bar a}^{b \bar b}$ and $\hat T_{a \bar b}^{b \bar a}$, which are typically the largest non-diagonal matrix elements. Indeed, those excitations imply there was no change in singly occupied orbitals. And since they are the only one to do so, we are also guaranteed not to find any other type of excitation within a set.
 
 \begin{figure}[H]
 	\begin{center}
