@@ -10,7 +10,7 @@
 
 \section{PT2 vs CIPSI}
 
-CIPSI and PT2, all approximations aside, both imply computation of all $\epsilon(\alpha)$, so both can be computed at the same time. CIPSI is about identifying the set of the largest ones, PT2 is about computing the sum over all of them. There are two main consequences to this
+CIPSI and PT2, all approximations aside, both imply computation of $\epsilon(\alpha)$ for all $\ket \alpha$, so both can be computed at the same time. CIPSI is about identifying the set of the largest ones, PT2 is about computing the sum over all of them. There are two main consequences to this
 \paragraph{PT2 is one iteration behind CIPSI}
 In a practical sense, CIPSI is ahead of PT2. A iteration $n$, identifiying the most significant $\ket \alpha$ is about building $\Psi^{n+1}$ while summing them is about estimating the cost of truncation for $\Psi^{n}$. Computing PT2 for a "final" wavefunction therefore requiers an extra iteration, which applies to a larger $\Psi$ and thus is more costly. ( autres implementation de PT2 possible ).
 
@@ -35,11 +35,16 @@ Before the stochastic computation of PT2 was set up, our best choice was to set 
 
 We eventually solved the previously discussed problem by turning the bias into an error bar. The base idea is that, instead of trying to get the largest possible chunk of contribution, we can randomly pick $\epsilon(\alpha)$ contributions and make a Monte-Carlo estimate for the sum over all $\ket \alpha$. In this case, to avoid any bias we must set
 
-$$t_g = N_{gen} ; t_s = N_{det}$$
+\begin{equation}
+t_g = N_{gen} ; t_s = N_{det}
+\end{equation}
+
 
 Not only the estimate will be unbiased and much closer to the actual PT2, but we will have an estimate for the error. Because PT2 is itself used as an approximation
 
-$$E_{var} + E_{PT2} \simeq E_{fullCI}$$
+\begin{equation}
+E_{var} + E_{PT2} \simeq E_{fullCI}
+\end{equation}
 
 An error significantly smaller than the typical accuracy of $E_{var} + E_{PT2}$ VS $E_{fullCI}$ is certainly acceptable.
 
@@ -50,13 +55,19 @@ For different reasons, the actual Monte-Carlo computation is significantly more 
 Individual $\epsilon(\alpha)$ are expensive to compute. In the CIPSI algorithm, each generator determinant creates a number of unique $\alpha$, and computes $\epsilon(\alpha)$ for each one of them.
 Essentially, $\ket \alpha$ are grouped in $N_{gen}$ disjoint sets, each associated with a generator determinant, as shown in figure \ref{fig:mu_sample}.
 
-	$$\epsilon(\alpha) \in \mathcal{A}_i ; \Hij{\alpha}{\Psi_i} \neq 0 ; \Hij{\alpha}{\Psi_{j<i}} =0 $$
+\begin{equation}
+\epsilon(\alpha) \in \mathcal{A}_i ; \Hij{\alpha}{\Psi_i} \neq 0 ; \Hij{\alpha}{\Psi_{j<i}} =0 
+\end{equation}
 
 Because of the numerous tricks used, we could compute all $\epsilon(\alpha)$ from one set considerably faster than if we had to compute each one separately. Therefore, in order to access a larger chunk of data, the stochastic PT2 algorithm will not consider individual $\epsilon(\alpha)$, but instead sums of all $\epsilon(\alpha)$ from the same set.
 The elementary contributions we are considering, aren't $\epsilon(\alpha)$, but
-	$$e_I = \sum_{\alpha \in \mathcal{A}_I} \epsilon(\alpha)$$
+\begin{equation}
+e_I = \sum_{\alpha \in \mathcal{A}_I} \epsilon(\alpha)
+\end{equation}
 Indeed
-    $$E_{PT2} = \sum_{I} e_I$$
+\begin{equation}
+E_{PT2} = \sum_{I} e_I
+\end{equation}
 
 $e_I$ are already explicitely computed by our CIPSI implementation, which returned the aggregated values of $\epsilon(\alpha)$ for one job, one job being essentially a generator determinant.
 
@@ -66,27 +77,39 @@ Each elementary contribution is associated with a generator determinant, so ther
 \section{Monte-Carlo sampling}
 
 We generally want to estimate the value of a sum over $N$ samples $s_i$
-$$S = \sum_{i=1}^N {s_i}$$
+\begin{equation}
+S = \sum_{i=1}^N {s_i}
+\end{equation}
 
 After randomly drawing $n$ sample indices (the same one can be drawn several times) forming the set $\{\mathcal{S}\}$, we can estimate $S$ as
 
-$$\tilde S = \frac{N}{n} \sum_{i \in \{\mathcal{S}\}} {s_i}$$
+\begin{equation}
+\tilde S = \frac{N}{n} \sum_{i \in \{\mathcal{S}\}} {s_i}
+\end{equation}
 
 with an estimated error (A VERIFIER XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)
 
-$$\sqrt{ \Big ((\sum_{i \in \{\mathcal{S}\}} {s_i})^2 - \sum_{i \in \{\mathcal{S}\}} {s^2_i} \Big )n^{-1} }$$
+\begin{equation}
+\sqrt{ \Big ((\sum_{i \in \{\mathcal{S}\}} {s_i})^2 - \sum_{i \in \{\mathcal{S}\}} {s^2_i} \Big )n^{-1} }
+\end{equation}
 
 The greatest the variance of $s_i$, the slowest the convergence. It is common to use a probability distribution $w$ as a convergence accelerator. We rewrite $S$ as 
 
-$$S = \sum_{i=1}^N {w_i \times \frac{s_i}{w_i}}$$
+\begin{equation}
+S = \sum_{i=1}^N {w_i \times \frac{s_i}{w_i}}
+\end{equation}
 
 which can be estimated by drawing sample indices $i$ with a probability of $w_i$ forming the set $\{\mathcal{S'}\}$, the associated sample values being $\frac{s_i}{w_i}$
 
-$$\tilde S' = \frac{1} {\sum_{i \in \{ \mathcal{S'} \} } w_i} \sum_{i \in \{\mathcal{S'}\}} {s_i}$$
+\begin{equation}
+\tilde S' = \frac{1} {\sum_{i \in \{ \mathcal{S'} \} } w_i} \sum_{i \in \{\mathcal{S'}\}} {s_i}
+\end{equation}
 
 Not using a repartition function is the particular case of drawing $\frac{s_i}{1}$ with a uniform probability ($1$ normalized over the $N$ samples). The variance of this sample space is that of $\frac{s_i}{w_i}$ rather than $s_i$. An ideal repartition function $w^\star$ would be so that
 
-$$\frac{s_i}{w^\star_i} = K$$
+\begin{equation}
+\frac{s_i}{w^\star_i} = K
+\end{equation}
 
 with $K$ any constant. The variance would be zero, so covergence would be reached after a single sample is drawn. Even an extremely rough approximation of $w^\star$ will improve convergence.
 
@@ -149,7 +172,9 @@ As can be seen in figure \ref{fig:eici2}, $\frac{e_I}{C_I^2}$, which is very clo
 \paragraph{Hybrid deterministic-stochastic aspect}
 Because $e_I$ decreases rapidly, most of the contribution is contained in the first samples. We can entierely compute the first samples, and only make a stochastic estimation for the sum of the smaller ones. This effectively splits the sample space in two ranges, a deterministic one, then a stochastic one (hence the hybrid characteristic of this method), and our estimated energy
 
-$$E_{PT2} = E_D + E_S$$
+\begin{equation}
+E_{PT2} = E_D + E_S
+\end{equation}
 
 with $E_D$ the exact energy for the deterministic part, and $E_S$ the estimated energy of the stochastic part. The error bar only applies to $E_S$, which is a fraction of the whole sum.
 We call $n_0$ the number of samples in this deterministic part and $u_0 = W_{n_0}$ its weight.
@@ -164,11 +189,15 @@ Therefore, instead of drawing individual indices, we are going to draw ``combs''
 
 We are sampling combs, but we have defined a repartition function for $e_I$. Since we impose that the same number of $e_I$ are drawn in each tooth - one per comb - we effectively give all teeth the same weight $W_T=\frac{1-u_0}{N_{teeth}}$ in the Monte-Carlo scheme. Therefore, the actual weight given to $e_I \in P_x$ is
 
-$$w_I = W_T \times \frac{\tilde w_I}{\sum_{J \in P_x} \tilde w_J}$$
+\begin{equation}
+w_I = W_T \times \frac{\tilde w_I}{\sum_{J \in P_x} \tilde w_J}
+\end{equation}
 
 To leave the repartition function unaltered, we need all teeth to actually weight $W_T$
 
-$$\sum_{J \in P_x} \tilde w_J = W_T$$
+\begin{equation}
+\sum_{J \in P_x} \tilde w_J = W_T
+\end{equation}
 
 Clearly this is not acheivable for any reartition function $\tilde w$. Schematically, it would require the threshold between two teeth to exactly match the threshold between two $e_I$. It is possible to artificially split a $e_I$ to get a matching threshold, but this adds some complexity algorithmically speaking.
 
@@ -185,8 +214,12 @@ B(u) = \sum_{i=0}^{N_{teeth}-1} e_{w[u_0+ W_T(u+i)]}
 %The deterministic part could in principle extend to the first $e_{I \in P_n}$ whose value is unknown, exclusive. This however is algorithmically complex because some combs 
 Given the first $e_{I \in P_t}$ whose value is unknown, we extend the deterministic range to $P_t$, exclusive. This implies $t$ is a parameter of $n_0$ and $u_0$
 
-$$n_0 = n_0(t) = \lTeethI[t]-1$$
-$$u_0 = u_0(t) = W_{n_0(t) -1}$$
+\begin{equation}
+n_0 = n_0(t) = \lTeethI[t]-1
+\end{equation}
+\begin{equation}
+u_0 = u_0(t) = W_{n_0(t) -1}
+\end{equation}
 
 It also implies all teeth $P_{n<t}$ must be ignored in combs, as they are not part of the stochastic range. We have to make $t$, the index of the first non-deterministic tooth, a parameter of comb values
 
@@ -218,7 +251,9 @@ For each comb, we draw a sample $e_I$ in each teeth. When a tooth is entirely co
 
 This is an empirical mechanism to balance the stochastic and deterministic aspect of this method. For a tooth containing $n$ samples of equal weight, full computation is acheived after on average (A VERIFXXXXXXXXXXXXXXXXXXXXXXX)
 
-$$\sum_{i=0}^{n-1} \frac{n}{n-i}$$
+\begin{equation}
+\sum_{i=0}^{n-1} \frac{n}{n-i}
+\end{equation}
 
 combs are drawn. Thus, teeth containing thousands of determinants are very hard to move to the deterministic part. A tooth containing 10000 samples with a single uncomputed one, only needs computation of a single sample to be moved to the deterministic part, but one has to wait on average 10000 more combs are drawn until by chance the right sample is computed.
 A convenient way to avoid this frustrating situation is, everytime a comb is drawn, to additionally compute the first uncomputed sample of the whole space. This ensures smooth filling of teeth, and that that the full deterministic computation will be achieved before $N_{gen}$ combs are drawn.
@@ -294,7 +329,9 @@ An array of size $\Nteeth$, with $\Nteeth[i+1]$ being the index of the first sam
 
 There is no trivial way to ensure teeth building will succeed with a given set of parameters. 
 With $n_0$ the size of the initial deterministic set, teeth building is sure to fail if 
-$$N_{det} - n_0 < \minDetInTeeth \times \Nteeth$$
+\begin{equation}
+N_{det} - n_0 < \minDetInTeeth \times \Nteeth
+\end{equation}
 However, it may not succeed as there is no guarantee the first tooth will contain $\minDetInTeeth$ samples. Because samples are sorted with decreasing $\tilde w_I$, each tooth is guaranteed to contains as many or more samples than the previous one.
 Relying on the fact that $\tilde w_i$ get more and more balanced, we increment $n_0$ until either the first tooth contains enough samples, or the impossibility condition is reached.
 
@@ -522,8 +559,16 @@ For a massively parallel implementation, we need to create a job queue. Because 
 		\includegraphics[width=1.00\columnwidth]{figures/pt2/teeth}
 		\caption{comb}
 		Variable names for the "comb" partition of $\Psi$. In boxes are shown indices, above are shown probabilities
-		$$toothOfDet[i] = t ; i \in \big [ lTeethI[t],rTeethI[t] \big ]$$
-		$$toothSize[t] = rTeeth[t] - lTeeth[t]$$
+		
+\begin{equation}
+toothOfDet[i] = t ; i \in \big [ lTeethI[t],rTeethI[t] \big ]
+\end{equation}
+
+		
+\begin{equation}
+toothSize[t] = rTeeth[t] - lTeeth[t]
+\end{equation}
+
 	\end{center}
 \end{figure}
 

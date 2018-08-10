@@ -65,12 +65,14 @@ As an example, one of the first attempted classification was according to the nu
 \end{itemize}
 
 Computation of $C(D)$ can be acheived using bitstrings. With $S$ a bitstring containing the orbitals wanted in the subset. The number of electrons in this subset for a determinant $\ket I$ represented by a $\alpha \beta$-bitstring $I$ is
-$$C(I)=|I_{\alpha} \wedge S|+|I_{\beta} \wedge S|$$
-    
+\begin{equation}
+C(I)=|I_{\alpha} \wedge S|+|I_{\beta} \wedge S|
+\end{equation}
+
 Using a subset is equivalent to using the complementary subset, so it is best to pick $N_{orb}/2$ orbitals. For a better entropy, it is of course better to interleave the chosen orbitals.
-$$S=binary(...101010101...)$$
-    
-    
+\begin{equation}
+S=binary(...101010101...)
+\end{equation}
     
 Determinants are sorted according to this criterion. Using ClBr with 500k determinants, and sorting determinant in increasing order of their respecive $C(D)$, we got matrix $M$ shown in figure \ref{fig:num_subspace}
 
@@ -97,9 +99,15 @@ However, only a relatively small area of $H$ is null by construction. It is poss
 
 
 Using $n=3$ uncorrelated subsets
-$$S_1 = binary(...010101010101...)$$
-$$S_2 = binary(...110011001100...)$$
-$$S_3 = binary(...111100001111...)$$
+\begin{equation}
+S_1 = binary(...010101010101...)
+\end{equation}
+\begin{equation}
+S_2 = binary(...110011001100...)
+\end{equation}
+\begin{equation}
+S_3 = binary(...111100001111...)
+\end{equation}
 The resulting $M$ in figure \ref{fig:num_subspace3} looks awesome but the area isn't reduced much.
 
 \begin{figure}[h!]
@@ -235,21 +243,37 @@ To understand this approach, we will considered bitstrings as single integers of
 SCHEMA
 
 
-$$\hat T_{a}^{b} D = E$$ 
+\begin{equation}
+\hat T_{a}^{b} D = E
+\end{equation}
 
-$$ibclr(ibset(I_D, b), a)$$
+\begin{equation}
+ibclr(ibset(I_D, b), a)
+\end{equation}
  
  
-$$ibclr(X, a) = X - ISHFT(1,a) ; ibtest(X,a) == TRUE$$
+\begin{equation}
+ibclr(X, a) = X - ISHFT(1,a) ; ibtest(X,a) == TRUE
+\end{equation}
 
-$$ibset(X, b) = X + ISHFT(1,b) ; ibtest(X,b) == FALSE$$
+\begin{equation}
+ibset(X, b) = X + ISHFT(1,b) ; ibtest(X,b) == FALSE
+\end{equation}
 
-If $\hat T_{a}^b$ can be applied to $D$, $$ibtest(I_D,a)\ and\ not\ ibtest(I_D,b)$$
-$$I_E = I_D + I_T ; I_T = ISHFT(1,b) - ISHFT(1,a)$$
+If $\hat T_{a}^b$ can be applied to $D$, 
+\begin{equation}
+ibtest(I_D,a)\ and\ not\ ibtest(I_D,b)
+\end{equation}
+
+\begin{equation}
+I_E = I_D + I_T ; I_T = ISHFT(1,b) - ISHFT(1,a)
+\end{equation}
 
 As can be seen, it is possible to have an integer representation of an excitation.
 
-$$TD = E \implies I_E = I_D + I_T ; E \neq 0$$
+\begin{equation}
+TD = E \implies I_E = I_D + I_T ; E \neq 0
+\end{equation}
 
 It must be noted that, if $T$ cannot be applied to $D$, $I_E = I_D + I_T$ will, in most cases, not be a valid reprensentation of a determinant ; that is, $popcnt(I_{E_\alpha}) \neq N_{e,\alpha} \vee popcnt(I_{E_\beta}) \neq N_{e,\beta}$. However, there are rare instances where this isn't true.
 
@@ -261,7 +285,9 @@ Therefore, if $I_E - I_D = I_T$, additional checks are required to establish tha
 Implementing this in Fortran may not looks straightforward considering in this language, integers are always signed, thus the leftmost bit has a special status. However, it is actually of no relevance except when it comes to sorting, and merely changing the sorting order won't cause any malfunction.
 If "signed" sorting is however desired, it can easily be emulated. Be $X$ and $Y$ two 64-bit integers, $u_comp$ the unsigned comparison operator (the one used by Fortran) and $s_comp$ the signed comparison operator.
 
-$$s\_comp(X,Y) = u\_comp(IEOR(X,ISHFT(1,63)), IEOR(Y,ISHFT(1,63))$$
+\begin{equation}
+s\_comp(X,Y) = u\_comp(IEOR(X,ISHFT(1,63)), IEOR(Y,ISHFT(1,63))
+\end{equation}
 
 
 $IEOR(X,ISHFT(1,63)$ returns $X$ with bit at position 63 flipped. Bit are indexed from 0 so bit at position 63 is the leftmost one for 64-bit integers.

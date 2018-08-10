@@ -52,7 +52,11 @@ avoid explicitely comparing I and alpha ( feuille de PQ ). \\
 
 \section{notation(?)}
 
-$$\Psi = \sum_I {c_I | D_I \rangle}$$
+
+\begin{equation}
+\Psi = \sum_I {c_I | D_I \rangle}
+\end{equation}
+
 
 Indices $p,q,r,s$ refer to SPINorbitals, $p$ and $r$ being of same spin, $q$ and $s$ being of same spin. 
 
@@ -176,7 +180,11 @@ $G = D_I$
 Iterate over all possible $G_{pq} = a_p a_q G$. Each $G_{pq}$ defines a "batch" of determinants, some of which may be unique $\ket \alpha$.
 \item
 Determinants contained in the $G_{pq}$ batch can be systematically defined by two indexes $r$ and $s$ with
-$$a^\dagger_r a^\dagger_s a_p a_q  G = G^{rs}_{pq}$$
+
+\begin{equation}
+a^\dagger_r a^\dagger_s a_p a_q  G = G^{rs}_{pq}
+\end{equation}
+
 \item
 allocate an empty matrix $P(G_{pq})$ indexed by $r$ and $s$. Each cell is associated with $G^{rs}_{pq}$. Some cells will be tagged (in whatever way) as not containing a unique $\ket \alpha$ ; they can contain either
 \begin{itemize}
@@ -206,7 +214,11 @@ If $J<I$, tag the corresponding cells ; $G_{pq}^{rs}$ has already been generated
 If $J \geq I$, increment all untagged $P_{r,s}(G_{pq})$ matrix element by $\Delta P_{r,s}(G_{pq}) = c_J\langle S| H|  G^{rs}_{pq} \rangle$. Note that $\overrightarrow{T}$ so that $S=\overrightarrow{T}G^{rs}_{pq}$ can be systematically deduced at the same time as the $r,s$ pair.
 \item
 End of loops. All untagged cells are guaranteed to contain a unique $\ket \alpha$, and $P_{r,s}(G_{pq}) = \langle \Psi |H|G^{rs}_{pq} \rangle$, thus\\
-$$\epsilon(G_{pq}^{rs}) = \frac{P_{r,s}(G_{pq})^2}{\Delta E_{G^{rs}_{pq}}}$$
+
+\begin{equation}
+\epsilon(G_{pq}^{rs}) = \frac{P_{r,s}(G_{pq})^2}{\Delta E_{G^{rs}_{pq}}}
+\end{equation}
+
 \end{itemize}
 
 
@@ -220,7 +232,11 @@ In some cases, full columns/rows are to be tagged. For performance purpose, it's
 
 The algorithm is designed to generate all $G_{pq}^{rs}$, which are doubly excited from $G$. The singly excited determinants are not explicitely generated, but are formally present as $G_{pq}^{ps}$.
 An issue is that $G_{pq}^{ps}$ refers to the same determinant $G_q^s$ regardless of $p$, and the algorithm only tags a $\ket \alpha$ as duplicate if it has a previous generator $K$, i.e. if
-$$G_{pq}^{rs} = {K}_{p'q'}^{r's'} ; K = D_{I'<I}$$
+
+\begin{equation}
+G_{pq}^{rs} = {K}_{p'q'}^{r's'} ; K = D_{I'<I}
+\end{equation}
+
 It doesn't cover the case $G_{pq}^{ps} = G_{p'q}^{p's}$.
 We default to tag $G_{pq}^{ps}$, which prevents generating mono-excitations, and selectively untag in certain cases:
 
@@ -316,11 +332,27 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
 A great deal of processing power is lost, because every doubly ionized generator $G_{pq}$ is compared to all selector determinants. In the vast majority of cases, it will show no connection can be made and the selector will be ignored. Thus, it's interesting to filter selector determinants in more outer loops ( generator loop, and loop over first ionization ).
 
 This can be done using the distance $f_A^B = f_B^A$, defined as the minimal number of operations - moving, anihilating or creating an electron - that must be done to go from a determinant $A$ to a determinant $B$ with ionization degrees of respectively $a$ and $b$. Beware of the $|x|$ notation being used for both absolute value and cardinality ( POPCNT ).
-%$$f_B^A = f_A^B = popcnt(iand(ieor(A,B),A)) ; popcnt(A) \geq popcnt(B)$$
+%
+%\begin{equation}
+%f_B^A = f_A^B = popcnt(iand(ieor(A,B),A)) ; popcnt(A) \geq popcnt(B)
+%\end{equation}
 
-%$$f_B^A = f_A^B = |(A_\alpha \oplus B_\alpha) \wedge A_\alpha| + |(A_\beta \oplus B_\beta) \wedge A_\beta|$$
-%$$|B_\alpha| \leq |A_\alpha| ; |B_\beta| \leq |A_\beta|$$
-$$f_A^B = \frac{|A_\alpha \oplus B_\alpha| + |A_\beta \oplus B_\beta| + |a-b|}{2}$$
+
+%
+%\begin{equation}
+%f_B^A = f_A^B = |(A_\alpha \oplus B_\alpha) \wedge A_\alpha| + |(A_\beta \oplus B_\beta) \wedge A_\beta|
+%\end{equation}
+
+%
+%\begin{equation}
+%|B_\alpha| \leq |A_\alpha| ; |B_\beta| \leq |A_\beta|
+%\end{equation}
+
+
+\begin{equation}
+f_A^B = \frac{|A_\alpha \oplus B_\alpha| + |A_\beta \oplus B_\beta| + |a-b|}{2}
+\end{equation}
+
 
 Considering $S$ a selector determinant and $X$ a generator determinant in a state of ionization from 0 to 2 ( it essentially is a wildcard for $G$, $G_p$ or $G_{pq}$ ).
 
@@ -390,17 +422,37 @@ As explained above, if there is a determinant $S ; a_{p'}S = G_{p}$ that is a pe
 The reach for $DROP\ G_P$ can be put on the path between the right list of the first loop and the left list of the second loop.
 Indeed, $DROP\ G_P$ should be reached whenever there is a determinant so that
 
-$$(f^S_{G_{p}} = 1) \& past$$
+
+\begin{equation}
+(f^S_{G_{p}} = 1) \& past
+\end{equation}
+
 
 The right list of the first loop contains all determinants so that
 
-$$(f^S_G \leq 4) \& selector$$
+
+\begin{equation}
+(f^S_G \leq 4) \& selector
+\end{equation}
+
 
 However 
 
-$$f^S_{G_{p}} = 1 \implies f^S_G \leq 1 \implies f^S_G \leq 4$$
-$$past \implies selector$$
-$$(f^S_{G_{p}} = 1) \& past \implies (f^S_G \leq 4) \& selector$$
+
+\begin{equation}
+f^S_{G_{p}} = 1 \implies f^S_G \leq 1 \implies f^S_G \leq 4
+\end{equation}
+
+
+\begin{equation}
+past \implies selector
+\end{equation}
+
+
+\begin{equation}
+(f^S_{G_{p}} = 1) \& past \implies (f^S_G \leq 4) \& selector
+\end{equation}
+
 
 
 Any determinant able to reach $DROP\ G_P$ will be present in the right list of the first loop. More trivially, from there it will always take the path to this list because $f^S_{G_{p}} = 1 \implies f^S_{G_{p}} \leq 2$.
@@ -430,12 +482,28 @@ Does a final filtering to keep only determinants that do contribute to $P$
 - "is in wavefunction" : $G_{pq}^{rs} = S$. There is no need to compute $\langle G_{pq}^{rs}|H|S \rangle$ since $G_{pq}^{rs}$ is necessarily tagged for being present in the wavefunction.
 
 
-$$(ij \rightarrow kl) = \big [(ij|kl) - (ij|lk) \big ] \times phase(S,ijkl)$$
-$$(i\bar j \rightarrow k\bar l) = (i\bar j|k\bar l) \times phase(S,i\bar jk\bar l)$$
+
+\begin{equation}
+(ij \rightarrow kl) = \big [(ij|kl) - (ij|lk) \big ] \times phase(S,ijkl)
+\end{equation}
 
 
-$$phase(S,ijkl) = P^S_i \oplus P^S_j \oplus P^S_{k+1} \oplus P^S_{l+1} \oplus (min(k,l)>max(i,j))$$
-$$phase(S,i\bar jk\bar l) = P^S_i \oplus P^S_{\bar j} \oplus P^S_{k+1} \oplus P^S_{\bar l+1}$$
+\begin{equation}
+(i\bar j \rightarrow k\bar l) = (i\bar j|k\bar l) \times phase(S,i\bar jk\bar l)
+\end{equation}
+
+
+
+
+\begin{equation}
+phase(S,ijkl) = P^S_i \oplus P^S_j \oplus P^S_{k+1} \oplus P^S_{l+1} \oplus (min(k,l)>max(i,j))
+\end{equation}
+
+
+\begin{equation}
+phase(S,i\bar jk\bar l) = P^S_i \oplus P^S_{\bar j} \oplus P^S_{k+1} \oplus P^S_{\bar l+1}
+\end{equation}
+
 
 
 

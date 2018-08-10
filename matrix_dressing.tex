@@ -37,8 +37,16 @@ $t$ refers to teeth
 \end{itemize}
 
 In some respect, computing the dressing vector is akin to computing PT2. Matrix dressing can be seen as a sum of elementary dressing vectors $\delta_\alpha$, each one associated with a particular $\ket \alpha$, just like PT2 is a sum of $\epsilon(\alpha)$. It is possible to pack those elementary vectors together like we packed $\ket \alpha$ together for PT2.
-$$\Delta_I = \sum_{\alpha \in \mathcal{A}_I} \delta_\alpha$$
-$$\Delta = \sum_{I} \Delta_I$$
+
+\begin{equation}
+\Delta_I = \sum_{\alpha \in \mathcal{A}_I} \delta_\alpha
+\end{equation}
+
+
+\begin{equation}
+\Delta = \sum_{I} \Delta_I
+\end{equation}
+
 Thus, both are a sum over all external determinants, and require to find connections between those determinants and the internal wavefunction. Presumably, the norm of resulting elementary dressing vectors, will scale in a fashion similar to that of $E(I)$ ( je sais pu la notation )
 With that in mind, is seems possible, theoritically, to generalize our hybrid stochastic-deterministic PT2 for computing dressing vectors.
 However there are a few significant difference.
@@ -52,7 +60,11 @@ In the case of PT2 ( at least in it Epstein-Nesbet version ), each connection fo
 \end{itemize}
 
 To address the first problem, we decided to compute the error bar for $E_{\Delta}$ the energy contribution of $\Delta$. Our dressed matrix being $H + \Delta$, its energy is
-    $$\frac{\langle \Psi |H + \Delta | \Psi\rangle}{\langle \Psi | \Psi \rangle} = \frac{\langle \Psi |H  | \Psi\rangle}{\langle \Psi | \Psi \rangle} + \frac{\langle \Psi |\Delta | \Psi\rangle}{\langle \Psi | \Psi \rangle} = E_H + E_{\Delta} $$
+    
+\begin{equation}
+\frac{\langle \Psi |H + \Delta | \Psi\rangle}{\langle \Psi | \Psi \rangle} = \frac{\langle \Psi |H  | \Psi\rangle}{\langle \Psi | \Psi \rangle} + \frac{\langle \Psi |\Delta | \Psi\rangle}{\langle \Psi | \Psi \rangle} = E_H + E_{\Delta} 
+\end{equation}
+
 
 $E_{\Delta}$ will be estimated just like we did for $E_{PT2}$. A vector size $N_{gen}$ is allocated to store individual $E_{\Delta_I}$.
 
@@ -60,7 +72,11 @@ $E_{\Delta}$ will be estimated just like we did for $E_{PT2}$. A vector size $N_
 
 The core idea is that, in a Monte-Carlo scheme, even an "exotic" one like our own, the estimated result has to be a linear combination of all samples. At any point $m$ of the Monte-Carlo, corresponding to a number of samples being drawn, we can write our estimated dressing vector $\Delta^m$ as :
 
-$$\Delta^m = \sum_{I=1}^{N_{gen}} \epsilon^m_{I} \Delta_I$$
+
+\begin{equation}
+\Delta^m = \sum_{I=1}^{N_{gen}} \epsilon^m_{I} \Delta_I
+\end{equation}
+
 
 The values for $\epsilon^m_I$ have no dependence on those of $\Delta_I$. They only depend on what samples have been drawn so far. If we decide beforehand in what order samples are to be drawn, we can compute $\epsilon$ vector for any point of the Monte-Carlo before any sample has been computed. This allows us to set up predetermined "checkpoints".
 
@@ -78,19 +94,39 @@ For checkpoint $m$, we start with a null vector $\tilde \Delta^m$. Each time an 
 we increment it 
 
 
-$$\tilde \Delta^m \gets \tilde \Delta^m + \epsilon_I^m \Delta_I$$
+
+\begin{equation}
+\tilde \Delta^m \gets \tilde \Delta^m + \epsilon_I^m \Delta_I
+\end{equation}
+
 
 Once this has been done, $\Delta_I$ can be discarded. Indeed, when checkpoint $m$ is reached, $\tilde \Delta^m = \Delta^m$, as obviously $\epsilon_I^m = 0$ for any $\Delta_I$ sample that hasn't yet been drawn at $m$. ( preciser que c'est l'ordre de CALCUL pas de TIRAGE ).( VARIABLES DEFINI NORMALEMENT DANS LE CHAPITRE PT2... )
 
 $\epsilon$ is defined as follow
 
-$$acm[i] = \frac{toothSize[toothOfDet[i]]}{w[i]}$$
-%$$acw[i] = \frac{teethSize[teethFromDet[i]]}{cm[i]-cm[i-1]};i>1$$
+
+\begin{equation}
+acm[i] = \frac{toothSize[toothOfDet[i]]}{w[i]}
+\end{equation}
+
+%
+\begin{equation}
+acw[i] = \frac{teethSize[teethFromDet[i]]}{cm[i]-cm[i-1]};i>1
+\end{equation}
 
 
-$$\epsilon^m_i = \frac{acw[i] \times n[m,i]}{N[m]}  ; i>rDetI[m] ??$$
 
-$$\epsilon^m_i = 1 ; i \leq rDetI[m] ??$$
+
+\begin{equation}
+\epsilon^m_i = \frac{acw[i] \times n[m,i]}{N[m]}  ; i>rDetI[m] ??
+\end{equation}
+
+
+
+\begin{equation}
+\epsilon^m_i = 1 ; i \leq rDetI[m] ??
+\end{equation}
+
 
 The memory cost for a checkpoint $m$ is $2 \times N_{det}$ floats, corresponding to the storage of $\epsilon^m$ and $\tilde \Delta^m$. This cost is small enough to allow setting up quite a few checkpoints. However, in addition to this memory cost, comes some computational cost. If we set up $N_{cp}$ checkpoints, it implies each time a sample is drawn, we will have, theoretically, to incremement $N_{cp}$ vectors of size $N_{det}$. For quicker jobs, this price may not be negligible. It gets worse if, as was the case in our first implementations, a collector is in charge of updating checkpoints for multiple slaves. 
 
@@ -100,11 +136,23 @@ For the deterministic part, things are straightforward. We allocate a vector $\D
 
 For the stochastic part, instead of using $\epsilon$, we use $\tilde \epsilon$, defined as follow.
 
-$$\tilde \epsilon^m_i = 0 ; i \leq rDetI[m]$$
 
-$$\tilde \epsilon^1_i = acw[1] \times n[1,i]  ; i>rDetI[1] ??$$
+\begin{equation}
+\tilde \epsilon^m_i = 0 ; i \leq rDetI[m]
+\end{equation}
 
-$$\tilde \epsilon^m_i = acw[i] \times (n[m,i]-n[m-1,i])  ; i>rDetI[m]; m>1 ??$$
+
+
+\begin{equation}
+\tilde \epsilon^1_i = acw[1] \times n[1,i]  ; i>rDetI[1] ??
+\end{equation}
+
+
+
+\begin{equation}
+\tilde \epsilon^m_i = acw[i] \times (n[m,i]-n[m-1,i])  ; i>rDetI[m]; m>1 ??
+\end{equation}
+
 
 (notation  $\tilde \Delta^m$ utilise aussi pour $\epsilon$ )
 As can be seen, $\tilde \Delta^m$ will need to be updated when sample $i$ is computed, only if $(n[m,i]-n[m-1,i]) \neq 0$, in other word, only if $i$ has been drawn between checkpoint $m-1$ and $m$. [This means at most 1 writting ( instead of $N_{cp}$ ) each time a sample is drawn.]FAUX? 
@@ -113,8 +161,16 @@ $\epsilon$ can be reconstructed from $\tilde \epsilon$.
 
 
 
-$$\epsilon^m_i = \frac{1}{N[m]} \sum_{j=1}^{m} {\tilde \epsilon^j_i} ; i > rDetI[m]$$
-$$\epsilon^m_i = 1; i \leq rDetI[m]$$
+
+\begin{equation}
+\epsilon^m_i = \frac{1}{N[m]} \sum_{j=1}^{m} {\tilde \epsilon^j_i} ; i > rDetI[m]
+\end{equation}
+
+
+\begin{equation}
+\epsilon^m_i = 1; i \leq rDetI[m]
+\end{equation}
+
 
 
 $\epsilon^m_i$ is not explicitely reconstructed in the shown algorithms, $\Delta^m$ is directly computed from $\tilde \epsilon^m_i$.
