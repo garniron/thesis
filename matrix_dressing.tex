@@ -23,6 +23,61 @@ Take into account c\_I\\alpha in the diagonalization of H : Matrix dressing
 Matrix dressing
 c\_I\\alpha may be derived from c ; in which case self-consistence/iteration
 
+\section{task splitting}
+
+Load balancing is a major issue in parallel computing. Often, the tasks we intuitively would like to create have very different computing times. In several of our algorithms, we faced the problem of a few tasks being considerably longer than the others. We took a generic approach of defining a ``fragmentation'' level $F_i$ for all ``logical'' tasks $i$, defining a number of independent ``actual'' tasks it should be decomposed in, based on its estimated cost. Task $i$ is put in the job queue $F_i$ times, each time associated with and index $s$ ranging from $0$ to $F_i-1$.
+
+In practice, $F_i \neq 1$ is only found for the few very expensive tasks.
+There is of course no universal approach to define a task sub-division, but a generic way is to set a counter $c$ at the begining of a loop and skip it if $s \neq c \mod F_i$.
+
+Imagining a toy problem where we have $M$ a list of $N$ matrices size $n \times n$, and for each $M^i$ we want to print
+
+\begin{equation}
+\sum_{x} \sum_y \text{transmogrify}(M^i_{xy})
+\end{equation}
+
+with $\text{transmogrify}$ some expensive computation, the pseudo-code for the master and slave could be as shown in algorithm \ref{alg:tasksplit_master} and \ref{alg:tasksplit_slave} respectively.
+
+
+\begin{algorithm}
+	\label{alg:tasksplit_master}
+	\caption{tasksplit\_master}
+	\tcc{A logical task is computation for one matrix}
+	chose $F_i$ \;
+	\For{$i=1,N$}{
+	\For{$s=0,F_i-1$}{
+		add task $(i,s)$ to the queue	
+	}
+	}
+	$f$,$\text{R}$ are arrays size $N$ initialized with $0$ \;
+	\While{not all matrices printed}{
+		get $(i,\text{sum})$ from a slave \;
+		$R[i] \gets R[i] + \text{sum}$ \;
+		$f[i] \gets f[i] + 1$ \;
+		\If{$f[i] = F_i$}{
+			print $R[i]$ \;
+		}
+	}
+\end{algorithm}
+
+\begin{algorithm}
+	\label{alg:tasksplit_slave}
+	\caption{tasksplit\_slave}
+	\While{}{
+		get task $(i, s)$ from the queue \;
+		$R \gets 0$ \;
+		$c \gets 0$ \;
+		\For{$x=1,n$}{
+		\For{$y=1,n$}{
+			$c \gets c + 1$ \;
+			\If{$s = c \mod F_i$}{
+				$R \gets R + \text{transmogrify}(M^i_{xy})$ \;
+			}
+		}
+		}
+		send result $(i, R)$ \;
+	}
+\end{algorithm}
 
 \section{implementation}
 Plein de variable, subsection pour resumer la notation?
@@ -255,7 +310,7 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 	\label{PRECOMPUTE_MONTECARLO}
 	\tcc*[h]{Computes $J$ the array so that $J_i$ is the $i^{th}$ sample that must be computed to perform the Monte-Carlo computation, and $n[m,i]$ the total number of times sample $i$ has been drawn at checkpoint $m$, regardless of which teeth are in the deterministic part.}
 	
-		$\tilde M \gets 0$ \;		
+		$\tilde M$ array size $\Ndet$ initialized with $0$\;		
 		$N_c \gets 0$ \;
 		$N_j \gets n_0(1)$ \;
 		\For{$i=1,N_j$}{
