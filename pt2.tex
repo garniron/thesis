@@ -798,5 +798,69 @@ toothSize[t] = rTeeth[t] - lTeeth[t]
 		}
 	}
 \end{algorithm}
+
+\begin{algorithm}
+	\label{UPDATE_CHECKPOINT}
+	\caption{UPDATE\_CHECKPOINT}
+		%\tcc{updates checkpoint $i_{cp}$ - ERREUR SUR $\sigma^2$$}
+		
+		%\SetKwFunction{FUpdateCheckpoints}{UpdateCheckpoints}
+		%\SetKwProg{Fn}{Function}{:}{}
+	
+		%\Fn(\tcc*[h]{Update checkpoints when a sample is computed}){\FUpdateCheckpoints{}}{
+		$lp \gets 1$ \;
+		\While{}{
+		try to get task I \;
+		\uIf{task was available}{
+			$t$ so that $I \in P_t$ \;
+			$p$ the checkpoint task $I$ belongs in \;
+		}\Else{
+			$p \gets N_{cp}$ \;	
+		}
+		\If{$p > lp$}{
+			build $\Delta^{p-1}$ \;
+			send $\Delta^{p-1}$ \;
+			send $e_{\Delta_{I}}$ for all $I \in \{\mathcal{M}\}_{p-1} $ locally computed\;
+			\If{$p = N_{cp}$}{
+				FINISHED \;
+			}
+		}
+		compute $\Delta_I$ \;
+		$e_{\Delta_I} \gets \Delta_I \cdot C$ \;
+		$\Delta^{D,t} \gets \Delta^{D,t} + \Delta_I$ \;
+
+		\For{$m=1,N_{cp}$}{
+			\If{$M_{m,I} \neq 0$}{
+			%$\sigma[m] \gets \sigma[m] + M_{m,I} \times e_{\Delta_I}$ \;
+			%$\sigma_2[m] \gets \sigma_2[m] + M_{m,I} \times e_{\Delta_I}^2$ \;
+			$\tilde \Delta^{m} \gets \tilde \Delta^{m} + M_{m,I} \times \Delta_I$ \;
+			}
+		}
+		}
+		
+		%}
+		
+\end{algorithm}
+
+
+\begin{algorithm}
+	\label{COMPUTE_CHECKPOINTS}
+	\caption{COMPUTE\_CHECKPOINTS}
+		\tcc{result for checkpoint $m$}
+		
+		%\SetKwFunction{FComputeCheckpoints}{ComputeCheckpoints}
+		%\SetKwProg{Fn}{Function}{:}{}
+	
+		%\Fn(\tcc*[h]{Compute the final estimated dressing vector}){\FComputeCheckpoints{some args}}{
+			%$\Delta^m \gets \Delta_{deterministic}$\;
+			\For{$t=0,lastTeeth[m]$}{
+				$\Delta^m \gets \Delta^m + \Delta^{D,t}$ \;
+			}
+			\For{$m'=1,m$}{
+				$\Delta^m \gets \Delta^m + \frac{\tilde \Delta^{m'}}{N[m]}$
+			}
+		%}
+\end{algorithm}
+
 \end{comment}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -381,65 +381,82 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 \end{algorithm}
 
 \begin{algorithm}
-	\label{UPDATE_CHECKPOINT}
-	\caption{UPDATE\_CHECKPOINT}
-		%\tcc{updates checkpoint $i_{cp}$ - ERREUR SUR $\sigma^2$$}
-		
-		%\SetKwFunction{FUpdateCheckpoints}{UpdateCheckpoints}
-		%\SetKwProg{Fn}{Function}{:}{}
+	\tcc{code for a slave node, OMP parallel}
 	
-		%\Fn(\tcc*[h]{Update checkpoints when a sample is computed}){\FUpdateCheckpoints{}}{
-		
-		$lp \gets 1$ \;
-		\While{}{
-		try to get task I \;
+	cp\_done, cp\_sent : shared scalars initialized to $0$ \;
+	cp\_max : shared array size $N_{proc}$ initialized to $0$ \;
+	
+	
+	\tcc{loop for each core $iproc$}
+	\While{}{
+		try to get task $(I,s)$ from queue \;
 		\uIf{task was available}{
-			$t$ so that $I \in P_t$ \;
-			$p$ the checkpoint task $I$ belongs in \;
+			\alert{pas de notaion pour l'ensemble d'un checkpoint} \;
+			$m$ so that $I \in CHECKPOINT_m$ \;	
 		}\Else{
-			$p \gets N_{cp}$ \;	
+			$m \gets N_{cp} + 1$ \;		
 		}
-		\If{$p > lp$}{
-			build $\Delta^{p-1}$ \;
-			send $\Delta^{p-1}$ \;
-			send $e_{\Delta_{I}}$ for all $I \in \{\mathcal{M}\}_{p-1} $ locally computed\;
-			\If{$p = N_{cp}$}{
-				FINISHED \;
-			}
+		will\_send $\gets 0$ \;
+		--OMP CRITICAL-- \;
+		cp\_max$[iproc] \gets m$ \;
+		cp\_done $\gets min(\text{cp\_max}) -1$ \;
+		\If{cp\_done > cp\_sent}{
+			will\_send $\gets$ cp\_done \;		
+			cp\_sent $\gets$ cp\_done \;		
 		}
-		compute $\Delta_I$ \;
-		$e_{\Delta_I} \gets \Delta_I \cdot C$ \;
-		$\Delta^{D,t} \gets \Delta^{D,t} + \Delta_I$ \;
-
-		\For{$m=1,N_{cp}$}{
-			\If{$M_{m,I} \neq 0$}{
-			%$\sigma[m] \gets \sigma[m] + M_{m,I} \times e_{\Delta_I}$ \;
-			%$\sigma_2[m] \gets \sigma_2[m] + M_{m,I} \times e_{\Delta_I}^2$ \;
-			$\tilde \Delta^{m} \gets \tilde \Delta^{m} + M_{m,I} \times \Delta_I$ \;
-			}
+		--END OMP CRITICAL-- \;
+		\If{will\_send $\neq 0$}{
+			SEND $\Delta^{\text{will\_send}}$ shown in algo TBD
 		}
+		\If{$m = N_{cp}+1$}{
+			exit \;
 		}
-		
-		%}
-		
+		UPDATE with I shown in algo TBD \;
+	}
 \end{algorithm}
+
 \begin{algorithm}
-	\label{COMPUTE_CHECKPOINTS}
-	\caption{COMPUTE\_CHECKPOINTS}
-		\tcc{result for checkpoint $m$}
-		
-		%\SetKwFunction{FComputeCheckpoints}{ComputeCheckpoints}
-		%\SetKwProg{Fn}{Function}{:}{}
+	\tcc{UPDATE}
+	\KwData{global shared scope : $\Delta^{D,t}$ and $\tilde \Delta^{m}$ as described, initialized with $0$}
+	\KwData{global shared scope : $f$ an array size $N_{gen}$ initialized with $0$. The fragmentation count}
 	
-		%\Fn(\tcc*[h]{Compute the final estimated dressing vector}){\FComputeCheckpoints{some args}}{
-			%$\Delta^m \gets \Delta_{deterministic}$\;
-			\For{$t=0,lastTeeth[m]$}{
+	\KwData{from outer scope : $s, I \in CHECKPOINT_m$} 
+	\BlankLine
+	$t$ so that $I \in P_t$ \;
+	\alert{notation pour fragmentation pas defini}
+	
+	compute $\Delta_{I,s}$ ($\Delta_{I}$ avec fragmentation index $s$ ...) \;
+	\tcc{lock global arrays before update}
+	$\Delta^{D,t} \gets \Delta^{D,t} + \Delta_I$ \;
+	\For{$m'=m,N_{cp}$}{
+		\If{$\tilde e^m_I \neq 0$}{
+			$\tilde \Delta^{m'} \gets \tilde \Delta^{m'} + \frac{W_T}{w_I} \Delta_I$ \;
+		}
+	}
+	$e_{\Delta_I} \gets e_{\Delta_I} + C \cdot \Delta_{I,s}$ \;
+	$f[I] \gets f[I] + 1$ \;
+\end{algorithm}
+
+
+\begin{algorithm}
+	\tcc{SEND}
+	
+	\tcc{compute partial value of $\Delta^m$ with partial values of $\Delta^{D,t}$ and $\tilde \Delta^m$}
+	
+	$\Delta^m \gets 0$ \;
+		\For{$m'=m,1$}{
+				\alert{erreur sur le facteur?} \;
+				$\Delta^m \gets \Delta^m + \frac{\tilde \Delta^{m'}}{M_m}$
+			}
+			
+			\For{$t=t-1,0,-1$}{
 				$\Delta^m \gets \Delta^m + \Delta^{D,t}$ \;
 			}
-			\For{$m'=1,m$}{
-				$\Delta^m \gets \Delta^m + \frac{\tilde \Delta^{m'}}{N[m]}$
-			}
-		%}
+			
+			
+			
+	$\mathcal{I}$ the set of $I \in CHECKPOINT_m$ with $f[I] > 0$ \;
+	send ($\Delta^m$, $\mathcal{I}$, $e_{\Delta_{I \in \mathcal{I}}}$, $f[I \in \mathcal{I}]$)
 \end{algorithm}
 
 
