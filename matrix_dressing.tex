@@ -184,12 +184,74 @@ $\epsilon$ is defined as follow
 \end{equation}
 
 
-with $M_{m,i}$ the number of times sample $i$ has been drawn at checkpoint $m$ \alert{ rappeler que $t_{M_m}=$  first non-deterministic tooth after drawing $M_m$ samples ?}
+with $M_{m,i}$ the number of times sample $i$ has been drawn at checkpoint $m$.
 
 
 The memory cost for a checkpoint $m$ is $2 \times N_{det}$ floats, corresponding to the storage of $\epsilon^m$ and $\tilde \Delta^m$. This cost is small enough to allow setting up quite a few checkpoints. However, in addition to this memory cost, comes some computational cost. If we set up $N_{cp}$ checkpoints, it implies each time a sample is drawn, we will have, theoretically, to incremement $N_{cp}$ vectors of size $N_{det}$. For quicker jobs, this price may not be negligible. It gets worse if, as was the case in our first implementations, a collector is in charge of updating checkpoints for multiple slaves. 
 
 
+We can drastically reduce the amount of writting required for each sample by rewriting $\Delta^m$.
+Firstly, we define $\Delta^{D,t}$ as the total dressing for teeth $t$
+\begin{equation}
+\Delta^{D,t} = \sum_{I \in P_t} \Delta_I
+\end{equation}
+
+We rewrite $\Delta^m$ as
+
+\begin{equation}
+\label{eq:rewrite1}
+\Delta^{m} = \sum_{t=0}^{\dot t_m - 1} \Delta^{D,t}+ \sum_{I=1}^{N_{gen}} \gamma^m_{I} \Delta_I
+\end{equation}
+
+The second term being $\Delta^m$ minus its deterministic contribution, we can trivially write
+
+\begin{equation}
+\gamma^m_i = 
+\begin{cases}
+0 & \text{if } i \leq \dot n_0(m) \\
+\epsilon^m_i = \frac{W_T \times M_{m,i}}{w_i \times M_m} & \text{if } i > \dot n_0(m)
+\end{cases}
+\end{equation}
+
+We define
+
+\begin{align}
+\Delta^{S,m} = \sum_I (\gamma^m_I - \gamma^{m-1}_I) \Delta_I \\
+\end{align}
+
+We can rewrite the second term of equation \ref{eq:rewrite1}
+\begin{equation}
+\sum_{I=1}^{N_{gen}} \gamma^m_{I} \Delta_I = \sum_{p<m} \Delta^{S,p}
+\end{equation}
+
+And write the final form or $\Delta^m$ as
+\begin{equation}
+\Delta^m=\sum_{t=0}^{\dot t_{m}-1} \Delta^{D,t} + \sum_{p \leq m} \Delta^{S,p}
+\end{equation}
+
+The vectors we need to store are $\Delta^{D,t}$ and $\Delta^{S,m}$. Each time we compute an elementary dressing vector $\Delta_I$, the need for update goes as follow
+
+\begin{itemize}
+\item
+$\Delta^{D,t}$ with $I \in P_t$. This is exactly one write.
+\item
+$\Delta^{S,m}$ where $\gamma^m_I - \gamma^{m-1}_I \neq 0$. This is
+ \begin{itemize}
+ \item
+ 	No write if it is moved to the deterministic set in the same checkpoint it is first drawn or computed for tooth filling
+ \item
+ 	Otherwise, one write per checkpoint in which it is drawn until the one where it is moved to the detemrinistic set, inclusive.
+ \end{itemize}
+ While this retains the maximum of $N_{cp}$ writes for one sample, it is much lower in practice.
+\end{itemize}
+
+For convenience we define
+
+\begin{equation}
+\tilde \epsilon^m_I = \gamma^m_I - \gamma^{m-1}_I
+\end{equation}
+
+\begin{comment}
 We can drastically reduce the amount of writting required for each sample, by separating the deterministic and stochastic part, and computing differences between checkpoints rather than checkpoints directly.
 For the deterministic part, things are straightforward. We allocate a vector $\Delta^{D,t}$ of size $N_{det}$ for each tooth $t$, and one $\Delta^{D,0}$ for the initial deterministic set. For each sample that is computed, the $\Delta^{D,t}$ vector corresponding to the $t$ tooth it belongs in - or $\Delta^{D,0}$ if it belongs in the initial deterministic part - is incremented. That's exactly 1 vector write per sample.
 
@@ -208,7 +270,7 @@ For the stochastic part, instead of using $\epsilon$, we use $\tilde \epsilon$, 
 
 
 
-\begin{comment}
+
 \begin{equation}
 \tilde \epsilon^m_i = 0 ; i \leq rDetI[m]
 \end{equation}
@@ -224,7 +286,7 @@ For the stochastic part, instead of using $\epsilon$, we use $\tilde \epsilon$, 
 \begin{equation}
 \tilde \epsilon^m_i = acw[i] \times (n[m,i]-n[m-1,i])  ; i>rDetI[m]; m>1 ??
 \end{equation}
-\end{comment}
+
 
 (notation  $\tilde \Delta^m$ utilise aussi pour $\epsilon$ )
 As can be seen, $\tilde \Delta^m$ will need to be updated when sample $i$ is computed, only if $M_{m,i}-M_{m-1,i} \neq 0$, in other word, only if $i$ has been drawn between checkpoint $m-1$ and $m$. [This means at most 1 writting ( instead of $N_{cp}$ ) each time a sample is drawn.]FAUX? 
@@ -249,7 +311,7 @@ $\epsilon^m_i$ is not explicitely reconstructed in the shown algorithms, $\Delta
 \begin{equation}
 \Delta^m=\Delta^{D,0} + \sum_{t=1}^{\dot t_{m}-1} \Delta^{D,t} + \sum_{p \leq m} \tilde \Delta^p
 \end{equation}
-
+\end{comment}
 
 
 \begin{algorithm}
@@ -459,7 +521,16 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 	send ($\Delta^m$, $\mathcal{I}$, $e_{\Delta_{I \in \mathcal{I}}}$, $f[I \in \mathcal{I}]$)
 \end{algorithm}
 
-
+\begin{algorithm}
+	get ($\breve \Delta^m$, $\mathcal{I}$, $\breve e_{\Delta_{I \in \mathcal{I}}}$, $\breve f[I \in \mathcal{I}]$) \;
+	$\Delta^m \gets \Delta^m + \breve \Delta^m$ \;
+	\ForAll{$I \in \mathcal{I}$}{
+		$\breve e_{\Delta_{I}} \gets \breve e_{\Delta_{I}} + \breve e_{\Delta_{I}}$ \;
+		$f[I] \gets f[I] + \breve f[I]$ \;
+	}
+	
+	treat $e_{\Delta_{I}}$ as $e_I$ in the pt2 algorithm to estimate error \;
+\end{algorithm}
 
 \subsection{finding connections - microlists}
 
