@@ -148,26 +148,26 @@ The values for $\epsilon^m_I$ have no dependence on those of $\Delta_I$. They on
 
 
 Those checkpoints can be set at any arbitrary point, but they must be determined beforehand and cannot be changed during the computation ; we will only be able to get results at those points.
-For checkpoint $m$, we start with a null vector $\tilde \Delta^m$. Each time an elementary vector $\Delta_I$ is computed
+For checkpoint $m$, we start with a null vector for $\Delta^m$. Each time an elementary vector $\Delta_I$ is computed
 we increment it 
 
 
 
 \begin{equation}
-\tilde \Delta^m \gets \tilde \Delta^m + \epsilon_I^{m} \Delta_I
+\Delta^m \gets \Delta^m + \epsilon_I^{m} \Delta_I
 \end{equation}
 
 
-Once this has been done, $\Delta_I$ can be discarded. Indeed, when checkpoint $m$ is reached, $\tilde \Delta^m = \Delta^{m}$, as obviously $\epsilon_I^{m} = 0$ for any $\Delta_I$ sample that hasn't yet been drawn at checkpoint ${m}$.
-For convenience, some notations we defined can be adapted as functions of a checkpoint reached
+Once this has been done, $\Delta_I$ can be discarded. Indeed, when checkpoint $m$ is reached, $\Delta^{m}$ has its final value, as obviously $\epsilon_I^{m} = 0$ for any $\Delta_I$ sample that hasn't yet been drawn at checkpoint ${m}$.
+For convenience, some notations can be defined as functions of a checkpoint reached
 
 \begin{equation}
-\dot t_m = t_{M_m}
+\dot t_m
 \end{equation}
 the first non-deterministic tooth when checkpoint $m$ is reached, and
 
 \begin{equation}
-\dot n_0(m) = n_0(t_{M_m})
+\dot n_0(m) = n_0(\dot t_m)
 \end{equation}
 
 the size of the deterministic range when $m$ is reached.
@@ -187,13 +187,13 @@ $\epsilon$ is defined as follow
 with $M_{m,i}$ the number of times sample $i$ has been drawn at checkpoint $m$.
 
 
-The memory cost for a checkpoint $m$ is $2 \times N_{det}$ floats, corresponding to the storage of $\epsilon^m$ and $\tilde \Delta^m$. This cost is small enough to allow setting up quite a few checkpoints. However, in addition to this memory cost, comes some computational cost. If we set up $N_{cp}$ checkpoints, it implies each time a sample is drawn, we will have, theoretically, to incremement $N_{cp}$ vectors of size $N_{det}$. For quicker jobs, this price may not be negligible. It gets worse if, as was the case in our first implementations, a collector is in charge of updating checkpoints for multiple slaves. 
+The memory cost for a checkpoint $m$ is $2 \times N_{det}$ floats, corresponding to the storage of $\epsilon^m$ and $\Delta^m$. This cost is small enough to allow setting up quite a few checkpoints. However, in addition to this memory cost, comes some computational cost. If we set up $N_{cp}$ checkpoints, it implies each time a sample is drawn, we will have, theoretically, to incremement $N_{cp}$ vectors of size $N_{det}$. For quicker jobs, this price may not be negligible. It gets worse if, as was the case in our first implementations, a collector is in charge of updating checkpoints for multiple slaves. 
 
 
 We can drastically reduce the amount of writting required for each sample by rewriting $\Delta^m$.
-Firstly, we define $\Delta^{D,t}$ as the total dressing for teeth $t$
+Firstly, we define $\Delta^{D,t}$ as the total dressing for teeth $\mathcal{T}_t$
 \begin{equation}
-\Delta^{D,t} = \sum_{I \in P_t} \Delta_I
+\Delta^{D,t} = \sum_{I \in \mathcal{T}_t} \Delta_I
 \end{equation}
 
 We rewrite $\Delta^m$ as
@@ -203,13 +203,13 @@ We rewrite $\Delta^m$ as
 \Delta^{m} = \sum_{t=0}^{\dot t_m - 1} \Delta^{D,t}+ \sum_{I=1}^{N_{gen}} \gamma^m_{I} \Delta_I
 \end{equation}
 
-The second term being $\Delta^m$ minus its deterministic contribution, we can trivially write
+The second term being $\Delta^m$ minus its deterministic contribution, we can trivially write (adding an implied checkpoint $M_0=0$ for futur convenience)
 
 \begin{equation}
 \gamma^m_i = 
 \begin{cases}
-0 & \text{if } i \leq \dot n_0(m) \\
-\epsilon^m_i = \frac{W_T \times M_{m,i}}{w_i \times M_m} & \text{if } i > \dot n_0(m)
+0 & \text{if } i \leq \dot n_0(m) \vee m=0 \\
+\epsilon^m_i = \frac{W_T \times M_{m,i}}{w_i \times M_m} & \text{if } i > \dot n_0(m) \wedge m \neq 0
 \end{cases}
 \end{equation}
 
@@ -219,9 +219,10 @@ We define
 \Delta^{S,m} = \sum_I (\gamma^m_I - \gamma^{m-1}_I) \Delta_I \\
 \end{align}
 
+
 We can rewrite the second term of equation \ref{eq:rewrite1}
 \begin{equation}
-\sum_{I=1}^{N_{gen}} \gamma^m_{I} \Delta_I = \sum_{p<m} \Delta^{S,p}
+\sum_{I=1}^{N_{gen}} \gamma^m_{I} \Delta_I = \sum_{p \leq m} \Delta^{S,p}
 \end{equation}
 
 And write the final form or $\Delta^m$ as
@@ -233,16 +234,16 @@ The vectors we need to store are $\Delta^{D,t}$ and $\Delta^{S,m}$. Each time we
 
 \begin{itemize}
 \item
-$\Delta^{D,t}$ with $I \in P_t$. This is exactly one write.
+$\Delta^{D,t}$ with $I \in \mathcal{T}_t$. This is exactly one write.
 \item
 $\Delta^{S,m}$ where $\gamma^m_I - \gamma^{m-1}_I \neq 0$. This is
  \begin{itemize}
  \item
- 	No write if it is moved to the deterministic set in the same checkpoint it is first drawn or computed for tooth filling
+ 	No write if $I$ is moved to the deterministic range $\mathcal{D}$ in the same checkpoint it is first drawn or computed for tooth filling
  \item
- 	Otherwise, one write per checkpoint in which it is drawn until the one where it is moved to the detemrinistic set, inclusive.
+ 	Otherwise, one write per checkpoint in which it is drawn until the one where it is moved to $\mathcal{D}$, inclusive.
  \end{itemize}
- While this retains the maximum of $N_{cp}$ writes for one sample, it is much lower in practice.
+ While this increases the theoretical maximum of writes to $N_{cp}+1$ per sample, it is much lower in practice.
 \end{itemize}
 
 For convenience we define
@@ -251,68 +252,67 @@ For convenience we define
 \tilde \epsilon^m_I = \gamma^m_I - \gamma^{m-1}_I
 \end{equation}
 
-\begin{comment}
-We can drastically reduce the amount of writting required for each sample, by separating the deterministic and stochastic part, and computing differences between checkpoints rather than checkpoints directly.
-For the deterministic part, things are straightforward. We allocate a vector $\Delta^{D,t}$ of size $N_{det}$ for each tooth $t$, and one $\Delta^{D,0}$ for the initial deterministic set. For each sample that is computed, the $\Delta^{D,t}$ vector corresponding to the $t$ tooth it belongs in - or $\Delta^{D,0}$ if it belongs in the initial deterministic part - is incremented. That's exactly 1 vector write per sample.
+
+The task queue is built in a fashion similar to the one for $\EPT$ computation, with some differences.
+\begin{itemize}
+\item
+$M_{m,I}$ are evaluated for computation of $\tilde \epsilon^m_I$.
+\item
+$R$ stores indices of checkpoints rather than of combs
 
 
+\end{itemize}
 
 
-For the stochastic part, instead of using $\epsilon$, we use $\tilde \epsilon$, defined as follow.
+\begin{algorithm}
+	\caption{PRECOMPUTE\_MONTECARLO}
+	\label{PRECOMPUTE_MONTECARLO}
+	\tcc*[h]{Computes task queue}
+	
+		$\tilde M$ array size $\Ndet$ initialized with $0$\;
+		$u$ array size $\Ngen$ initialized with random numbers $\in [0,1)_\mathbb{R}$ \;
+		$N_c \gets 0$ \;
+		$N_j \gets n_0(1)$ \;
+		\For{$i=1,N_j$}{
+			$d[i] \gets TRUE$ \;
+			$J[i] \gets i$ \;
+		}
+		
+		$m \gets 1$ \;
+		$F \gets N_j+1$ \;
+		\While{$N_j < N_{gen}$}{
+			ADD\_COMB shown as algorithm \ref{alg:FILL_TOOTH} \;
+			FILL\_TOOTH shown as algorithm \ref{alg:ADD_COMB} \;
+		  
+		  
+		  %$oldcurth \gets curth$ \;
+		  %\While{$curth \leq N_{cpmax}$}{
+		  %	\If{$N_j \leq cpthreshold[curth]$}{
+		  %		$curth \gets curth + 1$ \;
+		  %	}
+		  %}
+		  
+		  \If{$M_m = N_c$}{
+		  	$R[N_j] \gets m$ \;
+		    %$cpthreshold[m] \gets N_j$ \;
+            $M_{m,*} \gets \tilde M$ \;
+            $m \gets m+1$ \;
+		  } 
+		}
+\end{algorithm}
 
-\begin{equation}
-\tilde \epsilon^m_i = 
-\begin{cases}
-0 & i \leq \dot n_0(m) \\
-\frac{W_T \times (M_{m,i}-M_{m-1,i})}{w_i}  & i>\dot n_0(m)
-\end{cases}
-\end{equation}
+An extra array $P[i]=m$ is built, mapping a sample index $i$ to the checkpoint $m$ in which it is first needed ; in other words, when sample $i$ needs to be evalutated, checkpoints up to $m-1$ have been fully built.
 
-
-
-
-\begin{equation}
-\tilde \epsilon^m_i = 0 ; i \leq rDetI[m]
-\end{equation}
-
-
-
-\begin{equation}
-\tilde \epsilon^1_i = acw[1] \times n[1,i]  ; i>rDetI[1] ??
-\end{equation}
-
-
-
-\begin{equation}
-\tilde \epsilon^m_i = acw[i] \times (n[m,i]-n[m-1,i])  ; i>rDetI[m]; m>1 ??
-\end{equation}
-
-
-(notation  $\tilde \Delta^m$ utilise aussi pour $\epsilon$ )
-As can be seen, $\tilde \Delta^m$ will need to be updated when sample $i$ is computed, only if $M_{m,i}-M_{m-1,i} \neq 0$, in other word, only if $i$ has been drawn between checkpoint $m-1$ and $m$. [This means at most 1 writting ( instead of $N_{cp}$ ) each time a sample is drawn.]FAUX? 
-
-$\epsilon$ can be reconstructed from $\tilde \epsilon$.
-
-
-
-
-\begin{equation}
-\epsilon^m_i =
-\begin{cases}
-1 & i \leq \dot n_0(m) \\
-\frac{1}{M_m} \sum_{p=1}^{m} {\tilde \epsilon^p_i} & i > \dot n_0(m)
-\end{cases}
-\end{equation}
-
-
-
-$\epsilon^m_i$ is not explicitely reconstructed in the shown algorithms, $\Delta^m$ is directly computed from $\tilde \epsilon^m_i$.
-\alert{A VERIFIERXXXXXXXXXXXXXXXXXXXXXXX}
-\begin{equation}
-\Delta^m=\Delta^{D,0} + \sum_{t=1}^{\dot t_{m}-1} \Delta^{D,t} + \sum_{p \leq m} \tilde \Delta^p
-\end{equation}
-\end{comment}
-
+\begin{algorithm}
+	$m \gets 1$ \;
+	\For{$i=1,\Ngen$}{
+		$P[J[i]] \gets m$ \;
+		\If{$R[i] \neq 0$}{
+			assert $m = R[i]$ \;
+			$m \gets m+1$ \;
+		}
+	}
+\end{algorithm}
 
 \begin{algorithm}
 	\caption{OPTIMIZE\_MONTECARLO}
@@ -366,42 +366,6 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 \end{itemize}
 
 
-
-\begin{algorithm}
-	\caption{PRECOMPUTE\_MONTECARLO}
-	\label{PRECOMPUTE_MONTECARLO}
-	\tcc*[h]{Computes $J$ the array so that $J_i$ is the $i^{th}$ sample that must be computed to perform the Monte-Carlo computation, and $n[m,i]$ the total number of times sample $i$ has been drawn at checkpoint $m$, regardless of which teeth are in the deterministic part.}
-	
-		$\tilde M$ array size $\Ndet$ initialized with $0$\;		
-		$N_c \gets 0$ \;
-		$N_j \gets n_0(1)$ \;
-		\For{$i=1,N_j$}{
-			$d_i \gets TRUE$ \;
-			$J_i \gets i$ \;
-		}
-		
-		$m \gets 1$ \;
-		$F \gets N_j+1$ \;
-		\While{$N_j < N_{gen}$}{
-			ADD\_COMB shown as algorithm \ref{alg:FILL_TOOTH} \;
-			FILL\_TOOTH shown as algorithm \ref{alg:ADD_COMB} \;
-		  
-		  
-		  %$oldcurth \gets curth$ \;
-		  %\While{$curth \leq N_{cpmax}$}{
-		  %	\If{$N_j \leq cpthreshold[curth]$}{
-		  %		$curth \gets curth + 1$ \;
-		  %	}
-		  %}
-		  
-		  \If{$M_m = N_c$}{
-		  	$R[N_j] \gets m$ \;
-		    %$cpthreshold[m] \gets N_j$ \;
-            $M_{m,*} \gets \tilde M$ \;
-            $m \gets m+1$ \;
-		  } 
-		}
-\end{algorithm}
 
 
 
