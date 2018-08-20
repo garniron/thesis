@@ -284,17 +284,17 @@ After drawing $n$ random numbers forming the set $\mathcal{U}$, and given $\math
 
 The initial deterministic range $\mathcal{T}_0$ is a technical constraint.
 Because samples are sorted with decreasing $\tilde w_i$, each tooth is guaranteed to contain as many or more samples than the previous one.
-For each comb, we draw a sample $e_I$ in each teeth. When a tooth is entirely computed, it is moved to $\mathcal{D}$. Thus, it is immediately obvious that a tooth containing a single sample makes no sense, as it will be instantly moved to $\mathcal{D}$ ; it can as well be considered part of it. Because it's usually accepted (???) that it takes at least 30 samples to estimate a variance, we can go further and consider that a tooth with fewer than 5-10 samples will be moved to $\mathcal{D}$ too fast to be of real interest. Because the first $C_I$ are usually disproportionately large, it's not possible to fit that many in a tooth. Therefore they are immediately considered part of $\mathcal{D}$.
+For each comb, we draw a sample in each teeth, and when a tooth is entirely computed, it is moved to $\mathcal{D}$. Thus, it is immediately obvious that a tooth containing a single sample makes no sense, as it will be instantly moved to $\mathcal{D}$ ; it can as well be considered part of it. Because it's usually accepted (???) that it takes at least 30 samples to estimate a variance, we can go further and consider that a tooth with fewer than 5-10 samples will be moved to $\mathcal{D}$ too fast to be of real interest. Because the first $C_I^2$ are usually disproportionately large, it's not possible to fit that many in a tooth. Therefore they are immediately considered part of $\mathcal{D}$.
 
-\subsection{chosen \textit{vs} effective repartition function}
+\subsection*{desired \textit{vs} effective repartition function}
 
 We have defined all teeth (except the special $\mathcal{T}_0$) as sharing the same total weight $W_T$. This is a constraint on our desired repartition function $\tilde w_I = C_I^2$ that will lead to the effective repartition function $w_I$.
 
-We are sampling comb values, but we have defined $\tilde w_I$ a repartition function for $e_I$. Since we impose that the same number of $e_I$ are drawn in each tooth - one per comb - we effectively give all teeth the same weight 
+We are sampling comb values, but we have defined $\tilde w_I$ a repartition function for $e_I$. Since we impose that the same number of $e_I$ are drawn in each tooth - one per comb - the relative weight of teeth becomes irrelevant, and we effectively give all teeth the same weight 
 \begin{equation}
 W_T=\frac{1-u_0}{N_{teeth}}
 \end{equation}
-in the Monte-Carlo scheme. Therefore, the actual weight given to $e_I \in \mathcal{T}_t$ is
+in the Monte-Carlo scheme. Therefore, the effective weight given to $e_I \in \mathcal{T}_t$ is
 
 \begin{equation}
 w_{I \in \mathcal{T}_t} = W_T \times \frac{\tilde w_I}{\sum_{J \in \mathcal{T}_t} \tilde w_J}
@@ -306,9 +306,9 @@ To leave the repartition function unaltered, we need all teeth to actually weigh
 \sum_{J \in \mathcal{T}_t} \tilde w_J = W_T
 \end{equation}
 
-Clearly this is not acheivable for any reartition function $\tilde w$. Schematically, as seen in figure \ref{fig:toothbuilding}, it would require the threshold between two teeth to exactly match the threshold between two samples. It is possible to artificially split a sample to get a matching threshold, but this adds some complexity implementationally speaking.
+Clearly this is not going to be the case for any reartition function $\tilde w$. Schematically, as seen in figure \ref{fig:toothbuilding}, it would require the threshold between two teeth to exactly match the threshold between two samples. It is possible to artificially split a sample to get a matching threshold, but this adds some complexity implementationally speaking.
 
-We are going to enforce that all teeth contain at least 5-10 samples - and often a lot more, up to hundreds of thousands. Therefore, a simpler solution is to ``round'' the teeth thresholds to the $e_I$ threshold directly above, which will result in teeth with weights close to $W_T$, and thus the effective repartition function will be little different from the desired one. Since our repartition function is an extremely rough estimation of $e_I$, this is unlikely to cause any significant change in convergence speed.
+We have enforced that all teeth contain at least 5-10 samples - and they usualy contain a lot more, up to hundreds of thousands. Therefore, a simpler solution is to ``round'' the teeth thresholds to the $e_I$ threshold directly above, which will result in teeth with weights close to $W_T$, and thus the effective repartition function will be little different from the desired one. Since our repartition function is an extremely rough estimation of $e_I$, this is unlikely to cause any significant change in convergence speed.
 
 Essentially, we will use $\tilde w$ only to define the $\mathcal{T}_t$ sets, then use $w$ as the actual repartition function. This gives us, by definition, teeth weighting exactly $W_T$.
 This is illustrated in figure \ref{fig:toothbuilding}.
@@ -400,7 +400,7 @@ A desired minimal number of samples per teeth
 \item[$w_I$]
 The effective repartition function
 \item[$n_0(t)$]
-An array of size $\Nteeth+1$ so that $n_0(t)$ is the number of samples in $\mathcal{D}$ with $\mathcal{T}_t$ the first non-deterministic tooth. For algorithmic convencience, $n_0(t+1)=\Ngen$.
+An array of size $\Nteeth+1$ so that $n_0(t)$ is the number of samples in $\mathcal{D}$ with $\mathcal{T}_t$ the first non-deterministic tooth. For algorithmic convencience, $n_0(\Nteeth+1)=\Ngen$.
 \end{description}
 \end{itemize}
 
@@ -410,7 +410,7 @@ With $n_0(1)$ the size of the initial deterministic set $\mathcal{T}_0$, teeth b
 \begin{equation}
 \Ngen - n_0(1) < \minDetInTeeth \times \Nteeth
 \end{equation}
-However, it may not succeed as there is no guarantee the first tooth will contain $\minDetInTeeth$ samples. Because samples are sorted with decreasing $\tilde w_I$, each tooth is guaranteed to contains as many or more samples than the previous one.
+However, it may not succeed as there is no guarantee the first tooth will contain $\minDetInTeeth$ samples. Because samples are sorted with decreasing $\tilde w_I$, each tooth is guaranteed to contains as many or more samples than the previous one, so we only need to ensure $|\mathcal{T}_1| \geq \minDetInTeeth$.
 Relying on the fact that relative values of $\tilde w_I$ get closer and closer, we increment $n_0(1)$ until either the first tooth contains enough samples, or the impossibility condition is reached.
 
 \begin{algorithm}
