@@ -361,7 +361,7 @@ with $j$ the task index associated with $I$, i.e. $J[j]=I$. These sets are track
 		$N_{cp} \gets k$ \;
 \end{algorithm}
 
-Algorithm \ref{alg:OPTIMIZE_MONTECARLO} is an optional reorganization of jobs order. It ensures results for a checkpoint are available as quickly as possible, without altering them. Some checkpoints may however be removed if no extra computation is required to reach the next one ; this situation can't happen in the unoptimized task queue, because of the tooth filling. It takes two things into consideration:
+Algorithm \ref{alg:OPTIMIZE_MONTECARLO} is an optional reorganization of jobs order. It ensures results for a checkpoint are available as quickly as possible, without altering them. Some checkpoints may however be removed if no extra computation is required to reach the next one ; this situation can't happen in the unoptimized task queue, because of the tooth filling. Two things are taken into consideration:
 \begin{itemize}
 \item
 Because no result is available between two checkpoints, the order in which jobs are processed between two checkpoints is irrelevant for the result. So, as is usually the case with parallel jobs, we would like to do the longest tasks first, so that we don't get an extra delay due to a massive task being done last. Therefore, jobs should always be in ascending order ( descending computational time) between two checkpoints.

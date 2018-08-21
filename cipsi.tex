@@ -505,72 +505,51 @@ phase(S,ijkl) = P^S_i \oplus P^S_j \oplus P^S_{k+1} \oplus P^S_{l+1} \oplus (min
 phase(S,i\bar jk\bar l) = P^S_i \oplus P^S_{\bar j} \oplus P^S_{k+1} \oplus P^S_{\bar l+1}
 \end{equation}
 
-
-
+\newcommand{\Gpq}{G_{pq}}
+\newcommand{\Gpbq}{G_{p \bar q}}
 
 \begin{table} 
 	\begin{tabular}{ c|c|c }
-		\hline \hline
-		$S = a^\dagger_{\tilde i \tilde j} G_{\tilde p \tilde q} $                   & $\tilde r, \tilde s ; \langle S|H|G_{\tilde p \tilde q}^{\tilde r \tilde s} \rangle \neq 0$  & $\langle S|H|G_{\tilde p \tilde q}^{\tilde r \tilde s} \rangle$ \\
-		\hline \hline
-		\rule{0pt}{3ex}  $ij$                                                                                               & $X,Y$                                                                                        & $(ij \rightarrow XY)$                                           \\
-		                                                                                                                                                                                                 & $X,i$                                                                                        & $(j \rightarrow X)$                                             \\
-		                                                                                                   & $X,j$                                                                                        & $(i \rightarrow X)$                                             \\
-		                                                                                                   & $i,j$                                                                                        & is in wavefunction                                              \\
-		\hline
-		\rule{0pt}{3ex} $i\bar{j}$                                                                                         & $X,\bar Y$                                                                                   & $(i \bar j\rightarrow X \bar Y)$                                \\ 
-		                                                                                                   & $X,\bar j$                                                                                   & $(i\rightarrow X)$                                              \\ 
-		                                                                                                   & $i,\bar X$                                                                                   & $(\bar j\rightarrow \bar X)$                                    \\ 
-		                                                                                                   & $i,\bar j$                                                                                   & is in wavefunction                                              \\ 
-		\hline \hline
-		$S = a_{\tilde a} a^\dagger_{\tilde i \tilde j \tilde k} G_{\tilde p \tilde q} $                   & $\tilde r, \tilde s ; \langle S|H|G_{\tilde p \tilde q}^{\tilde r \tilde s} \rangle \neq 0$  & $\langle S|H|G_{\tilde p \tilde q}^{\tilde r \tilde s} \rangle$ \\
-		\hline \hline
-		\rule{0pt}{3ex} $a,ijk$                                                                                            & $X,i$                                                                                        & $(aX\rightarrow jk)$                                            \\
-		                                                                                                   & $X,j$                                                                                        & $(aX\rightarrow ik)$                                            \\
-		                                                                                                   & $X,k$                                                                                        & $(aX\rightarrow ij)$                                            \\
-		                                                                                                   & $i,j$                                                                                        & $(a\rightarrow k)$                                              \\
-		                                                                                                   & $i,k$                                                                                        & $(a\rightarrow j)$                                              \\
-		                                                                                                   & $j,k$                                                                                        & $(a\rightarrow i)$                                              \\
-		\hline
-		\rule{0pt}{3ex} $a,ij \bar k$                                                                                      & $\bar k,X$                                                                                   & $(aX\rightarrow ij)$                                            \\
-		                                                                                                   & $\bar k,i$                                                                                   & $(a\rightarrow j)$                                              \\
-		                                                                                                   & $\bar k,j$                                                                                   & $(a\rightarrow i)$                                              \\
-		                                                                                                   & $\bar X,i$                                                                                   & $(\bar ka  \rightarrow \bar X j)$                               \\
-		                                                                                                   & $\bar X,j$                                                                                   & $(\bar ka  \rightarrow \bar X i)$                               \\
-		\hline
-		\rule{0pt}{3ex} $\bar a,\bar i j k$                                                                                & $j,k$                                                                                        & $(\bar a\rightarrow \bar i)$                                    \\
-		                                                                                                   & $X,j$                                                                                        & $(k\bar a\rightarrow X\bar i)$                                  \\
-		                                                                                                   & $X,k$                                                                                        & $(j\bar a\rightarrow X\bar i)$                                  \\
-		                 
-		\hline \hline
-		$S = a_{\tilde a \tilde b} a^\dagger_{\tilde i \tilde j \tilde k \tilde l} G_{\tilde p \tilde q} $ & $\tilde r, \tilde s ;  \langle S|H|G_{\tilde p \tilde q}^{\tilde r \tilde s} \rangle \neq 0$ & $\langle S|H|G_{\tilde p \tilde q}^{\tilde r \tilde s} \rangle$ \\
-		\hline \hline
-		\rule{0pt}{3ex} $ab,ijkl$                                                                                          & $i,j$                                                                                        & $(ab \rightarrow kl)$                                           \\
-		                                                                                                   & $i,k$                                                                                        & $(ab \rightarrow jl)$                                           \\
-		                                                                                                   & $i,l$                                                                                        & $(ab \rightarrow jk)$                                           \\
-		                                                                                                   & $j,k$                                                                                        & $(ab \rightarrow il)$                                           \\
-		                                                                                                   & $j,l$                                                                                        & $(ab \rightarrow ik)$                                           \\
-		                                                                                                   & $k,l$                                                                                        & $(ab \rightarrow ij)$                                           \\
-		              
-		\hline
-		\rule{0pt}{3ex} $ab,ijk\bar l$                                                                                     & $\bar l, i$                                                                                  & $(ab \rightarrow jk)$                                           \\
-		                                                                                                   & $\bar l, j$                                                                                  & $(ab \rightarrow ik)$                                           \\ 
-		                                                                                                   & $\bar l, k$                                                                                  & $(ab \rightarrow ij)$                                           \\ 
-		        
-		\hline
-		\rule{0pt}{3ex} $ab,ij\bar k \bar l$                                                                               & $\bar k, \bar l$                                                                             & $(ab \rightarrow ij)$                                           \\
-		                   
-		\hline
-		\rule{0pt}{3ex} $a\bar b,ijk \bar l$                                                                               & $i,j$                                                                                        & $(a \bar b\rightarrow k  \bar l)$                               \\
-		                                                                                                   & $i,k$                                                                                        & $(a \bar b\rightarrow j  \bar l)$                               \\
-		                                                                                                   & $j,k$                                                                                        & $(a \bar b\rightarrow i  \bar l)$                               \\
-		                              
-		\hline
-		\rule{0pt}{3ex} $a\bar b,ij \bar k \bar l$                                                                         & $\bar k,i$                                                                                   & $(a \bar b \rightarrow j \bar l)$                               \\
-		                                                                                                   & $\bar k,j$                                                                                   & $(a \bar b \rightarrow i \bar l)$                               \\
-		                                                                                                   & $\bar l,i$                                                                                   & $(a \bar b \rightarrow j \bar k)$                               \\
-		                                                                                                   & $\bar l,j$                                                                                   & $(a \bar b \rightarrow i \bar k)$                               \\
-	\end{tabular} 
+		\hline \hline \rule{0pt}{3ex}
+		$S$									&$ r, s$ 	& $\Hij{S}{\Gpq^{rs}}$	\\
+		\hline \hline \rule{0pt}{3ex}
+		$\ac {ij} \Gpq$						& $X,Y$ 	&$(ij \rightarrow XY)$		\\
+											& $X,i$ 	&$(j \rightarrow X)$		\\
+											& $i,j$ 	&is in wavefunction			\\
+		\hline \rule{0pt}{3ex}
+		$\an a \ac {ijk} \Gpq$				&$X,i$		&$(aX \rightarrow jk)$		\\
+											&$i,j$		&$(a \rightarrow k)$		\\
+		\hline \rule{0pt}{3ex}
+		$\an {\bar a} \ac {\bar i jk} \Gpq$	&$X,j$		&$(\bar a k \rightarrow \bar i X)$		\\
+											&$j,k$		&$(\bar a \rightarrow \bar i)$		\\
+		\hline \rule{0pt}{3ex}
+		$\an {ab} \ac {ijkl} \Gpq$			&$i,j$		&$(ab \rightarrow kl)$		\\
+		\hline \rule{0pt}{3ex}
+		$\an {a  \bar b} \ac {ijk \bar l} \Gpq$			&$i,j$		&$(a \bar b \rightarrow k \bar l)$		\\
+		\hline \rule{0pt}{3ex}
+		$\an {\bar a \bar b} \ac {i j \bar k \bar l} \Gpq$	&$i,j$		&$(\bar a \bar b \rightarrow \bar k \bar l)$		\\
+		
+		\hline \hline \rule{0pt}{3ex}
+		$S$									&$ r, \bar s$ 	& $\Hij{S}{\Gpbq^{r \bar s}}$	\\
+		\hline \hline \rule{0pt}{3ex}
+		$\ac {i \bar j} \Gpbq$				& $X, \bar Y$ 	&$(i \bar j \rightarrow X \bar Y)$		\\
+											& $X,i$ 		&$(\bar j \rightarrow X)$		\\
+											& $X,\bar j$ 	&$(i \rightarrow X)$		\\
+											& $i,\bar j$ 	&is in wavefunction			\\
+											
+											
+		\hline \rule{0pt}{3ex}
+		$\an a \ac {ij \bar k} \Gpbq$		&$X,\bar k$		&$(aX \rightarrow ij)$		\\
+											&$i,\bar k$		&$(a \rightarrow j)$		\\
+											&$i,\bar X$		&$(a \bar k \rightarrow j \bar X)$		\\
+											
+		\hline \rule{0pt}{3ex}
+		$\an {ab} \ac {ijk \bar l} \Gpbq$			&$i,\bar l$		&$(ab \rightarrow jk)$		\\
+		\hline \rule{0pt}{3ex}
+		$\an {a  \bar b} \ac {ijk \bar l} \Gpbq$			&$i,j$		&$(a \bar b \rightarrow k \bar l)$		\\
+		\hline \rule{0pt}{3ex}
+		$\an {a  \bar b} \ac {ij \bar k \bar l} \Gpbq$			&$i,\bar k$		&$(a \bar b \rightarrow j \bar l)$		\\
+	\end{tabular}
 \end{table}
 
 
