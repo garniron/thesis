@@ -2,5 +2,77 @@
 
  
 \begin{document}
-...
+
+\begin{algorithm}
+\KwData{$\kalpha$ the considered exernal determinant}
+\KwData{$D_i$ the list of $N$ internal determinants connected to $\kalpha$}
+\KwResult{finds all diamonds in $\mathcal{O}(N_{ref} \times N)$} 
+
+\ForAll{$\kI$ with $EXC(\kI, \kalpha) \leq 4$}{
+
+$\delta \gets -(I + \alpha)$ \;
+$i \gets 1$ \;
+$j \gets 1$ \;
+\While{$j \leq N \wedge i \leq N$}{
+	\uIf{$D_j - D_i > \delta$}{
+		increment $i$ \;
+	}
+	\uElseIf{$D_j - D_i < \delta$}{
+		increment $j$ \;
+	}
+	\Else
+	{
+		\tcc{$\hat T_{I \rightarrow D_j}$ is $D_j-I$}
+		\tcc{$D_i + (D_j-I) = \alpha$}
+		
+		
+		
+		%\tcc{\alert{check diamond}}
+		%\If{$(I \oplus D_i \wedge I = D_j \oplus \alpha \wedge D_j) \wedge (I \oplus D_i \wedge D_i = D_j \oplus \alpha \wedge \alpha)$}{
+		%\If{$\hat T_{I \rightarrow D_i} = \hat T_{D_j \rightarrow \alpha}$}{
+		
+		\tcc{\alert{check if addition applies correct excitaion}}
+		\tcc{impossible exciation results in an abnormal number of modified spinorbitals}	
+		\If{$||D_j \oplus I|| = ||D_i \oplus \alpha||$}{
+			diamond found \;
+		}
+		increment $i$ and $j$ \;
+	}
+}
+}
+\end{algorithm}
+
+Applying an impossible excitation by addition, will usually lead to an abnormal result with a wrong number of ``electrons''. But in some cases, it may lead to an existing determinant. 
+
+
+
+This algorithm works when bitstrings are considered binary integers of arbitrary size. However, no assumption is made about the operators involved in the diamond, they can be any combination of creations and anihilations. Therefore, for simplification purpose, it is possible to consider all 64-bit integers independently, each one carrying a subset of the operators involved in the excitation.
+
+Essentially, adding and substracting can be done integer-wise, without the added complexity of carry and overflow.
+Because integers of lower $\Nint$ vary more, they should be given more weight when comparing(???)
+
+
+
+\begin{algorithm}
+	\KwData{$I[]$ the children of $\kI$}
+	
+	\ForAll{$\ket {G_p}$ singly ionized generator}{
+		\tcc{indexed by 1 hole and 2 particles}
+		$c_\alpha[h,p1,p2]$ \;
+		\tcc{$\kalpha = a_h a^\dagger_{p1} a^\dagger_{p2} \ket {G_p}$}
+		\ForAll{$I,I[r],I[s]$}{
+			$\alpha \gets I \oplus I[r] \oplus I[s]$ \;
+			\tcc{check $||\alpha||$ ?}
+			$x \gets G_p \oplus \alpha$ \;
+			\If{$||x|| = 3$}{
+				$(h,p1,p2) \gets \texttt{BITSTRING\_TO\_LIST}(x)$ \;
+				increment $c_\alpha[h,p1,p2]$ \;		
+			}
+		}
+	}
+\end{algorithm}
+
 \end{document}
+
+
+
