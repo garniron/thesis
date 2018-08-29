@@ -75,7 +75,7 @@ All the program is built such that the $\alpha$ and $\beta$ spinorbitals share t
 \section{Determinant internal representation}
 \label{sec:det_representation}
 
-Determinants can be written as a string of creation operators applying to the vacuum state $\vac$.
+Determinants can be written as a string of creation operators applied to the vacuum state $\vac$.
 \begin{equation}
 \ac{i} \ac{j} \ac{k} \vac = \kI
 \end{equation}
@@ -294,7 +294,7 @@ Let $\bitI$ and $\bitJ$ be the bitstring representations of $\kI$ and $\kJ$, and
 \section{Computing Excitations}
 
 An algorithm used to compute the excitation degree is presented as algorithm \ref{alg:EXC_DEGREE}, and one to compute the sets of created holes and particles as algorithm \ref{alg:EXC}. Algorithm \ref{alg:EXC}, however, returns the sets as bitstrings. Extracting the indices from a bitstring is another basic operation, presented as algorithm \ref{alg:LIST_FROM_BITSTRING}.
-Because computing excitations is a hotspot of the program, and because we are typically interested in double excitations at most, a more specialized algorithm can be used (\alert{PAS ENCORE ECRIT/POMPÉ}).
+Because computing excitations is a hotspot of the program, and because we are typically interested in double excitations at most, a more specialized algorithm can be used.\cite{Scemama_2013}
 
 
 \begin{algorithm}[h!]
