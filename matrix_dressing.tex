@@ -281,10 +281,14 @@ with $j$ the task index associated with $I$, i.e. $J[j]=I$. These sets are track
 \begin{algorithm}
 	\caption{PRECOMPUTE\_MONTECARLO}
 	\label{PRECOMPUTE_MONTECARLO}
-	\tcc*[h]{Computes task queue}
-	
+	\tcc{Computes task queue}
+		\alert{pour $M_m$ deplacer dans le texte?} \;
+		\KwData{$M_m$ the desired number of combs for checkpoints $m$. $M_0 = 0$ for convenience. $M_{n+1} > M_n$, $\exists M_n > \Ngen$}
+		
 		$\tilde M$ array size $\Ndet$ initialized with $0$\;
 		$u$ array size $\Ngen$ initialized with random numbers $\in [0,1)_\mathbb{R}$ \;
+		
+		$R^{-1}[0] \gets 0$ \;
 		$N_c \gets 0$ \;
 		$N_j \gets n_0(1)$ \;
 		\For{$i=1,N_j$}{
@@ -292,26 +296,22 @@ with $j$ the task index associated with $I$, i.e. $J[j]=I$. These sets are track
 			$J[i] \gets i$ \;
 		}
 		
-		$m \gets 1$ \;
+		$N_{cp} \gets 0$ \;
 		$F \gets N_j+1$ \;
 		\While{$N_j < N_{gen}$}{
 			ADD\_COMB shown as algorithm \ref{alg:FILL_TOOTH} \;
 			FILL\_TOOTH shown as algorithm \ref{alg:ADD_COMB} \;
-		  
-		  
-		  %$oldcurth \gets curth$ \;
-		  %\While{$curth \leq N_{cpmax}$}{
-		  %	\If{$N_j \leq cpthreshold[curth]$}{
-		  %		$curth \gets curth + 1$ \;
-		  %	}
-		  %}
-		  
-		  \If{$M_m = N_c$}{
-		  	$R^{-1}[m] \gets N_j$ \;
-		    %$cpthreshold[m] \gets N_j$ \;
-            $M_{m,*} \gets \tilde M$ \;
-            $m \gets m+1$ \;
-		  } 
+			\If{$M_{N_{cp}+1} = N_c$}{
+				$N_{cp} \gets N_{cp}+1$ \;
+				$R^{-1}[N_{cp}] \gets N_j$ \;
+				 %$cpthreshold[m] \gets N_j$ \;
+				$M_{N_{cp},*} \gets \tilde M$ \;
+			} 
+		}
+		\If{$R^{-1}[N_{cp}] \neq N_j$}{
+			\tcc{adds a final checkpoint}
+			$N_{cp} \gets N_{cp}+1$ \;
+			$R^{-1}[N_{cp}] = N_j$ \;
 		}
 \end{algorithm}
 
@@ -333,33 +333,33 @@ with $j$ the task index associated with $I$, i.e. $J[j]=I$. These sets are track
 	%\SetKwProg{Fn}{Function}{:}{}
 	
 	%\Fn(\tcc*[h]{Optional algorithm to reorder jobs so checkpoints are reached as fast as possible.}){\FMain{some args}}{
-		$lastNj \gets 1$ \;
+		%$lastNj \gets 1$ \;
 		\For{$m=1,N_{cp}$}{
 			$Nmoved \gets 0$ \;
-			\For{$j=lastNj,R^{-1}[m]$}{
+			$firstTask \gets R^{-1}[m-1]+1$ \;
+			\For{$j=firstTask,R^{-1}[m]$}{
 				\If{$M_{m,J[j]} = 0 \wedge J[j] > \dot n_0(m)$}{
 					\tcc{ensures moved jobs are at the end of the checkpoint once sorted}
 					$J[j] \gets J[j] + \Ngen$ \;
 					$Nmoved \gets Nmoved + 1$ \;
 				}
 			}
-			sort array J from $lastNj$ to $R^{-1}[m]$, inclusive \;
+			sort array J from $firstTask$ to $R^{-1}[m]$, inclusive \;
 			\tcc{moved jobs are sent to the next checkpoint}
 			$R^{-1}[m] \gets R^{-1}[m] - Nmoved$ \;
 			\tcc{restores moved jobs original value}
 			\For{$j=R^{-1}[m]+1,R^{-1}[m] + Nmoved$}{
 				$J[j] \gets J[j] - \Ngen$ \;	
 			}
-			$lastNj \gets R^{-1}[m] + 1$ \;
 		}
-		$k \gets 1$ \;		
-		\For{$i=2,N_{cp}$}{
-			\If{$R^{-1}[k] \neq R^{-1}[i]$}{
-				$k \gets k + 1$ \;	
-				$R^{-1}[k] \gets R^{-1}[i]$ \;
-			}		
-		}
-		$N_{cp} \gets k$ \;
+		%$k \gets 1$ \;		
+		%\For{$i=2,N_{cp}$}{
+	%		\If{$R^{-1}[k] \neq R^{-1}[i]$}{
+	%			$k \gets k + 1$ \;	
+%				$R^{-1}[k] \gets R^{-1}[i]$ \;
+%			}		%
+%		}
+%		$N_{cp} \gets k$ \;
 \end{algorithm}
 
 Algorithm \ref{alg:OPTIMIZE_MONTECARLO} is an optional reorganization of jobs order. It ensures results for a checkpoint are available as quickly as possible, without altering them. Some checkpoints may however be removed if no extra computation is required to reach the next one ; this situation can't happen in the unoptimized task queue, because of the tooth filling. Two things are taken into consideration:
@@ -372,13 +372,50 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 
 
 
+\begin{algorithm}
+	\label{COMPUTE_EPSILON}
+	\caption{COMPUTE\_EPSILON}
+		\KwResult{ $\tilde \epsilon$}
+		$\tilde \epsilon^*_* \gets 0$ \;
+		$F \gets n_0(1)+1$ \;		
+		\For{$m=1,N_{cp}$}{
+			\For{$i=R^{-1}[m-1]+1,R^{-1}[m]$}{
+				$d[J[i]] \gets true$ \;			
+			}
+			\While{$d(U+1)$}{
+				$U \gets U+1$ \;
+		  	}
+		  	
+		  	$\dot t_m \gets N_{teeth}+1$ \;
+			$\dot n_0(m) \gets N_{gen}$ \;
+			
+			\For{$t=2,N_{teeth}+1$}{
+				\If{$U < n_0(t)$}{% rTeethI[t]$}{
+					$\dot t_m \gets t-1$ \;
+					$\dot n_0(m) \gets n_0(t-1)$ \;
+					break loop \;
+				}
+			}
+			
+			
+			%\For{$t=\dot t_m,N_{teeth}$}{
+				
+				\For{$i=\dot n_0(m)+1, \Ngen$}{
+					$\tilde \epsilon^m_i \gets \frac{W_T \times M_{m,i}}{w[i]}$ \;
+				}
+			%}
+		}
+		\For{$m=N_{cp},2,step=-1$}{
+			$\tilde \epsilon^m_* \gets \tilde \epsilon^m_* - \tilde \epsilon^{m-1}_*$ \;
+		}
+\end{algorithm}
 
 
 \begin{algorithm}
 	\label{COMPUTE_EPSILON}
 	\caption{COMPUTE\_EPSILON}
 		\KwResult{ $\tilde \epsilon$}
-		$\epsilon^*_* \gets 1$ \;
+		$\tilde \epsilon^*_* \gets 0$ \;
 		$F \gets n_0(1)+1$ \;		
 		\For{$m=1,N_{cp}$}{
 			\While{$F \leq N_{gen}$}{
@@ -411,15 +448,20 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 		}
 \end{algorithm}
 
+\newcommand{\cpsent}{\text{cp\_sent}}
+\newcommand{\cpdone}{\text{cp\_done}}
+\newcommand{\cpmax}{\text{cp\_done}}
+\newcommand{\willsend}{\text{will\_send}}
+
 \begin{algorithm}
 	\tcc{code for a slave node, OMP parallel}
 	
 	cp\_done, cp\_sent : shared scalars initialized to $0$ \;
 	cp\_max : shared array size $N_{proc}$ initialized to $0$ \;
-	
+	$f$ : shared array size $\Ngen$ initialized to $0$ \;
 	
 	\tcc{loop for each core $iproc$}
-	\While{}{
+	\While{$\cpdone > \cpsent \vee m < N_{cp}+1$ }{
 		try to get task $(I,s)$ from queue \;
 		\uIf{task was available}{
 			$m$ so that $I \in \mathcal{P}_m$ \;	
@@ -428,22 +470,22 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 		}
 		will\_send $\gets 0$ \;
 		--OMP CRITICAL-- \;
-		cp\_max$[iproc] \gets m$ \;
-		cp\_done $\gets min(\text{cp\_max}) -1$ \;
-		\If{cp\_done > cp\_sent}{
-			will\_send $\gets$ cp\_done \;		
-			cp\_sent $\gets$ cp\_done \;		
+		$\cpmax[iproc] \gets m$ \;
+		$\cpdone \gets min(\text{cp\_max}) -1$ \;
+		\If{$\cpdone > \cpsent$}{
+			$\cpsent \gets \cpsent + 1$ \;		
+			$\willsend \gets \cpsent$ \;				
 		}
 		--END OMP CRITICAL-- \;
-		\If{will\_send $\neq 0$}{
-			SEND $\Delta^{\text{will\_send}}$ shown in algo TBD
+		\If{$\willsend \neq 0$}{
+			SEND $\Delta^{\willsend}$ shown in algo TBD
 		}
-		\If{$m = N_{cp}+1$}{
-			exit \;
+		\If{$m < N_{cp}+1$}{
+			UPDATE with I shown in algo TBD \;
 		}
-		UPDATE with I shown in algo TBD \;
 	}
 \end{algorithm}
+
 
 \begin{algorithm}
 	\tcc{UPDATE}
@@ -452,41 +494,46 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 	
 	\KwData{from outer scope : $s, I \in \mathcal{P}_m$} 
 	\BlankLine
-	$t$ so that $I \in P_t$ \;
-	\alert{notation pour fragmentation pas defini}
+	$t$ so that $I \in \mathcal{T}_t$ \;
 	
-	compute $\Delta_{I,s}$ ($\Delta_{I}$ avec fragmentation index $s$ ...) \;
+	compute $\Delta_{I,s}$ \;
 	\tcc{lock global arrays before update}
-	$\Delta^{D,t} \gets \Delta^{D,t} + \Delta_I$ \;
-	\For{$m'=m,N_{cp}$}{
-		\If{$\tilde e^m_I \neq 0$}{
-			$\tilde \Delta^{m'} \gets \tilde \Delta^{m'} + \frac{W_T}{w_I} \Delta_I$ \;
+	$\Delta^{D,t} \gets \Delta^{D,t} + \Delta_{I,s}$ \;
+	\For{$p=m,N_{cp}$}{
+		\If{$\tilde e^p_I \neq 0$}{
+			$\Delta^{S,p} \gets \Delta^{S,p} + \tilde \epsilon^{p}_I \Delta_{I,s}$ \;
 		}
 	}
-	$e_{\Delta_I} \gets e_{\Delta_I} + C \cdot \Delta_{I,s}$ \;
+	$x \gets \Psi \cdot \Delta_{I,s}$ \;
+	--ATOMIC-- \;
+	$e_I \gets e_I + x$ \;
 	$f[I] \gets f[I] + 1$ \;
+	--END ATOMIC-- \;
 \end{algorithm}
 
 
 \begin{algorithm}
 	\tcc{SEND}
 	
-	\tcc{compute partial value of $\Delta^m$ with partial values of $\Delta^{D,t}$ and $\tilde \Delta^m$}
+	\tcc{compute partial value of $\Delta^m$ with partial values of $\Delta^{D,t}$ and $\Delta^{S,m}$}
+	\tcc{sending information for checkpoint $m$}
+	
+	$\dot f \gets \sum_{I \in \mathcal{P}_m} f[I]$ \;
+	\If{$\dot f = 0$}{
+		return \;
+	}
 	
 	$\Delta^m \gets 0$ \;
-		\For{$m'=m,1$}{
-				\alert{erreur sur le facteur?} \;
-				$\Delta^m \gets \Delta^m + \frac{\tilde \Delta^{m'}}{M_m}$
-			}
-			
-			\For{$t=t-1,0,-1$}{
-				$\Delta^m \gets \Delta^m + \Delta^{D,t}$ \;
-			}
-			
-			
-			
-	$\mathcal{I}$ the set of $I \in \mathcal{P}_m$ with $f[I] > 0$ \;
-	send ($\Delta^m$, $\mathcal{I}$, $e_{\Delta_{I \in \mathcal{I}}}$, $f[I \in \mathcal{I}]$)
+	\For{$p=m,1$}{
+		$\Delta^m \gets \Delta^m + \Delta^{S,p}$
+	}
+	$\Delta^m \gets \frac{\Delta^m}{M_m}$ \; 
+	\For{$t=\dot t_m-1,0,-1$}{
+		$\Delta^m \gets \Delta^m + \Delta^{D,t}$ \;
+	}
+	%$\mathcal{I}$ the set of $I \in \mathcal{P}_m$ with $f[I] > 0$ \;
+	\tcc{$f$ from the slave algorithm can be used to send $e_{I \in \mathcal{P}_m}$ as a sparse \alert{vector/matrix}}
+	send ($m$, $\Delta^m$, $e_{I \in \mathcal{P}_m}$, $\dot f$) \;
 \end{algorithm}
 
 
@@ -515,8 +562,8 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 			$m \gets m+1$ \;
 		}
 		\Else{
-			retrieve $(l, \breve {\Delta}^l$, $\breve {e}_{*},\breve f)$  \;
-			increment $e_{*}$ with $\breve e_{*}$\;
+			retrieve $(l, \breve {\Delta}^l$, $\breve {e}_{I \in \mathcal{P}_l},\breve f)$  \;
+			increment $e_{I \in \mathcal{P}_l}$ with $\breve e_{I \in \mathcal{P}_l}$\;
 			increment $\Delta^l$ with $\breve \Delta^l$ \;
 			decrement $\dot f[l]$ with $\breve f$\;
 		}
