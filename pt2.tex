@@ -1,6 +1,6 @@
 \documentclass[./thesis.tex]{subfiles}
 
- \newcommand{\minDetInTeeth}{\text{minDetInTeeth}}
+\newcommand{\minDetInT}{\text{minDetInT1}}
 \newcommand{\Nteeth}{N_\text{teeth}}
 \newcommand{\lTeethI}{\text{lTeethI}}
 
@@ -244,10 +244,12 @@ The number or samples in the deterministic range, therefore, is function of a to
 
 We can write the expression of $B_t(u)$ the sample value associated with a comb. It is function of a randow number $u \in [0,1)_\mathbb{R}$ and $t$ the index of the first non-deterministic tooth.
 
-\begin{equation}
+\begin{align}
 \label{eq:combvalue}
-B_t(u) = \sum_{i=t-1}^{N_{teeth}-1} e_{w[u_0+ W_T(u+i)]}
-\end{equation}
+B_t(u) = W_T \sum_{i=t-1}^{N_{teeth}-1} \frac{e_{y(u+i)}}{w_{y(u+i)}} \\
+y(x)=\text{FIND\_SAMPLE}(u_0+ W_T \times x, W)
+\end{align}
+\alert{merite sans doute plus d'explications...}
 
 An illustrative exemple is given as figure \ref{fig:toothindet}.
 
@@ -283,7 +285,8 @@ After drawing $n$ random numbers forming the set $\mathcal{U}$, and given $\math
 \subsection*{why an initial deterministic part?}
 
 The initial deterministic range $\mathcal{T}_0$ is a technical constraint.
-Because samples are sorted with decreasing $\tilde w_i$, each tooth is guaranteed to contain as many or more samples than the previous one.
+
+Because samples are sorted with decreasing $\tilde w_i$, it is guaranteed that $|\mathcal{T}_{t>t'}| \geq |\mathcal{T}_{t'>0}|-1$.
 For each comb, we draw a sample in each teeth, and when a tooth is entirely computed, it is moved to $\mathcal{D}$. Thus, it is immediately obvious that a tooth containing a single sample makes no sense, as it will be instantly moved to $\mathcal{D}$ ; it can as well be considered part of it. Because it's usually accepted (???) that it takes at least 30 samples to estimate a variance, we can go further and consider that a tooth with fewer than 5-10 samples will be moved to $\mathcal{D}$ too fast to be of real interest. Because the first $C_I^2$ are usually disproportionately large, it's not possible to fit that many in a tooth. Therefore they are immediately considered part of $\mathcal{D}$.
 
 \subsection*{desired \textit{vs} effective repartition function}
@@ -352,17 +355,13 @@ The algorithm to find a sample index associated with drawing $u$ in with a repar
 	
 	\Fn(\tcc*[h!]{Finds sample index associated with drawing random value $v$ in a cumulative probability distribution $p$}){\FFind{$v$,$p$}}{
 		\KwData{$0 \leq v < 1$}
-		%\KwData{$cw[l-1] \leq v < cw[r] ; cw[0] = 0$}
-		\KwResult{Returns $i$ so that $p[i-1] \leq v < p[i]$. It's implied $p[0] = 0$}
-		\tcc {The result must be in the range $[l,r]_\mathbb{Z}$. We set them for the most general case}
-		$l \gets 1$ \;
-		$r \gets \text{size of array } p$ \;
+		\KwData{$p$ float array of size $N$ with $p[0]=0$, $p[N]=1$, $p[n+1] \geq p[n]$}
+		\KwResult{Returns $i$ so that $p[i-1] \leq v < p[i]$}
 		
-		\uIf{$v < p[l]$}{
-			\KwRet $l$ \;
-		}\ElseIf{$l-r \leq 1$}{
-			\KwRet $r$ \;
-		}
+		\tcc {The result must be in the range $[l,r]_\mathbb{Z}$. We set them for the most general case}
+		$l \gets 0$ \;
+		$r \gets N$ \;
+		
 		\While{$r-l > 1$}{
 			$i \gets \lfloor (r-l) / 2 \rfloor$ \;
 			\uIf{$p[i] < v$}{
@@ -390,8 +389,8 @@ The algorithm to find a sample index associated with drawing $u$ in with a repar
 The desired repartition function, which we chose to be $C_I^2$.
 \item[$\Nteeth$]
 A desired number of teeth
-\item[$\minDetInTeeth$]
-A desired minimal number of samples per teeth
+\item[$\minDetInT > 1$]
+A desired minimal number of samples in first teeth. All subsequent teeth are guaranteed to contain $\minDetInT-1$ samples.
 \end{description}
 
 \item
@@ -408,9 +407,9 @@ An array of size $\Nteeth+1$ so that $n_0(t)$ is the number of samples in $\math
 There is no trivial way to ensure teeth building will succeed with a given set of parameters. 
 With $n_0(1)$ the size of the initial deterministic set $\mathcal{T}_0$, teeth building is sure to fail if 
 \begin{equation}
-\Ngen - n_0(1) < \minDetInTeeth \times \Nteeth
+\Ngen - n_0(1) < \minDetInT \times \Nteeth
 \end{equation}
-However, it may not succeed as there is no guarantee the first tooth will contain $\minDetInTeeth$ samples. Because samples are sorted with decreasing $\tilde w_I$, each tooth is guaranteed to contains as many or more samples than the previous one, so we only need to ensure $|\mathcal{T}_1| \geq \minDetInTeeth$.
+However, it may not succeed as there is no guarantee the first tooth will contain $\minDetInT$ samples. Because samples are sorted with decreasing $\tilde w_I$, each tooth is guaranteed to contains as many or more samples than the previous one, so we only need to ensure $|\mathcal{T}_1| \geq \minDetInT$.
 Relying on the fact that relative values of $\tilde w_I$ get closer and closer, we increment $n_0(1)$ until either the first tooth contains enough samples, or the impossibility condition is reached.
 
 \begin{algorithm}
@@ -419,15 +418,16 @@ Relying on the fact that relative values of $\tilde w_I$ get closer and closer, 
 
 	\While{}{
 		$u_0 \gets \tilde W[n_0(1)]$\;
-		$r \gets \tilde W[n_0(1)+\minDetInTeeth]$ \;
+		$r \gets \tilde W[n_0(1)+\minDetInT]$ \;
 		$W_T = \frac{1 - u_0}{N_{teeth}}$ \;
 		\If{$W_T \geq r - u_0$}{
 			break loop\;
 		}
 		
 		$n_0(1) \gets n_0(1) + 1$ \;
-		\If{$\Ngen - n_0(1) < \minDetInTeeth \times \Nteeth$}{
-			STOP cannot compute with those parameters \;
+		\If{$\Ngen - n_0(1) < \minDetInT \times \Nteeth$}{
+			\tcc{cannot compute with those parameters} \;
+			try with fewer teeth \;
 		}
 
 	}
@@ -450,7 +450,7 @@ And the effective repartition function $w_I$
 
 \begin{algorithm}
 	\caption{COMPUTE\_TEETH}
-	
+	$w_{i<n_0(1)} \gets \tilde w_{i<n_0}$ \;
 	\For{$t=1,N_{teeth}$}{
 		$\text{tooth\_width} = \tilde W_{n_0(t+1)} - \tilde W_{n_0(t)}$ \;
 		\For{$i=n_0(t)+1, n_0(t+1)$}{
@@ -494,7 +494,11 @@ For a massively parallel implementation, we need to create a task queue. Because
 	$R[N_j] \gets N_c$ \;
 	FILL\_TOOTH shown as algorithm \ref{alg:FILL_TOOTH} \;
 	}
-	
+	\tcc{for convenience, makes sure the last task matches the last comb, rather than a tooth filling}
+	\If{$\Ngen > 1$}{
+		$R[N_j-1] \gets 0$ \;
+		$R[N_j] \gets N_c$ \;
+	}
 \end{algorithm}
 
 \begin{algorithm}
@@ -540,35 +544,38 @@ For a massively parallel implementation, we need to create a task queue. Because
 \begin{algorithm}
 	$n \gets 1$ \;
 	$t \gets 0$ \;
-	$F \gets 0$ \;
+	$U \gets 0$ \;
+	$f$ integer array size $\Ngen$ initialized with $F$ the fragmentation. \;
 	$d$ logical array size $\Ngen+1$ initialized with FALSE \;
+	$S$ and $S^{(2)}$ float arrays size $\Nteeth+1$ initialized with $0$ \;
 	\While{$n \leq N_{gen}$}{
-		\uIf{$d[J[n]]$}{
-			\While{$d[F+1]$}{
-				$F \gets F + 1$ \;
+		\uIf{$f[J[n]] = 0$}{
+			$d[J[n]] = true$ \;
+			\While{$d[U+1]$}{
+				$U \gets U + 1$ \;
 			}
-			\While{$F \geq n_0(t+1)$}{
+			\tcc{shortcut boolean evaluation required to prevent out of bound access to $n_0$}
+			\While{$t \leq \Nteeth \wedge U \geq n_0(t+1)$}{
 				$t \gets t+1$ \;
+				$E_0 \gets \sum_{I<n_0(t)} e_I$ \;
 			}
 			\If{$R[n] \neq 0$}{
-				$S_* \gets S_* + B_*(u[R[n]])$ \;
-				$S^{(2)}_* \gets S^{(2)}_* + B_*(u[R[n]])^2$ \;
-				\tcc{\alert{A VERIFIERXXXXXXXXXXXXXXXXXXXXXXXX}}
-				error $\gets \sqrt{(S_t^2 - S^{(0)}_t) n^{-1} }$ \;
+				$c \gets R[n]$ \;
+				$S_* \gets S_* + B_*(u[c])$ \;
+				$S^{(2)}_* \gets S^{(2)}_* + B_*(u[c])^2$ \;
+				$E \gets E_0 + S_t/c$ \;
+				error $\gets \sqrt{(S_t^{(2)} - {S_t}^2)(c-1)^{-1} }$ \;
+				exit on acceptable error \;
 			}
-
 			$n \gets n+1$ \;
 		}
 		\Else{
 			retrieve $I$ and $e_I$ \;
 			store $e_I$ \;
-			$d[I] \gets TRUE$ \;
+			$f[I] \gets f[I]-1$ \;
 		}
-			
-
-		
 	}
-	\tcc{full computation done}
+	\tcc{estimated energy $E \pm \text{error}$}
 \end{algorithm}
 
 
@@ -579,7 +586,7 @@ For a massively parallel implementation, we need to create a task queue. Because
 	$x \gets 0$ \;
 	\For{$t=N_{teeth},1,-1$}{
 		$I \gets FIND\_SAMPLE(u_0+W_T \times (u+t-1), W)$ \;
-		$x \gets x + e_{I}$ \;
+		$x \gets x + W_T \times \frac{e_{I}}{w_I}$ \;
 		$S_t \gets S_t + x$ \;
 		$S^{(2)}_t \gets S^{(2)}_t + x^{2}$ \;
 	}
