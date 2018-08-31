@@ -1,3 +1,4 @@
+
 \documentclass[./thesis.tex]{subfiles}
 
  
@@ -488,15 +489,40 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 	send ($\Delta^m$, $\mathcal{I}$, $e_{\Delta_{I \in \mathcal{I}}}$, $f[I \in \mathcal{I}]$)
 \end{algorithm}
 
+
 \begin{algorithm}
-	get ($\breve \Delta^m$, $\mathcal{I}$, $\breve e_{\Delta_{I \in \mathcal{I}}}$, $\breve f[I \in \mathcal{I}]$) \;
-	$\Delta^m \gets \Delta^m + \breve \Delta^m$ \;
-	\ForAll{$I \in \mathcal{I}$}{
-		$\breve e_{\Delta_{I}} \gets \breve e_{\Delta_{I}} + \breve e_{\Delta_{I}}$ \;
-		$f[I] \gets f[I] + \breve f[I]$ \;
+	$m \gets 1$ \;
+	$c \gets 1$ \;
+	$S$ and $S^{(2)}$ float arrays size $N_{teeth}+1$ initialized with $0$ \;
+	$e_* \gets 0$ \;
+	$\dot f[*] \gets \sum_{I \in \mathcal{P}_*} F_I$ \;
+	\While{}{
+		\uIf{$\dot f[m] = 0$}{
+			\While{$c \leq M_m$}{
+				$S_* \gets S_* + B_*(u[c])$ \;
+				$S^{(2)}_* \gets S^{(2)}_* + B_*(u[c])^2$ \;
+				$c \gets c+1$ \;
+				
+			}
+			\tcc{$E$ for printing purpose}
+			$E \gets \sum_{I \leq \dot{n}_0(m)} e_I + {S_t}/c$ \;
+			$t \gets \dot{t}_m$ \;
+			error $\gets \sqrt{(S_t^{(2)} - {S_t}^2) (c-1)^{-1} }$ \;
+			exit loop if $m=N_{cp}$ \;
+			\tcc{chose to not exit if next checkpoint is available}
+			exit loop if acceptable error and $f[m+1] \neq 0$\;
+			
+			$m \gets m+1$ \;
+		}
+		\Else{
+			retrieve $(l, \breve {\Delta}^l$, $\breve {e}_{*},\breve f)$  \;
+			increment $e_{*}$ with $\breve e_{*}$\;
+			increment $\Delta^l$ with $\breve \Delta^l$ \;
+			decrement $\dot f[l]$ with $\breve f$\;
+		}
 	}
+	$\Delta^m$ is the estimated dressing vector \;
 	
-	treat $e_{\Delta_{I}}$ as $e_I$ in the pt2 algorithm to estimate error \;
 \end{algorithm}
 
 \subsection{finding connections - microlists}
