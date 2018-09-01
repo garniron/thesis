@@ -518,7 +518,7 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 	\tcc{compute partial value of $\Delta^m$ with partial values of $\Delta^{D,t}$ and $\Delta^{S,m}$}
 	\tcc{sending information for checkpoint $m$}
 	
-	$\dot f \gets \sum_{I \in \mathcal{P}_m} f[I]$ \;
+	$\dot f \gets \sum_{I \in \mathcal{P}_{p\leq m}} f[I]$ \;
 	\If{$\dot f = 0$}{
 		return \;
 	}
@@ -542,7 +542,7 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 	$c \gets 1$ \;
 	$S$ and $S^{(2)}$ float arrays size $N_{teeth}+1$ initialized with $0$ \;
 	$e_* \gets 0$ \;
-	$\dot f[*] \gets \sum_{I \in \mathcal{P}_*} F_I$ \;
+	$\dot f$ integer array size $N_{cp}$ initialized with $\dot f[m] = \sum_{I \in \mathcal{P}_{p\leq m}} F_{I}$ \;
 	\While{}{
 		\uIf{$\dot f[m] = 0$}{
 			\While{$c \leq M_m$}{
