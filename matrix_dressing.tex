@@ -201,7 +201,7 @@ We rewrite $\Delta^m$ as
 
 \begin{equation}
 \label{eq:rewrite1}
-\Delta^{m} = \sum_{t=0}^{\dot t_m - 1} \Delta^{D,t}+ \sum_{I} \gamma^m_{I} \Delta_I
+\Delta^{m} = \sum_{t=0}^{\dot t_m - 1} \Delta^{D,t}+ \frac{1}{M_m} \sum_{I} \gamma^m_{I} \Delta_I
 \end{equation}
 
 The second term being $\Delta^m$ minus its deterministic contribution, we can trivially write (defining $\gamma^ 0_I=0$ for convenience)
@@ -210,7 +210,7 @@ The second term being $\Delta^m$ minus its deterministic contribution, we can tr
 \gamma^m_i = 
 \begin{cases}
 0 & \text{if } i \leq \dot n_0(m) \vee m=0 \\
-\epsilon^m_i = \frac{W_T \times M_{m,i}}{w_i \times M_m} & \text{if } i > \dot n_0(m) \wedge m \neq 0
+\epsilon^m_i \times M_m = \frac{W_T \times M_{m,i}}{w_i} & \text{if } i > \dot n_0(m) \wedge m \neq 0
 \end{cases}
 \end{equation}
 
@@ -223,12 +223,12 @@ We define
 
 We can rewrite the second term of equation \ref{eq:rewrite1}
 \begin{equation}
-\sum_{I} \gamma^m_{I} \Delta_I = \sum_{p \leq m} \Delta^{S,p}
+\frac{1}{M_m}\sum_{I} \gamma^m_{I} \Delta_I = \frac{1}{M_m} \sum_{p=1}^m \Delta^{S,p}
 \end{equation}
 
 And write the final form or $\Delta^m$ as
 \begin{equation}
-\Delta^m=\sum_{t=0}^{\dot t_{m}-1} \Delta^{D,t} + \sum_{1 \leq p \leq m} \Delta^{S,p}
+\Delta^m=\sum_{t=0}^{\dot t_{m}-1} \Delta^{D,t} + \frac{1}{M_m} \sum_{p=1}^m \Delta^{S,p}
 \end{equation}
 
 The vectors we need to store are $\Delta^{D,t}$ and $\Delta^{S,m}$. Each time we compute an elementary dressing vector $\Delta_I$, the need for update goes as follow
