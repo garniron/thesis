@@ -722,8 +722,8 @@ With this method, the cost of computing a phase --- after paying the overhead of
 \subsection{Double excitations}
 
 
-A double excitation ca be expressed as a product of two single excitations.
-In the case of an $\alpha \beta$ double excitation, the two single excitations are independant, so the phase factor is merely the product of the phase factors computed for each spin part. 
+A double excitation can be expressed as a product of two single excitations.
+In the case of an $\alpha \beta$ double excitation, the two single excitations are independent, so the phase factor is merely the product of the phase factors computed for each spin part. 
 \begin{equation}
 \phase{\kI}{\ordering \excorb{p \bar q}{r \bar s} \kI} = 
 \phase{\kI}{\ordering \excorb{p}{r} \kI} \times
@@ -838,6 +838,7 @@ array of keys is 64~kiB, the typical size of the L1 cache.
 
 \begin{table}
 \caption{Time to access the integrals (in ns/integral) with different access patterns. The time to generate random numbers (measured as 67~ns/integral) was not counted in the random access results.}
+\label{tab:integrals}
 \begin{center}
   \begin{tabular}{lrr}
     \hline
@@ -880,7 +881,7 @@ When the data is accessed with a stride of one (the $i,j,l,k$ storage) the cache
 
 With the hash table, the random access is only $2.18\times$ slower than the random access in the array. Indeed, two random accesses are required: one for the first element of the bucket of keys one for the corresponding value. The rest of the extra time corresponds to the binary search. The locality of the data can be exploited: when the access is done with a regular access pattern, the data is fetched $\sim 3\times$ faster than using a random access.
 
-A CIPSI calculation was run with the array storage and with the hash table storage. With the hash storage, the total wall clock time was increased by a factor of two.
+A CIPSI calculation was run with the array storage and with the hash table storage. With the hash storage, the total wall clock time was increased only by a factor of two.
 
 So to accelerate the access to the most frequently used integrals, all the
 integrals involving the $128$ closest MOs (molecular orbitals) to the Fermi
@@ -900,23 +901,22 @@ Generally speaking, a subspace of determinants is defined by a reference and a c
 Because of the determinant-driven approach, it may not be possible to store all the determinants of the considered subspace. \textbf{Pourquoi c'est lie au determinant-driven?}
 }
 
-% - as a matter of fact there is no algorithm to systematically generate all determinants for a defined subspace. The idea to 
 
 
 \paragraph{Reference space}
 The \QP allows to define either a determinants of a CAS (Complete Active Space) or the full-CI space as the reference.\footnote{Although the full-CI space is a particular CAS, it is treated differently at the code level.}
 
 \paragraph{Excitation class}
-The excitations to be applied to determinants of the reference space are defined by six sets of spinorbitals. For each 
+The excitations to be applied to determinants of the reference space are defined by sets of orbitals describing:
 \begin{itemize}
 \item
-single excitation,
+Single excitations
 \item
-the first excitation of a double excitation
+The first excitation of a double excitation
 \item
-the second excitation of a double excitation
+The second excitation of a double excitation
 \end{itemize}
-there is one set for the allowed holes and one set for the allowed particles.
+For each set category, there is one set for the allowed holes and one set for the allowed particles.
 This defines the rules used to generate determinants of the external space from the reference determinants.
 
 Typically, to define a CAS-SD (CAS augmented with all single and double excitations applied to all the determinants of the CAS), one defines:
