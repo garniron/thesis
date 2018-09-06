@@ -144,8 +144,8 @@ A simplified version of the algorithm goes as follow. It makes no approximation 
 
 
 \begin{algorithm}
-	\caption{UNBLOCK\_MONO}
-	\label{alg:unblock_mono}
+	\caption{UNBLOCK\_SINGLE}
+	\label{alg:unblock_single}
 		\KwData{ -------}
 		\KwResult{ -------------}
 		
@@ -183,8 +183,8 @@ A simplified version of the algorithm goes as follow. It makes no approximation 
           		$B_{r*} \gets FALSE$ \;
 		}
 		
-		\tcc{unblocks some elements of $B$ so that monoexcitations are properly generated}
-		Unblock\_mono($B$, p, $q$, $M_\alpha, M_\beta$)
+		\tcc{unblocks some elements of $B$ so that single excitations are properly generated}
+		Unblock\_single($B$, p, $q$, $M_\alpha, M_\beta$)
 			
 				
 			
@@ -231,13 +231,13 @@ a determinant present in the wavefunction
 \item
 a non-existing determinant
 \item
-a non-unique $\ket \alpha$ ( either a bi-excitation of a previous generator, or a mono-excitation of the current one )
+a non-unique $\ket \alpha$ ( either a bi-excitation of a previous generator, or a single excitation of the current one )
 \end{itemize}
 
 \item
 Since two electrons cannot occupy the same spinorbital, tag cells where $r$ or $s$ is occupied in $G_{pq}$ ( tags non-existing determinants ). 
 \item
-apply monoexcitation tagging : this is described - what a surprise - in section "monoexcitation tagging". ( tags duplicate $\ket \alpha$ ). This ensures monoexcitations for $G$ are generated exactly once.
+apply single excitation tagging : this is described - what a surprise - in section "single excitation tagging". ( tags duplicate $\ket \alpha$ ). This ensures single excitations for $G$ are generated exactly once.
 \item
 \textbf{selector loop} : inner loop over $D_J$ 
 \item
@@ -266,9 +266,9 @@ Tagged cells are simply tracked using a logical matrix $B(G_{pq})$.
 In some cases, full columns/rows are to be tagged. For performance purpose, it's useful to allocate a boolean vector to track fully tagged columns, and another to track fully tagged rows. While important, this optimization is fairly simple to set up and use, so for simplification purpose, it will be mostly ignored.
 
 
-\subsection{Monoexcitation tagging}
+\subsection{Single excitation tagging}
 
-The algorithm is designed to generate all $G_{pq}^{rs}$, which are doubly excited from $G$. The singly excited determinants are not explicitely generated, but are formally present as $G_{pq}^{ps}$.
+The algorithm is designed to generate all $G_{pq}^{rs}$, which are doubly excited from $G$. The singly excited determinants are not explicitly generated, but are formally present as $G_{pq}^{ps}$.
 An issue is that $G_{pq}^{ps}$ refers to the same determinant $G_q^s$ regardless of $p$, and the algorithm only tags a $\ket \alpha$ as duplicate if it has a previous generator $K$, i.e. if
 
 \begin{equation}
@@ -276,20 +276,20 @@ G_{pq}^{rs} = {K}_{p'q'}^{r's'} ; K = D_{I'<I}
 \end{equation}
 
 It doesn't cover the case $G_{pq}^{ps} = G_{p'q}^{p's}$.
-We default to tag $G_{pq}^{ps}$, which prevents generating mono-excitations, and selectively untag in certain cases:
+We default to tag $G_{pq}^{ps}$, which prevents generating single excitations, and selectively untag in certain cases:
 
 
 \begin{itemize}
 \item
-Untagging all $\alpha$ mono-excitations of $G$ exactly once:
+Untagging all $\alpha$ single excitations of $G$ exactly once:
 
-Pick $P$ any non-frozen $\beta$ spinorbital occupied in $G$. Untag $G_{Pq}^{Ps}$ whenever $q,s$ are of spin $\alpha$. Any $\alpha$ mono-excitation $q \rightarrow  s$ is untagged a single time.
+Pick $P$ any non-frozen $\beta$ spinorbital occupied in $G$. Untag $G_{Pq}^{Ps}$ whenever $q,s$ are of spin $\alpha$. Any $\alpha$ single excitation $q \rightarrow  s$ is untagged a single time.
 
-$P$ cannot be of spin $\alpha$, because mono-excitations $P \rightarrow  s$ and $q \rightarrow  P$ would be formally present as $G_{PP}^{Ps}$ and $G_{Pq}^{PP}$, which aren't ever generated, since for obvious reasons the algorithm never considers $G_{qq}$ or $G_{pq}^{rr}$.
+$P$ cannot be of spin $\alpha$, because single excitations $P \rightarrow  s$ and $q \rightarrow  P$ would be formally present as $G_{PP}^{Ps}$ and $G_{Pq}^{PP}$, which aren't ever generated, since for obvious reasons the algorithm never considers $G_{qq}$ or $G_{pq}^{rr}$.
 \item
-Untagging all $\beta$ mono-excitations exactly once:
+Untagging all $\beta$ single excitations exactly once:
 
-Pick $Q$ any $\alpha$ spinorbital occupied in $G$. If $p,q$ are of spin $\beta$, untag $G_{pQ}^{rQ}$. Any $\beta$ mono-excitation $p \rightarrow  r$ is untagged a single time.
+Pick $Q$ any $\alpha$ spinorbital occupied in $G$. If $p,q$ are of spin $\beta$, untag $G_{pQ}^{rQ}$. Any $\beta$ single excitation $p \rightarrow  r$ is untagged a single time.
 \end{itemize}
 
 

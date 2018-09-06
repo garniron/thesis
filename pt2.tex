@@ -6,8 +6,6 @@
 
 \begin{document}
 
-\section{def}
-
 \section{$\EPT$ \textit{vs} selection}
 
 The selection of determinants and the calculation of $\EPT$, all approximations aside, both imply the computation of $\epsilon(\alpha)$ for all $\ket \alpha$, so both can be computed at the same time. The selection is about identifying the set of the most important contributions, $\EPT$ is about computing the sum over all of them. There are two main consequences to this:
@@ -15,19 +13,17 @@ The selection of determinants and the calculation of $\EPT$, all approximations 
 At iteration $n$, identifying the most significant $\ket \alpha$ is about building $\Psi^{n+1}$ while summing the contributions is about estimating the cost of truncation for $\Psi^{n}$. Computing $\EPT$ for a "final" wavefunction therefore requires an extra iteration, which applies to a larger number of determinants and thus is more expensive. Note that if only $\EPT$ is required, a more efficient algorithm can be used.\cite{Cimiraglia_1996}
 
 \paragraph{The selection can take more approximations}
-Fully computing the sum has to be more costly than just identifying the largest terms. As was said in~\ref{sec:SELECTION}, the CIPSI algorithm can take pretty drastic approximations%, because we only try to identify the set of $\ket \alpha$ with the largest contributions $\epsilon(\alpha)$.
+The computation of the sum has to be more costly than just identifying the largest terms. As was said in chapter~\ref{chap:CIPSI}, the CIPSI algorithm can take pretty drastic approximations for the selection.\cite{Evangelisti_1983}
 	\begin{itemize}
 		\item{$t_g$}
 		allows to explore a reduced subset of $\ket \alpha$ in which we are almost sure to find those of interest.
 		\item{$t_s < t_g$}
 		allows for a less accurate and less expensive computation of $\epsilon(\alpha)$, which is unlikely to significantly change the identified set.
 	\end{itemize}
-	These approximations do not apply when computing $\EPT$. The very large number of smaller contributions makes them impossible to neglect without introducing a bias. Unfortunately, increasing $t_g$ and $t_s$ thresholds dramatically increases the computational cost.
+	These approximations do not apply when computing $\EPT$. The very large number of smaller contributions makes them impossible to neglect without introducing a bias, and increasing the $t_g$ and $t_s$ thresholds dramatically increases the computational cost.
 
 
-\paragraph{}
-
-Unfortunately, a partial computation of $\EPT$ always results in a biased result. Since $\epsilon(\alpha)$ is an energy contribution, it is necessarily negative, and $\EPT$ is a sum of same-sign contributions. Therefore, when $\EPT$ is truncated some energy is missing but there is little clue how much exactly. The $t_g$ and $t_s$ thresholds used in CIPSI can be seen as ways of adjusting this truncation for a given computational cost.
+Unfortunately, a partial computation of $\EPT$ always results in a biased result. Since $\epsilon(\alpha)$ is an energy contribution, it is necessarily negative, and $\EPT$ is a sum of same-sign contributions. Therefore, when $\EPT$ is truncated some correlation energy is missing but there is little clue how much exactly. The $t_g$ and $t_s$ thresholds used in CIPSI can be seen as ways of adjusting this truncation for a given computational cost.
 
 Before the stochastic computation of $\EPT$ was implemented, our best choice was to set low $t_g$ and $t_s$ thresholds while performing the selection, and accept very approximate values for $\EPT$ for intermediate wavefunctions. Then, once the selection was completed, we would raise them just for a final, very expensive ``$\EPT$ only'' iteration. In fact, an exact computation with $t_g=\Ngen$ and $t_s=\Ndet$ was often prohibitively long, so the final $\EPT$ was still biased, and the biases were not well controlled. The effect was particularly important when computing atomization energies, where the $\EPT$ values were much larger on the molecule than on the atoms.
 A practical way to circumvent this problem was already proposed 20 years ago, by giving an extrapolation of $\EPT$ when $t_g$ goes to zero.\cite{Angeli_1997} However, the algorithm we propose here has the advantage of giving an unbiased result within a statistical confidence interval.
@@ -38,6 +34,7 @@ We eventually solved the previously discussed problem by turning the bias into a
 \begin{equation}
 t_g = \Ngen \; ; \; t_s = \Ndet.
 \end{equation}
+\alert{Verifier $t_g = 0$}.
 
 Not only the estimate will be unbiased and much closer to the actual $\EPT$, but we will have an estimate for the error. Because $\EPT$ is itself used as an approximation
 \begin{equation}
