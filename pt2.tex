@@ -10,9 +10,9 @@
 
 \section{$\EPT$ \textit{vs} selection}
 
-The selection of determinants and the calculation of $\EPT$, all approximations aside, both imply computation of $\epsilon(\alpha)$ for all $\ket \alpha$, so both can be computed at the same time. The selection is about identifying the set of the largest ones, $\EPT$ is about computing the sum over all of them. There are two main consequences to this
+The selection of determinants and the calculation of $\EPT$, all approximations aside, both imply the computation of $\epsilon(\alpha)$ for all $\ket \alpha$, so both can be computed at the same time. The selection is about identifying the set of the most important contributions, $\EPT$ is about computing the sum over all of them. There are two main consequences to this:
 \paragraph{$\EPT$ is one iteration behind the selection}
-In a practical sense, the selection is ahead of $\EPT$. At iteration $n$, identifiying the most significant $\ket \alpha$ is about building $\Psi^{n+1}$ while summing them is about estimating the cost of truncation for $\Psi^{n}$. Computing $\EPT$ for a "final" wavefunction therefore requiers an extra iteration, which applies to a larger $\Psi$ and thus is more costly. \alert{(autres implementation de $\EPT$ possibles)}.
+At iteration $n$, identifying the most significant $\ket \alpha$ is about building $\Psi^{n+1}$ while summing the contributions is about estimating the cost of truncation for $\Psi^{n}$. Computing $\EPT$ for a "final" wavefunction therefore requires an extra iteration, which applies to a larger number of determinants and thus is more expensive. Note that if only $\EPT$ is required, a more efficient algorithm can be used.\cite{Cimiraglia_1996}
 
 \paragraph{The selection can take more approximations}
 Fully computing the sum has to be more costly than just identifying the largest terms. As was said in~\ref{sec:SELECTION}, the CIPSI algorithm can take pretty drastic approximations%, because we only try to identify the set of $\ket \alpha$ with the largest contributions $\epsilon(\alpha)$.
@@ -103,7 +103,8 @@ The simplest way to compute $\EPT$ with a Monte Carlo algorithm is to express $\
 \begin{equation}
 \EPT = \sum_{\alpha = 1}^{N_\alpha} \frac{ \Hij{\alpha}{\Psi}^2 }{\Evar - H_{\alpha \alpha} } = \sum_{\alpha = 1}^{N_\alpha} \epsilon(\alpha) = \frac{1}{N_\alpha} \sum_{\alpha = 1}^{N_\alpha} p(\alpha) N_\alpha \epsilon(\alpha) = \langle N_\alpha\, \epsilon(\alpha) \rangle,
 \end{equation}
-with $p(\alpha) = 1 / N_\alpha$.
+where $p(\alpha) = 1 / N_\alpha$. This corresponds to a uniform sampling of the $\kalpha$ determinants.
+
 %TODO : J'en suis la
 
 The largest the variance of $s_i$, the slowest the convergence. It is common to use a probability distribution $w$ as a convergence accelerator. We rewrite $S$ as 
@@ -118,7 +119,7 @@ which can be estimated by drawing sample indices $i$ with a probability of $w_i$
 \tilde S' = \frac{1} {\sum_{i \in \{ \mathcal{S'} \} } w_i} \sum_{i \in \{\mathcal{S'}\}} {s_i}
 \end{equation}
 
-Not using a repartition function is the particular case of drawing $\frac{s_i}{1}$ with a uniform probability ($1$ normalized over the $N$ samples). The variance of this sample space is that of $\frac{s_i}{w_i}$ rather than $s_i$. An ideal repartition function $w^\star$ would be so that
+Not using a partition function is the particular case of drawing $\frac{s_i}{1}$ with a uniform probability ($1$ normalized over the $N$ samples). The variance of this sample space is that of $\frac{s_i}{w_i}$ rather than $s_i$. An ideal partition function $w^\star$ would be so that
 
 \begin{equation}
 \frac{s_i}{w^\star_i} = K
@@ -129,7 +130,7 @@ with $K$ any constant. The variance would be zero, so covergence would be reache
 
 
 The representation we are going to use is an horizontal serie of $N$ boxes of width $w_i$, containing the sample index $i$.
-The sample index $i$ associated with drawing a random number $u \in [0,1)_\mathbb{R}$ is noted $w[u]$. It is determined using the cumulative repartition function $W$
+The sample index $i$ associated with drawing a random number $u \in [0,1)_\mathbb{R}$ is noted $w[u]$. It is determined using the cumulative partition function $W$
 \begin{equation}
 W_i = \sum_{k \leq i} w_k
 \end{equation}
@@ -144,7 +145,7 @@ w[u] = i \;; W_{i-1} \leq u < W_i
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/mc_representation}
 		\caption{Schematic representation of a Monte-Carlo computation}
 		\label{fig:mc_representation}
-		Drawing the random number $u$ with the repartition function $w$ yields sample index $i=w[u] = 2$
+		Drawing the random number $u$ with the partition function $w$ yields sample index $i=w[u] = 2$
 	\end{center}
 \end{figure}
 
@@ -154,10 +155,10 @@ w[u] = i \;; W_{i-1} \leq u < W_i
 \section{The sample space}
 
 \paragraph{``Sample'' and ``Comb''}
-Because of its original nature, this algorithm casts some ambiguity on what should be refered to as a ``sample''. We are going to estimate a sum of elementary contributions $e_I$, compute and store them individually, and draw them based on a repartition function ; therefore they will be refered to as the \emph{samples} and shown as such in the previously introduced representation. But the actual sample values ($s_i$ in the previous section) are sums over several $e_I$, refered to as \emph{combs}.
+Because of its original nature, this algorithm casts some ambiguity on what should be refered to as a ``sample''. We are going to estimate a sum of elementary contributions $e_I$, compute and store them individually, and draw them based on a partition function ; therefore they will be refered to as the \emph{samples} and shown as such in the previously introduced representation. But the actual sample values ($s_i$ in the previous section) are sums over several $e_I$, refered to as \emph{combs}.
 
 
-\paragraph{$C_I^2$ is used as a repartition function}
+\paragraph{$C_I^2$ is used as a partition function}
 Generator determinants are sorted with decreasing absolute values of $C_I$.
 	As can be seen in figure \ref{fig:ei}, the values of $e_I$ span many orders of magnitude and decrease rapidly with $I$, in an exponential-looking way. Smoothed values for $e_I$ are shown in figure \ref{fig:p_i}. There are a few reasons for that.
 \begin{itemize}
@@ -182,7 +183,7 @@ Consequently we chose
 \tilde w_I = C_I^2
 \end{equation}
 
-as a repartition function for $e_I$. This is however not the exact repartition function used in the Monte-Carlo scheme. We will later introduce some slight modification to it, for algorithmic reasons.
+as a partition function for $e_I$. This is however not the exact partition function used in the Monte-Carlo scheme. We will later introduce some slight modification to it, for algorithmic reasons.
 As can be seen in figure \ref{fig:eici2}, $\frac{e_I}{C_I^2}$, which is very close to our sample space, indeed has a lower variance than $e_I$ but is still similar in that it spans orders of magnitude and overall decreases.
 
 \section{Partition of the sample space}
@@ -289,11 +290,11 @@ The initial deterministic range $\mathcal{T}_0$ is a technical constraint.
 Because samples are sorted with decreasing $\tilde w_i$, it is guaranteed that $|\mathcal{T}_{t>t'}| \geq |\mathcal{T}_{t'>0}|-1$.
 For each comb, we draw a sample in each teeth, and when a tooth is entirely computed, it is moved to $\mathcal{D}$. Thus, it is immediately obvious that a tooth containing a single sample makes no sense, as it will be instantly moved to $\mathcal{D}$ ; it can as well be considered part of it. Because it's usually accepted (???) that it takes at least 30 samples to estimate a variance, we can go further and consider that a tooth with fewer than 5-10 samples will be moved to $\mathcal{D}$ too fast to be of real interest. Because the first $C_I^2$ are usually disproportionately large, it's not possible to fit that many in a tooth. Therefore they are immediately considered part of $\mathcal{D}$.
 
-\subsection*{desired \textit{vs} effective repartition function}
+\subsection*{desired \textit{vs} effective partition function}
 
-We have defined all teeth (except the special $\mathcal{T}_0$) as sharing the same total weight $W_T$. This is a constraint on our desired repartition function $\tilde w_I = C_I^2$ that will lead to the effective repartition function $w_I$.
+We have defined all teeth (except the special $\mathcal{T}_0$) as sharing the same total weight $W_T$. This is a constraint on our desired partition function $\tilde w_I = C_I^2$ that will lead to the effective partition function $w_I$.
 
-We are sampling comb values, but we have defined $\tilde w_I$ a repartition function for $e_I$. Since we impose that the same number of $e_I$ are drawn in each tooth - one per comb - the relative weight of teeth becomes irrelevant, and we effectively give all teeth the same weight 
+We are sampling comb values, but we have defined $\tilde w_I$ a partition function for $e_I$. Since we impose that the same number of $e_I$ are drawn in each tooth - one per comb - the relative weight of teeth becomes irrelevant, and we effectively give all teeth the same weight 
 \begin{equation}
 W_T=\frac{1-u_0}{N_{teeth}}
 \end{equation}
@@ -303,7 +304,7 @@ in the Monte-Carlo scheme. Therefore, the effective weight given to $e_I \in \ma
 w_{I \in \mathcal{T}_t} = W_T \times \frac{\tilde w_I}{\sum_{J \in \mathcal{T}_t} \tilde w_J}
 \end{equation}
 
-To leave the repartition function unaltered, we need all teeth to actually weight $W_T$
+To leave the partition function unaltered, we need all teeth to actually weight $W_T$
 
 \begin{equation}
 \sum_{J \in \mathcal{T}_t} \tilde w_J = W_T
@@ -311,9 +312,9 @@ To leave the repartition function unaltered, we need all teeth to actually weigh
 
 Clearly this is not going to be the case for any reartition function $\tilde w$. Schematically, as seen in figure \ref{fig:toothbuilding}, it would require the threshold between two teeth to exactly match the threshold between two samples. It is possible to artificially split a sample to get a matching threshold, but this adds some complexity implementationally speaking.
 
-We have enforced that all teeth contain at least 5-10 samples - and they usualy contain a lot more, up to hundreds of thousands. Therefore, a simpler solution is to ``round'' the teeth thresholds to the $e_I$ threshold directly above, which will result in teeth with weights close to $W_T$, and thus the effective repartition function will be little different from the desired one. Since our repartition function is an extremely rough estimation of $e_I$, this is unlikely to cause any significant change in convergence speed.
+We have enforced that all teeth contain at least 5-10 samples - and they usualy contain a lot more, up to hundreds of thousands. Therefore, a simpler solution is to ``round'' the teeth thresholds to the $e_I$ threshold directly above, which will result in teeth with weights close to $W_T$, and thus the effective partition function will be little different from the desired one. Since our partition function is an extremely rough estimation of $e_I$, this is unlikely to cause any significant change in convergence speed.
 
-Essentially, we will use $\tilde w$ only to define the $\mathcal{T}_t$ sets, then use $w$ as the actual repartition function. This gives us, by definition, teeth weighting exactly $W_T$.
+Essentially, we will use $\tilde w$ only to define the $\mathcal{T}_t$ sets, then use $w$ as the actual partition function. This gives us, by definition, teeth weighting exactly $W_T$.
 This is illustrated in figure \ref{fig:toothbuilding}.
  
  \begin{figure}[h!]
@@ -345,7 +346,7 @@ A convenient way to avoid this frustrating situation is, everytime a comb is dra
 
 \subsection{drawing}
 
-The algorithm to find a sample index associated with drawing $u$ in with a repartition function $w$ is show as algorithm \ref{alg:FIND_SAMPLE}.
+The algorithm to find a sample index associated with drawing $u$ in with a partition function $w$ is show as algorithm \ref{alg:FIND_SAMPLE}.
 
 \begin{algorithm}
 \label{alg:FIND_SAMPLE}
@@ -386,7 +387,7 @@ The algorithm to find a sample index associated with drawing $u$ in with a repar
 \emph{input}
 \begin{description}
 \item[$\tilde w_I$]
-The desired repartition function, which we chose to be $C_I^2$.
+The desired partition function, which we chose to be $C_I^2$.
 \item[$\Nteeth$]
 A desired number of teeth
 \item[$\minDetInT > 1$]
@@ -397,7 +398,7 @@ A desired minimal number of samples in first teeth. All subsequent teeth are gua
 \emph{output}
 \begin{description}
 \item[$w_I$]
-The effective repartition function
+The effective partition function
 \item[$n_0(t)$]
 An array of size $\Nteeth+1$ so that $n_0(t)$ is the number of samples in $\mathcal{D}$ with $\mathcal{T}_t$ the first non-deterministic tooth. For algorithmic convencience, $n_0(\Nteeth+1)=\Ngen$.
 \end{description}
@@ -446,7 +447,7 @@ Then, $n_0(t)$ can be fully computed
 
 %$n_0(\Nteeth)$ has to be treated separately, as by construction $u_0 + \Nteeth W_T = 1$, which is outside of the range $[0,1)_\mathbb{R}$ defined for $u$ in FIND\_SAMPLE.
 
-And the effective repartition function $w_I$
+And the effective partition function $w_I$
 
 \begin{algorithm}
 	\caption{COMPUTE\_TEETH}
