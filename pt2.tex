@@ -363,7 +363,7 @@ The algorithm to find a sample index associated with drawing $u$ in with a repar
 		$r \gets N$ \;
 		
 		\While{$r-l > 1$}{
-			$i \gets \lfloor (r-l) / 2 \rfloor$ \;
+			$i \gets \lfloor (r+l) / 2 \rfloor$ \;
 			\uIf{$p[i] < v$}{
 				$l \gets i$ \;
 			}
