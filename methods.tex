@@ -1,30 +1,20 @@
  
 \documentclass[./thesis.tex]{subfiles}
 \begin{document}
-
 Quantum chemistry aims at describing the electronic structures of molecuar systems.
-Usually, relativisic effects are neglected and the speed of nuclei is considered negligible compared to that of the electrons (Born-Oppenheimer approximation). In this context, the model system is a cloud of $N$ electrons and a set of $M$ nuclei considered poncutal, immobile charges. It can be described by solving Shrödinger's equation
-
+Usually, relativistic effects are neglected and the speed of nuclei is considered negligible compared to that of the electrons (Born-Oppenheimer approximation). In this context, the model system is a cloud of $N$ electrons and a set of $M$ nuclei considered poncutal, immobile charges. It can be described by solving Shrödinger's equation
 \begin{equation}
  \widehat{H}_n \Psi({\bf r}_1,\dots,{\bf r}_N) = E_n \Psi_n({\bf r}_1,\dots,{\bf r}_N)
 \end{equation}
-
 with $\widehat H$ the non-relativistic electronic Hamiltonian
-
 \begin{equation}
 \widehat{H} = \sum_{i=1}^{N} \Big ( -\frac{1}{2} \Delta_i - \sum_{j=1}^M \frac{Z_j}{|{\bf r}_i - {\bf R}_j|} \Big ) + \sum_{i=1}^{N} \sum_{k>i}^{N} \frac{1}{|{\bf r}_i - {\bf r}_k|}
 \end{equation}
-
-
-${\bf r}_i$ the spacial coordinates of electron $i$, ${\bf R}_j$ and $Z_j$ respectively the spacial coordinate and charge of nuclei $j$. Furthermore, because of the fermionic nature of electrons, $\Psi$ must statisfy the condition of being anti-symmetric with electron permutation.
-
+${\bf r}_i$ the spatial coordinates of electron $i$, ${\bf R}_j$ and $Z_j$ respectively the spatial coordinate and charge of nuclei $j$. Furthermore, because of the fermionic nature of electrons, $\Psi$ must satisfy the condition of being anti-symmetric with electron permutation.
 \begin{equation}
 \Psi({\bf r}_1, {\bf r}_2) = -\Psi({\bf r}_2, {\bf r}_1)
 \end{equation}
-
-
-We will use the so-called \emph{spin-free} formalism, in which the above condition is acheived by defining two types of electrons, $\alpha$ and $\beta$, and writing the wavefunction as a product of two determinants associated with $\alpha$ and $\beta$ electrons respectively.
-
+We will use the so-called \emph{spin-free} formalism, in which the above condition is achieved by defining two types of electrons, $\alpha$ and $\beta$, and writing the wavefunction as a product of two determinants associated with $\alpha$ and $\beta$ electrons respectively.
 \begin{equation}
 \begin{array}{c}
  \Psi({\bf r}_1,\dots,{\bf r}_{\Na},{\bf r}_{\Na+1},\dots,{\bf r}_N;
@@ -46,63 +36,41 @@ We will use the so-called \emph{spin-free} formalism, in which the above conditi
 \end{array} 
 \label{eq:slater}
 \end{equation}
-
-with $\{ \varphi_i \}$ a set of mono-electronic functions refered to as \emph{molecular orbitals}, or \emph{MO}, typically chosen orthogonal. This type of wavefunction is refered to as a \emph{slater determinant}. We call $N_\alpha$ and $N_\beta \leq N_\alpha$ the number of $\alpha$ and $\beta$ electrons.
-
-Even though typically, only one or a few $\ket{\Psi^n}$ associated with lowest eignenvalues are of interest, the Shrödinger's equation cannot be solved exactly \alert{(except for H?)}, and more or less drastic approximations need to be used. 
-
+with $\{ \varphi_i \}$ a set of mono-electronic functions refered to as \emph{molecular orbitals}, or \emph{MO}, typically chosen orthogonal. This type of wavefunction is revered to as a \emph{slater determinant}. We call $N_\alpha$ and $N_\beta \leq N_\alpha$ the number of $\alpha$ and $\beta$ electrons.
+Even though typically, only one or a few $\ket{\Psi^n}$ associated with lowest eigenvalues are of interest, the Shrödinger's equation cannot be solved exactly \alert{(except for H?)}, and more or less drastic approximations need to be used. 
 Molecular orbitals are typically defined as linear combinations of \emph{atomic orbitals}, or \emph{AO}, here noted $\chi_k$
-
 \begin{equation}
  \varphi_i({\bf r}) = \sum_k C_{ki} \chi_k({\bf r}).
 \end{equation}
-
-These functions qualify the used \emph{basis set}, and are usually themselves pre-defined linear combitations of gaussian functions. This is a restriction put on the form of the wavefunction, therefore it is known as the \emph{finite basis approximation}.
-
+These functions qualify the used \emph{basis set}, and are usually themselves pre-defined linear combinations of gaussian functions. This is a restriction put on the form of the wavefunction, therefore it is known as the \emph{finite basis approximation}.
 In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficient associated with with molecular orbitals are optimized so as to minimize the energy. This method, however does not take into account electronic correlation, \alert{bicoz fonctions mono-electroniques?}. For this, $\Psi$ must be expressed in a basis of N-electron functions. This basis is $\{\ket D_i \}$ the set of the Slater determinants that can be built by putting $N_\alpha$ electrons in $M$ orbitals and $N_\beta$ electrons in $M$ orbitals.
-The eignenvectors of $\widehat{H}$ are consequently expressed as a linear combination of slater determinants 
-
+The eigenvectors of $\widehat{H}$ are consequently expressed as a linear combination of slater determinants 
 \begin{equation}
 \ket{\Psi_n} = \sum_{i} c_i^n |D_i^n \rangle 
 \end{equation}
-
 Solving the eigenequation for state $n$ in this basis is refered to as \emph{full configurations interaction (FCI)} and yields a solution for Schrödinger's equation that is exact for the given basis set.
-This is however only acheivable for very small systems, given that $N_{FCI}$ the size of the determinants basis scales \alert{factorially} with the number of molecular orbitals
-
+This is however only achievable for very small systems, given that $N_{FCI}$ the size of the determinants basis scales \alert{factorially} with the number of molecular orbitals
 \begin{equation}
 N_{FCI} = \frac{M!}{N_\alpha ! (M-N_\alpha)!} \times \frac{M!}{N_\beta ! (M-N_\beta)!}
 \end{equation}
-
 Post-Hartree-Fock methods are trying to circumvent this problem, and therefore are essentially approximations of FCI. Different approach exist.
-
-
 \paragraph{traditional????? variational methods}
 In variational methods, Schrödinger's equation is projected in a reduced basis.
 Generally speaking, solving Schrödinger's equation in a basis of Slater determinants is called \emph{configurations interaction (CI)}, the FCI being the particular case where the whole $\{\ket D_i \}$ set is used. The general idea of these methods is to select a relevant subset of Slater determinants for the reduced basis.
-
-
-One possible approach is to effictively reduce the number of molecular orbital, by performing a FCI in a reduced set of orbitals and freezing occupation status for the others. This refered to as \emph{complete active space interaction configuration (CAS-CI)}. Choosing the CAS orbitals can require some expertise. The CAS-SCF method minimizes energy by both performing a CAS-CI and optimizing molecular orbitals.
-
+One possible approach is to effectively reduce the number of molecular orbital, by performing a FCI in a reduced set of orbitals and freezing occupation status for the others. This refered to as \emph{complete active space interaction configuration (CAS-CI)}. Choosing the CAS orbitals can require some expertise. The CAS-SCF method minimizes energy by both performing a CAS-CI and optimizing molecular orbitals.
 Another approach is to select determinants according to their excitation degree - by how many occupied orbitals they differ - with respect to some reference. If this reference is the Hartree-Fock determinant, the method known as CISD. Alternatively, the reference can be a CAS, in which case it is known as \emph{multi-reference configuration interaction (MR-CI)}.
-
-
 \paragraph{selected CI methods}
 These method rely on the same principle as the traditional????? ones, except that determinants aren't chosen a priori based on occupation or excitation criterion, but selected among the entire set of determinant based on their contribution to the wavefunction. Usual methods can be seen as exact resolution of Schrödinger's equation for a complete, well-defined set of determinant (and for a given basis set), while selected methods are more of a truncation of the FCI.
-
 \begin{equation}
 \ket{\Psi^{n}} = \sum_{i \in \mathcal{D}^n} c_i^{n} \ket{D^n_i}
 \end{equation}
-
 \begin{equation}
 e_\alpha = \frac{\Hij{\Psi^n}{\alpha}^2}{E^n - H_{\alpha \alpha}}
 \end{equation}
-
 \begin{equation}
 \mathcal{D}^{n+1} = \mathcal{D}^{n} \cup \{ \alpha^\star \}^n
 \end{equation}
-
 \begin{equation}
 E_{PT2}^n = \sum_{\alpha \in \{\alpha \}^n} e_\alpha
 \end{equation}
-
 \end{document}
