@@ -20,7 +20,7 @@ Because of the fermionic nature of electrons, $\Psi$ must satisfy the condition 
 \begin{equation}
 \Psi({\bf r}_1, {\bf r}_2,\dots,{\bf r}_N) = -\Psi({\bf r}_2, {\bf r}_1,\dots,{\bf r}_N)
 \end{equation}
-We will use the so-called \emph{spin-free} formalism, in which the above condition is achieved by defining two types of electrons, $\alpha$ and $\beta$, and writing the wavefunction as a product of two determinants associated with $\alpha$ and $\beta$ electrons respectively.
+Throughout this thesis, we will use the so-called \emph{spin-free} formalism, in which the above condition is achieved by defining two types of electrons, $\alpha$ and $\beta$, and writing the wavefunction as a \emph{Waller-Hartree double determinant},\cite{Pauncz_1989} namely the product of two determinants associated with $\alpha$ and $\beta$ electrons respectively.
 \begin{equation}
 \begin{array}{c}
  \Psi({\bf r}_1,\dots,{\bf r}_{\Na},{\bf r}_{\Na+1},\dots,{\bf r}_N;
@@ -43,7 +43,7 @@ D_\alpha({\bf r}_1,\dots,{\bf r}_{\Na}) \times D_\beta({\bf r}_{\Na+1},\dots,{\b
 \end{array} \\
 \label{eq:slater}
 \end{equation}
-with $\{ \varphi_i \}$ a set of one-electron functions referred to as \emph{molecular orbitals}, or \emph{MO}, typically chosen orthogonal. This type of wavefunction is referred to as a \emph{Slater determinant}. We call $N_\alpha$ and $N_\beta \leq N_\alpha$ the number of $\alpha$ and $\beta$ electrons.
+with $\{ \varphi_i \}$ a set of one-electron functions referred to as \emph{molecular orbitals}, or \emph{MO}, typically chosen orthogonal. This type of wavefunction is the spin-free formulation of a \emph{Slater determinant}. We call $N_\alpha$ and $N_\beta \leq N_\alpha$ the number of $\alpha$ and $\beta$ electrons.
 
 Molecular orbitals are typically defined as linear combinations of \emph{atomic orbitals}, or \emph{AO}, here noted $\chi_k$
 \begin{equation}
@@ -82,6 +82,20 @@ This is however only achievable for very small systems, given that $\NFCI$ the s
 Post-Hartree-Fock methods are trying to circumvent this problem, and therefore are essentially approximations of FCI.
 %Different approaches exist.
 
+\alert{ Il faut mettre ici l'expression des elements de matrice de H dans la
+base des determinants.  Il faut aussi dire que pour Hartree-Fock, en utilisant
+les equations de Roothaan on peut resoudre le probleme dans la base des AOs.
+Par contre, le probleme est beaucoup complique dans une base de fonctions a
+N-electrons car chaque element de matrice doit faire intervenir des integrales
+a N electrons.  Si les fonctions de base a N-electrons sont des determinants
+fabriques a partir de fonctions a 1 electron orthonormales, telles que les
+determinants de Slater, le calcul des elements de matrice de H devient beaucoup
+plus simple grace aux regles de Slater-Condon qui permettent de ne faire
+intervenir que des integrales a 2 electrons. Il faut donc introduire les regles
+de Slater-Condon.  Il faut aussi introduire ici la four-index transformation,
+qui est un des bottlenecks des methodes post-HF a cause de son scaling en
+$\order{N^5}$.  } 
+
 \section{Variational post-Hartree-Fock methods}
 
 In variational methods, Schrödinger's equation is solved in an $N$-electron basis.
@@ -91,9 +105,22 @@ One usual approach is to effectively reduce the number of molecular orbitals, by
 
 Another usual approach is to select determinants according to their excitation degree --- by how many occupied orbitals they differ --- with respect to some reference. If this reference is the Hartree-Fock determinant and only single and double excitations are considered, the method is known as \emph{Configuration Interaction with Single and Double excitations (CISD)}. Alternatively, the reference can be a CAS, in which case it is known as \emph{Multi-Reference Configuration Interaction (MR-CI)}.
 
+
+\alert{On voit que pour faire un CI, on a besoin de toutes les integrales
+bielectroniques. Donc ca coute au moins $\order{N^5}$.  Il faut diagonaliser
+$H$ dans la base des determinants, et il y en a souvent un tres grand nombre
+(plusieurs millions, voire milliards). Donc je pense qu'il faut introduire
+Davidson ici. Mettre dans la partie 'determiant driven' l'implementations qu'on
+a dans le QP, et tes reflexions sur Davidson en dans les perspectives a la fin.
+}
+
 \section{Perturbative methods}
 
-\alert{Pioche un peu chez Manus pour introduire MP2 et Epstein Nesbet...}
+\alert{Pioche un peu chez Manus pour introduire MP2 et Epstein Nesbet.}
+
+\alert{On voit que pour MP2, on n'a pas besoin de toutes les integrales
+bielectroniques : les $\braket{vv}{vv}$ ne sont pas necessaires. Donc ca coute
+forcement moins cher que le CI.}
 
 \section{Selected CI methods}
 
@@ -110,4 +137,16 @@ e_\alpha = \frac{\Hij{\Psi^n}{\alpha}^2}{E^n - H_{\alpha \alpha}}
 \begin{equation}
 E_{PT2}^n = \sum_{\alpha \in \{\alpha \}^n} e_\alpha
 \end{equation}
+
+\alert{Ici, tu peux expliquer que dans les methodes selectionnees a priori, on
+fabrique tous les determinants a partir d'une regle predefinie. Donc on peut
+facilement faire une fonction d'adressage des determinants. Pour le CAS, c'est
+la meme que pour le FCI (citer \cite{Knowles_1984}). Et pour le CISD, on peut
+utiliser les operateurs d'excitations. Il est donc facile quand on a une
+integrale sous la main de savoir a quels elements de matrice elle contribue, et
+on peut donc utiliser des approches de type \emph{integral-driven}. Quand on a
+un jeu arbitraire de determinants, on ne peut plus le faire facilement et on
+doit alors recourir aux approches \emph{determinant-driven}. La transition est
+facile avec le chapire suivant.}
+
 \end{document}
