@@ -49,7 +49,7 @@ Molecular orbitals are typically defined as linear combinations of \emph{atomic 
 \begin{equation}
  \varphi_i({\bf r}) = \sum_k C_{ki} \chi_k({\bf r}).
 \end{equation}
-These functions qualify the used \emph{basis set}, and are usually themselves pre-defined linear combinations of Gaussian functions. This is a restriction put on the form of the wavefunction, therefore it is known as the \emph{finite basis-set approximation}.
+These functions qualify the used \emph{basis set}, and are usually themselves pre-defined linear combinations of Gaussian functions. This is a restriction put on the form of the wavefunction, therefore it is known as the \emph{finite basis set approximation}.
 In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy. This method, however is missing some important physical effects. For instance, using Eq.\eqref{eq:slater} one can see that in this model opposite-spin electrons are statistically independent (or \emph{uncorrelated}):
 \begin{equation}
 \begin{split}
@@ -67,15 +67,15 @@ Electron correlation is defined as\cite{Lowdin_1959}
 \begin{equation}
 \Ecor = E_\text{exact} - E_\text{HF}
 \end{equation}
-where $E_\text{HF}$ is the \emph{Hartree-Fock limit}, i.e. the limit to which the Hartree-Fock energy converges when the size of the basis-set increases.
+where $E_\text{HF}$ is the \emph{Hartree-Fock limit}, i.e. the limit to which the Hartree-Fock energy converges when the size of the basis set increases.
 
-To include electron correlation effects, $\Psi$ must be expressed in a basis of $N$-electron functions. 
-Such a basis is $\{\ket D_i \}$ the set of all the possible Slater determinants that can be built by putting $N_\alpha$ electrons in $M$ orbitals and $N_\beta$ electrons in $M$ orbitals.
+To include electron correlation effects, $\Psi$ may be expanded in
+$\{\ket D_i \}$, the set of all the possible Slater determinants that can be built by putting $N_\alpha$ electrons in $M$ orbitals and $N_\beta$ electrons in $M$ orbitals.
 The eigenvectors of $\widehat{H}$ are consequently expressed as a linear combination of Slater determinants 
 \begin{equation}
 \ket{\Psi_n} = \sum_{i} c_i^n \ket{D_i}.
 \end{equation}
-Solving the eigenequation for state $n$ in this basis is referred to as \emph{full configurations interaction (FCI)} and yields a solution for Schrödinger's equation that is exact for the given basis set.
+Solving the eigenequation for state $n$ in this basis is referred to as \emph{full configurations interaction (FCI)} and yields a solution for Schrödinger's equation that is exact for the given atomic basis set.
 This is however only achievable for very small systems, given that $\NFCI$ the size of the determinants basis scales factorially with the number of molecular orbitals
 \begin{equation}
 \NFCI = \frac{M!}{N_\alpha ! (M-N_\alpha)!} \times \frac{M!}{N_\beta ! (M-N_\beta)!}
@@ -125,13 +125,13 @@ forcement moins cher que le CI.}
 
 \section{Selected CI methods}
 
-These methods rely on the same principle as the usual CI approaches, except that determinants aren't chosen \textit{a priori} based on an occupation or excitation criterion, but selected among the entire set of determinant based on their estimated contribution to the FCI wavefunction. Usual methods can be seen as an exact resolution of Schrödinger's equation for a complete, well-defined set of determinant (and for a given basis set), while selected CI methods are more of a truncation of the FCI.
-The main advantages of these methods compared to the \alert{variational} ones, are that since the most relevant determinants are considered, they will typically yield a more accurate description of physical phenomenon, and a much lower energy for an equivalent number of determinants.
-It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction. Therefore, a posteriori selection of determinants is a rather natural idea that has been implemented from the late 60s \alert{voler les refs de manus}. The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developped by \alert{voler les refs de manus}, that iteratively selects determinants by using a perturbative criterion. 
+These methods rely on the same principle as the usual CI approaches, except that determinants aren't chosen \textit{a priori} based on an occupation or excitation criterion, but selected \emph{on the fly} among the entire set of determinant based on their estimated contribution to the FCI wavefunction. Conventional CI methods can be seen as an exact resolution of Schrödinger's equation for a complete, well-defined set of determinants (and for a given atomic basis set), while selected CI methods are more of a truncation of the FCI.
+The main advantages of these methods compared to the more conventional \textit{a priori} selected ones, are that since the most relevant determinants are considered, they will typically yield a more accurate description of physical phenomena, and a much lower energy for an equivalent number of determinants.
+It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction. Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been implemented from the late 60s \alert{voler les refs de manus}. The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developped by \alert{voler les refs de manus}, that iteratively selects determinants by using a perturbative criterion.  \alert{Mettre ici l'algo general de CIPSI}.
 
-There is however a computational downside. In variational methods, the rule by which determinants are selected is known a priori, and therefore, one can map a particular determiant to some row or column index\cite{Knowles_1984}. As a consequence, it can be systematically determined to which matrix element of $\widehat{H}$ a bielectronic integral contributes. This allows for the implementation of so-called \emph{intergral-driven} methods, that work essentially by iterating over integrals.
-On the contraty, in selected method, determinants aren't known a priori. Therefore an explicit list has to be maintained, and there is no instantaneous way to know whether a determinant has been selected, or what its index is. Consequently, so-called \emph{determinant-driven} approaches will be used, in which iteration is done over determinants rather than integrals. This can be a lot more costly, since the number of determinants is typically much greater than the number of integrals. The former scales as $N!$ while the later scales as $N^4$ with the number of MO.
-Furthermore, determinant-driven methods require an effective way to compare determinants in order to extract an excitation operators, and a way to rapidly fetch the associated integral(s).
+There is however a computational downside. In \textit{a priori} selected methods, the rule by which determinants are selected is known a priori, and therefore, one can map a particular determinant to some row or column index.\cite{Knowles_1984} As a consequence, it can be systematically determined to which matrix element of $\widehat{H}$ a two-electron integral contributes. This allows for the implementation of so-called \emph{intergral-driven} methods, that work essentially by iterating over integrals.
+On the contrary, in selected methods an explicit list has to be maintained, and there is no immediate way to know whether a determinant has been selected, or what its index is. Consequently, so-called \emph{determinant-driven} approaches will be used, in which iteration is done over determinants rather than integrals. This can be a lot more expensive, since the number of determinants is typically much larger than the number of integrals. The former scales as $\order{N!}$ while the latter scales as $\order{N^4}$ with the number of MOs.
+Furthermore, determinant-driven methods require an effective way to compare determinants in order to extract the corresponding excitation operators, and a way to rapidly fetch the associated integrals.
 
 Because of this high computational cost, approximations have been proposed, for example we use the one by \alert{cipsi stefano}, and recently, \alert{heat bath} have taken farther the idea of a more approximate but a lot cheaper selection.
 
@@ -150,15 +150,5 @@ e_\alpha = \frac{\Hij{\Psi^n}{\alpha}^2}{E^n - H_{\alpha \alpha}}
 E_{PT2}^n = \sum_{\alpha \in \{\alpha \}^n} e_\alpha
 \end{equation}
 
-\alert{Ici, tu peux expliquer que dans les methodes selectionnees a priori, on
-fabrique tous les determinants a partir d'une regle predefinie. Donc on peut
-facilement faire une fonction d'adressage des determinants. Pour le CAS, c'est
-la meme que pour le FCI (citer \cite{Knowles_1984}). Et pour le CISD, on peut
-utiliser les operateurs d'excitations. Il est donc facile quand on a une
-integrale sous la main de savoir a quels elements de matrice elle contribue, et
-on peut donc utiliser des approches de type \emph{integral-driven}. Quand on a
-un jeu arbitraire de determinants, on ne peut plus le faire facilement et on
-doit alors recourir aux approches \emph{determinant-driven}. La transition est
-facile avec le chapire suivant.}
 
 \end{document}
