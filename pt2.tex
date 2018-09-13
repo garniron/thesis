@@ -142,7 +142,9 @@ w[u] = i \;; W_{i-1} \leq u < W_i
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/mc_representation}
 		\caption{Schematic representation of a Monte-Carlo computation}
 		\label{fig:mc_representation}
-		Drawing the random number $u$ with the partition function $w$ yields sample index $i=w[u] = 2$
+Values inside the boxes are sample indices. Values outside are probabilities and drawn random numbers.
+
+Drawing the random number $u$ with the partition function $w$ yields sample index $i=w[u]$
 	\end{center}
 \end{figure}
 
@@ -214,9 +216,9 @@ The partition of the sample space is as follow
  \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/teeth}
-		\caption{A REFAIRE NOTATION.............}
+		\caption{Partitioning of the sample space}
 		\label{fig:teeth}
-		$e_I$
+		The sample space is partitioned in so-called \emph{teeth} from $\mathcal{T}_0$ to $\mathcal{T}_{N_{teeth}}$, $\mathcal{T}_0$ of total weight $u_0$, the others of total weight $W_T$
 	\end{center}
 \end{figure}
 
@@ -231,9 +233,9 @@ The number or samples in the deterministic range, therefore, is function of a to
  \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/tooththreshold}
-		\caption{A REFAIRE NOTATION.............}
+		\caption{Boundaries of a teeth index-wise and probability-wise}
 		\label{fig:teeth}
-		$e_I$
+		
 	\end{center}
 \end{figure}
 
@@ -254,9 +256,12 @@ An illustrative exemple is given as figure \ref{fig:toothindet}.
  \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/toothindet}
-		\caption{A REFAIRE NOTATION.............}
+		\caption{illustrative example of drawing two combs $a$ and $b$}
 		\label{fig:toothindet}
-		$e_I$
+		Samples that have been computed are greyed. $\mathcal{T}_1$ has been fully computed and is thus moved to $\mathcal{D}$. The first non-deterministic/not fully-computed tooth is $\mathcal{T}_2$.
+		$$E_D = e_1 + e_2 + e_3$$
+		$$B_2(a) = \frac{e_6}{w_6} + \frac{e_{10}}{w_{10}}\;;B_2(b) = \frac{e_6}{w_6} + \frac{e_{11}}{w_{11}}$$
+		$$E_S = \frac{B_2(a)+B_2(b)}{2} \times W_T \alert {A CHECK}$$
 	\end{center}
 \end{figure}
 
@@ -317,9 +322,10 @@ This is illustrated in figure \ref{fig:toothbuilding}.
  \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/toothbuilding}
-		\caption{A REFAIRE NOTATION.............}
+		\caption{Adjusting sample weights}
 		\label{fig:toothbuilding}
-		$e_I$
+		 Desired weights $\tilde w_i$ are adjusted to effective weights $w_i$ so as to satisfy
+		 $$\sum_{I \in \mathcal{T}_n} w_I = W_T$$
 	\end{center}
 \end{figure}
 
@@ -411,6 +417,7 @@ However, it may not succeed as there is no guarantee the first tooth will contai
 Relying on the fact that relative values of $\tilde w_I$ get closer and closer, we increment $n_0(1)$ until either the first tooth contains enough samples, or the impossibility condition is reached.
 
 \begin{algorithm}
+	\caption{COMPUTE\_TEETH}
 	$\tilde W_I = \sum_{i \leq I} {\tilde w_i}$ \;
 	$n_0(1) \gets 0$ \;
 

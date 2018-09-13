@@ -69,7 +69,8 @@ Electron correlation is defined as\cite{Lowdin_1959}
 \end{equation}
 where $E_\text{HF}$ is the \emph{Hartree-Fock limit}, i.e. the limit to which the Hartree-Fock energy converges when the size of the basis-set increases.
 
-To include electron correlation effects, $\Psi$ must be expressed in a basis of $N$-electron functions. Such a basis is $\{\ket D_i \}$ the set of all the possible Slater determinants that can be built by putting $N_\alpha$ electrons in $M$ orbitals and $N_\beta$ electrons in $M$ orbitals.
+To include electron correlation effects, $\Psi$ must be expressed in a basis of $N$-electron functions. 
+Such a basis is $\{\ket D_i \}$ the set of all the possible Slater determinants that can be built by putting $N_\alpha$ electrons in $M$ orbitals and $N_\beta$ electrons in $M$ orbitals.
 The eigenvectors of $\widehat{H}$ are consequently expressed as a linear combination of Slater determinants 
 \begin{equation}
 \ket{\Psi_n} = \sum_{i} c_i^n \ket{D_i}.
@@ -125,6 +126,17 @@ forcement moins cher que le CI.}
 \section{Selected CI methods}
 
 These methods rely on the same principle as the usual CI approaches, except that determinants aren't chosen \textit{a priori} based on an occupation or excitation criterion, but selected among the entire set of determinant based on their estimated contribution to the FCI wavefunction. Usual methods can be seen as an exact resolution of Schrödinger's equation for a complete, well-defined set of determinant (and for a given basis set), while selected CI methods are more of a truncation of the FCI.
+The main advantages of these methods compared to the \alert{variational} ones, are that since the most relevant determinants are considered, they will typically yield a more accurate description of physical phenomenon, and a much lower energy for an equivalent number of determinants.
+It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction. Therefore, a posteriori selection of determinants is a rather natural idea that has been implemented from the late 60s \alert{voler les refs de manus}. The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developped by \alert{voler les refs de manus}, that iteratively selects determinants by using a perturbative criterion. 
+
+There is however a computational downside. In variational methods, the rule by which determinants are selected is known a priori, and therefore, one can map a particular determiant to some row or column index\cite{Knowles_1984}. As a consequence, it can be systematically determined to which matrix element of $\widehat{H}$ a bielectronic integral contributes. This allows for the implementation of so-called \emph{intergral-driven} methods, that work essentially by iterating over integrals.
+On the contraty, in selected method, determinants aren't known a priori. Therefore an explicit list has to be maintained, and there is no instantaneous way to know whether a determinant has been selected, or what its index is. Consequently, so-called \emph{determinant-driven} approaches will be used, in which iteration is done over determinants rather than integrals. This can be a lot more costly, since the number of determinants is typically much greater than the number of integrals. The former scales as $N!$ while the later scales as $N^4$ with the number of MO.
+Furthermore, determinant-driven methods require an effective way to compare determinants in order to extract an excitation operators, and a way to rapidly fetch the associated integral(s).
+
+Because of this high computational cost, approximations have been proposed, for example we use the one by \alert{cipsi stefano}, and recently, \alert{heat bath} have taken farther the idea of a more approximate but a lot cheaper selection.
+
+An alternate approach to selection is \alert{a clarifier}, where walkers move from determinants to determinant with probabilities dependent on the matrix elements
+
 \begin{equation}
 \ket{\Psi^{n}} = \sum_{i \in \mathcal{D}^n} c_i^{n} \ket{D^n_i}
 \end{equation}
