@@ -10,8 +10,8 @@
 #    	gnuplot home:     http://www.gnuplot.info
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
-# set terminal qt 0 font "Sans,9"
-# set output
+set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
+set output 'figures/pt2/cn3_energy.pdf'
 unset clip points
 set clip one
 unset clip two

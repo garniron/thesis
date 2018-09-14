@@ -11,7 +11,7 @@
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
 set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
-set output 'figures/pt2/scaling_pt2.pdf'
+set output 'figures/pt2/scaling_node.pdf'
 unset clip points
 set clip one
 unset clip two
@@ -169,5 +169,5 @@ set grid
 GNUTERM = "qt"
 x = 0.0
 ## Last datafile plotted: "data_pt2"
-plot 'data_pt2' index 0 u 1:(25856.5870/$2) w lp title '', x w l title 'Ideal'
+plot 'data_pt2' index 0 u 1:(5341.9917/$2) w lp title 'Ground state', 'data_pt2' index 1 u 1:(4310.0066/$2) w lp title 'Excited state', x w l title 'Ideal'
 #    EOF

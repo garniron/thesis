@@ -669,6 +669,8 @@ The $1s$ orbitals of the carbon and the nitrogen atoms were frozen, so
 the FCI space which is explored is a CAS(18,111). 
 The stopping criterion of the calculation of the PT2 contribution was a
 relative statistical error below 1/1000-th.
+The fraction of the full deterministic calculation required to reach this criterion
+is typically around $5\%$.
 The measurements were made on the Olympe supercomputer (CALMIP). Each node is 
 a dual-socket Intel(R) Xeon(R) Gold 6140 CPU @ 2.30GHz with 192GiB of RAM, and
 contains 36 physical CPU cores.
@@ -690,38 +692,39 @@ contains 36 physical CPU cores.
 \begin{table}
 \caption{$\EPT$ calculations for increasingly large wave functions. Time is given in seconds, and energies are given in atomic units.}
 \label{tab:energy_pt2}
-\begin{tabular}{rllrr}
+\begin{center}
+\begin{tabular}{rllr}
 \hline
-$\Ndet$ & $\Evar$ & $\EPT$ & Time & Computed \\
-\multicolumn{4}{c}{}  & fraction \\
+\tabc{$\Ndet$} & \tabc{$\Evar$} & \tabc{$\EPT$} & \tabc{Time} \\
 \hline
-\multicolumn{4}{l}{Ground state}  & \\
-  $  1~000$ & $-149.493~834$ & $-150.047~222   $ & $     0.96$ & $2.0\%$  \\ 
-  $  2~000$ & $-149.517~108$ & $-150.033~45(4) $ & $     0.45$ & $10.2\%$ \\ 
-  $  4~000$ & $-149.569~122$ & $-150.013~50(6) $ & $     2.26$ & $10.5\%$ \\ 
-  $  8~000$ & $-149.610~316$ & $-150.002~1(2)  $ & $     5.55$ & $6.8\%$  \\ 
-  $ 16~000$ & $-149.653~690$ & $-149.995~5(3)  $ & $    12.25$ & $4.1\%$  \\ 
-  $ 32~000$ & $-149.701~976$ & $-149.991~3(2)  $ & $    31.12$ & $2.4\%$  \\ 
-  $ 64~000$ & $-149.760~167$ & $-149.989~5(2)  $ & $   231.55$ & $5.4\%$  \\ 
-  $128~000$ & $-149.821~695$ & $-149.991~7(2)  $ & $   682.64$ & $4.5\%$  \\ 
-  $256~000$ & $-149.884~469$ & $-149.997~2(1)  $ & $ 3~334.25$ & $5.9\%$  \\ 
-  $512~000$ & $-149.928~717$ & $-150.002~08(7) $ & $12~390.33$ & $6.1\%$  \\ 
-$1~024~000$ & $-149.944~559$ & $-150.003~99(6) $ & $25~856.58$ & $3.1\%$  \\ 
+\multicolumn{4}{c}{Ground state}  \\
+  $  1~000$ & $-149.493~834$ &  $-150.047~222   $ & $    0.96$  \\ 
+  $  2~000$ & $-149.517~108$ &  $-150.033~527(6)$ & $    1.46$  \\ 
+  $  4~000$ & $-149.569~122$ &  $-150.013~19(6) $ & $    1.38$  \\ 
+  $  8~000$ & $-149.610~316$ &  $-150.002~3(2)  $ & $    2.49$  \\ 
+  $ 16~000$ & $-149.653~690$ &  $-149.994~9(2)  $ & $    4.84$  \\ 
+  $ 32~000$ & $-149.701~976$ &  $-149.990~7(3)  $ & $   14.78$  \\ 
+  $ 64~000$ & $-149.760~167$ &  $-149.989~5(2)  $ & $   49.29$  \\ 
+  $128~000$ & $-149.821~695$ &  $-149.992~1(2)  $ & $  123.79$  \\ 
+  $256~000$ & $-149.884~469$ &  $-149.997~3(1)  $ & $  544.76$  \\ 
+  $512~000$ & $-149.928~717$ &  $-150.002~01(7) $ & $2~109.24$  \\ 
+$1~024~000$ & $-149.944~559$ &  $-150.003~98(6) $ & $5~341.99$  \\ 
 \hline
-\multicolumn{4}{l}{Excited state} & \\
-  $  1~000$ & $-149.282~739$ & $-149.816~16(6)$ &  $     0.97$  \\ 
-  $  2~000$ & $-149.316~223$ & $-149.798~7(1) $ &  $     1.45$  \\ 
-  $  4~000$ & $-149.378~019$ & $-149.779~9(2) $ &  $     3.70$  \\ 
-  $  8~000$ & $-149.408~217$ & $-149.775~3(2) $ &  $     7.82$  \\ 
-  $ 16~000$ & $-149.443~536$ & $-149.772~4(2) $ &  $    28.65$  \\ 
-  $ 32~000$ & $-149.486~756$ & $-149.770~7(2) $ &  $    64.22$  \\ 
-  $ 64~000$ & $-149.539~740$ & $-149.771~0(2) $ &  $   237.61$  \\ 
-  $128~000$ & $-149.597~166$ & $-149.774~1(2) $ &  $   586.05$  \\ 
-  $256~000$ & $-149.657~072$ & $-149.779~9(1) $ &  $ 2~331.47$  \\ 
-  $512~000$ & $-149.700~727$ & $-149.785~49(8)$ &  $ 9~044.83$  \\ 
-$1~024~000$ & $-149.723~989$ & $-149.793~04(7)$ &  $24~948.48$  \\ 
+\multicolumn{4}{c}{Excited state} \\
+  $  1~000$ & $-149.282~739$ & $-149.816~16(6)$ &  $    0.97$  \\ 
+  $  2~000$ & $-149.316~223$ & $-149.798~60(7)$ &  $    1.19$  \\ 
+  $  4~000$ & $-149.378~019$ & $-149.780~1(1) $ &  $    2.18$  \\ 
+  $  8~000$ & $-149.408~217$ & $-149.775~5(1) $ &  $    3.36$  \\ 
+  $ 16~000$ & $-149.443~536$ & $-149.772~5(2) $ &  $    6.37$  \\ 
+  $ 32~000$ & $-149.486~756$ & $-149.771~1(3) $ &  $    9.24$  \\ 
+  $ 64~000$ & $-149.539~740$ & $-149.771~3(2) $ &  $   41.83$  \\ 
+  $128~000$ & $-149.597~166$ & $-149.774~4(2) $ &  $  116.78$  \\ 
+  $256~000$ & $-149.657~072$ & $-149.779~9(1) $ &  $  404.48$  \\ 
+  $512~000$ & $-149.700~727$ & $-149.785~46(8)$ &  $1~431.22$  \\ 
+$1~024~000$ & $-149.723~989$ & $-149.793~05(6)$ &  $4~310.00$  \\ 
 \hline
 \end{tabular}
+\end{center}
 \end{table}
 
 In figure~\ref{fig:energy_pt2}, we plot the convergence of the energies of
@@ -741,9 +744,6 @@ number of generators, and
 \end{enumerate}
 But when the wave function becomes large enough, the second point is not true any more because only a limited number of determinants $\ket{I}$ of $\Psi$ have a non-zero
 value $\mel{\alpha}{H}{I}$, and this number is bounded by the number of single and double excitations, characteristic of the basis set. This explains the asymptotic linear scaling behavior one can observe.
-
-Table~\ref{tab:energy_pt2} also reports the fraction of the full calculation that was done before the stopping criterion was reached. On can see that only $5\%$ of the full deterministic calculation is required.
-
 \begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/pt2/scaling_node}
