@@ -261,7 +261,7 @@ An illustrative exemple is given as figure \ref{fig:toothindet}.
 		Samples that have been computed are greyed. $\mathcal{T}_1$ has been fully computed and is thus moved to $\mathcal{D}$. The first non-deterministic/not fully-computed tooth is $\mathcal{T}_2$.
 		$$E_D = e_1 + e_2 + e_3$$
 		$$B_2(a) = \frac{e_6}{w_6} + \frac{e_{10}}{w_{10}}\;;B_2(b) = \frac{e_6}{w_6} + \frac{e_{11}}{w_{11}}$$
-		$$E_S = \frac{B_2(a)+B_2(b)}{2} \times W_T \alert {A CHECK}$$
+		$$E_S = (B_2(a)+B_2(b)) \times W_T \alert {A CHECK}$$
 	\end{center}
 \end{figure}
 
@@ -353,11 +353,14 @@ The algorithm to find a sample index associated with drawing $u$ in with a parti
 
 \begin{algorithm}
 \label{alg:FIND_SAMPLE}
-\caption{FIND\_SAMPLE}
+\caption[FIND\_SAMPLE]{Finds sample index associated with drawing random value $v$ in a cumulative probability distribution $p$}
+
 \SetKwFunction{FFind}{FIND\_SAMPLE}
 	\SetKwProg{Fn}{Function}{:}{}
 	
-	\Fn(\tcc*[h!]{Finds sample index associated with drawing random value $v$ in a cumulative probability distribution $p$}){\FFind{$v$,$p$}}{
+	
+	\Fn{\FFind{$v$,$p$}}{
+		\tcc{Finds sample index associated with drawing random value $v$ in a cumulative probability distribution $p$}
 		\KwData{$0 \leq v < 1$}
 		\KwData{$p$ float array of size $N$ with $p[0]=0$, $p[N]=1$, $p[n+1] \geq p[n]$}
 		\KwResult{Returns $i$ so that $p[i-1] \leq v < p[i]$}
@@ -417,7 +420,10 @@ However, it may not succeed as there is no guarantee the first tooth will contai
 Relying on the fact that relative values of $\tilde w_I$ get closer and closer, we increment $n_0(1)$ until either the first tooth contains enough samples, or the impossibility condition is reached.
 
 \begin{algorithm}
-	\caption{COMPUTE\_TEETH}
+	\caption{Compute teeth weights and bounaries}
+	\KwData{$\tilde w_i$, $\Nteeth$, $\minDetInT$ as perviously described}
+	\KwResult{$n_0(1),u_0,W_T$}
+	
 	$\tilde W_I = \sum_{i \leq I} {\tilde w_i}$ \;
 	$n_0(1) \gets 0$ \;
 
@@ -430,32 +436,32 @@ Relying on the fact that relative values of $\tilde w_I$ get closer and closer, 
 		}
 		
 		$n_0(1) \gets n_0(1) + 1$ \;
-		\If{$\Ngen - n_0(1) < \minDetInT \times \Nteeth$}{
-			\tcc{cannot compute with those parameters} \;
-			try with fewer teeth \;
+		\If{$\Ngen - n_0(1) < (\minDetInT-1) \times \Nteeth$}{
+			\tcc{cannot compute with those parameters}
+			try with fewer teeth. \;
 		}
-
 	}
-\end{algorithm}
-
-Then, $n_0(t)$ can be fully computed
-
-\begin{algorithm}
-	\caption{COMPUTE\_TEETH}
 	\For{$t=2,N_{teeth}$}{
 		$r = u_0 + W_T \times (t-1)$ \;
 		$n_0(t) = FIND\_SAMPLE(r, \tilde W)$ \;
 	}
+	\tcc{for convenience}
 	$n_0(\Nteeth+1) = \Ngen$ \;
 \end{algorithm}
+
+Then, $n_0(t)$ can be fully computed
+
 
 %$n_0(\Nteeth)$ has to be treated separately, as by construction $u_0 + \Nteeth W_T = 1$, which is outside of the range $[0,1)_\mathbb{R}$ defined for $u$ in FIND\_SAMPLE.
 
 And the effective partition function $w_I$
 
 \begin{algorithm}
-	\caption{COMPUTE\_TEETH}
-	$w_{i<n_0(1)} \gets \tilde w_{i<n_0}$ \;
+	\caption{Compute effecive repartition function}
+	\KwData{$\tilde{w}_i, n_0, W_T$}
+	\KwResult{$w_i$}
+	$\tilde W_I = \sum_{i \leq I} {\tilde w_i}$ \;
+	$w_{i<n_0(1)} \gets \tilde w_{i<n_0(1)}$ \;
 	\For{$t=1,N_{teeth}$}{
 		$\text{tooth\_width} = \tilde W_{n_0(t+1)} - \tilde W_{n_0(t)}$ \;
 		\For{$i=n_0(t)+1, n_0(t+1)$}{
@@ -481,6 +487,8 @@ For a massively parallel implementation, we need to create a task queue. Because
 
 
 \begin{algorithm}
+	\caption{Building "unfragmented" task queue}
+	\label{alg:TASK_QUEUE}
 	$R \gets $ array size $\Ngen$ initialized to 0 \;
 	$N_c \gets 0$ \;
 	$N_j \gets n_0(1)$ \;
@@ -547,13 +555,15 @@ For a massively parallel implementation, we need to create a task queue. Because
 
 
 \begin{algorithm}
+	\caption{PT2 master}
+	\label{alg:PT2_MASTER}
 	$n \gets 1$ \;
 	$t \gets 0$ \;
 	$U \gets 0$ \;
 	$f$ integer array size $\Ngen$ initialized with $F$ the fragmentation. \;
 	$d$ logical array size $\Ngen+1$ initialized with FALSE \;
 	$S$ and $S^{(2)}$ float arrays size $\Nteeth+1$ initialized with $0$ \;
-	\While{$n \leq N_{gen}$}{
+	\While{$n \leq \Ngen$}{
 		\uIf{$f[J[n]] = 0$}{
 			$d[J[n]] = true$ \;
 			\While{$d[U+1]$}{
@@ -566,9 +576,11 @@ For a massively parallel implementation, we need to create a task queue. Because
 			}
 			\If{$R[n] \neq 0$}{
 				$c \gets R[n]$ \;
+				\tcc{Updating $S$ and $S^{(2)}$ may be slightely costly if done naively} 
 				$S_* \gets S_* + B_*(u[c])$ \;
 				$S^{(2)}_* \gets S^{(2)}_* + B_*(u[c])^2$ \;
 				$E \gets E_0 + S_t/c$ \;
+				\tcc{division by zero occurs if $c=1$}
 				error $\gets \sqrt{(S_t^{(2)} - {S_t}^2)(c-1)^{-1} }$ \;
 				exit on acceptable error \;
 			}
@@ -585,7 +597,9 @@ For a massively parallel implementation, we need to create a task queue. Because
 
 
 \begin{algorithm}
-	\tcc{efficiently computes $S_* \gets S_* + B_*(u)$  and $S^{(2)}_* \gets S^{(2)}_* + B_*(u)^2$}
+	\caption{Update $S$ and $S^{(2)}$ from algorithm \ref{alg:PT2_MASTER}}
+	\label{alg:UPDATE_S}
+	\tcc{done naively, updating $S_* \gets S_* + B_*(u)$ and $S^{(2)}_* \gets S^{(2)}_* + B_*(u)^2$ is $\mathcal{O}(\Nteeth^2 \log{\Ngen})$}
 	
 					
 	$x \gets 0$ \;

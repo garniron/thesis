@@ -8,7 +8,7 @@ For atoms of the first 3 rows of the periodic table, relativistic effects can be
 \begin{equation}
  \widehat{H} \Psi({\bf x}_1,\dots,{\bf x}_N) = E \Psi_n({\bf x}_1,\dots,{\bf x}_N)
 \end{equation}
-where $\Psi$ is the electronic wave function and $E$ is the associated energy. $\widehat H$ is the non-relativistic electronic Hamiltonian operator
+where $\Psi$ is the electronic wave function, $E$ the associated energy, and $\bf x$ . $\widehat H$ is the non-relativistic electronic Hamiltonian operator
 \begin{equation}
 \widehat{H} = \sum_{i=1}^{N} \Big ( -\frac{1}{2} \Delta_i - \sum_{j=1}^M \frac{Z_j}{|{\bf r}_i - {\bf R}_j|} \Big ) + \sum_{i=1}^{N} \sum_{k>i}^{N} \frac{1}{|{\bf r}_i - {\bf r}_k|}
 \end{equation}
@@ -50,7 +50,7 @@ Molecular orbitals are typically defined as linear combinations of \emph{atomic 
  \varphi_i({\bf r}) = \sum_k C_{ki} \chi_k({\bf r}).
 \end{equation}
 These functions qualify the used \emph{basis set}, and are usually themselves pre-defined linear combinations of Gaussian functions. This is a restriction put on the form of the wavefunction, therefore it is known as the \emph{finite basis set approximation}.
-In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy. This method, however is missing some important physical effects. For instance, using Eq.\eqref{eq:slater} one can see that in this model opposite-spin electrons are statistically independent (or \emph{uncorrelated}):
+In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy, which can be acheived for closed-shell molecules using Roothan equations \cite{Roothaan_1951}. This method, however is missing some important physical effects. For instance, using Eq.\eqref{eq:slater} one can see that in this model opposite-spin electrons are statistically independent (or \emph{uncorrelated}):
 \begin{equation}
 \begin{split}
 \left[ \Psi_\textrm{HF}({\bf r}_1,\dots,{\bf r}_{\Na},{\bf r}_{\Na+1},\dots,{\bf r}_N;
@@ -75,13 +75,49 @@ The eigenvectors of $\widehat{H}$ are consequently expressed as a linear combina
 \begin{equation}
 \ket{\Psi_n} = \sum_{i} c_i^n \ket{D_i}.
 \end{equation}
-Solving the eigenequation for state $n$ in this basis is referred to as \emph{full configurations interaction (FCI)} and yields a solution for Schrödinger's equation that is exact for the given atomic basis set.
-This is however only achievable for very small systems, given that $\NFCI$ the size of the determinants basis scales factorially with the number of molecular orbitals
+Solving the eigenequation for state $n$ in this basis is referred to as \emph{Full Configurations Interaction (FCI)} and yields a solution for Schrödinger's equation that is exact for the given atomic basis set.
+Matrix elements of $\widehat H$ are integrals over $3N$ dimensions. However, given its bi-electronic nature, Slater determinants that differ by more than 2 electrons are known to have null matrix elements, and the others can be expressed as sums of integrals over \alert{3 or 6} dimensions, which can be computed for a reasonable cost. These simplifications are known as \emph{Slater-Condon rules} \alert{a re-checker imperativement}
+
+% \Hij[\hat h]{\varphi_i \varphi_j}{\varphi_i \varphi_j} - \Hij[\hat h]{\varphi_i \varphi_j}{\varphi_j \varphi_i} 
+\begin{align}
+\Hij{D}{D} = \frac{1}{2} \sum_{i=1}^N \sum_{j=1}^N \Big [ (ii|jj) - (ij|ij) \Big ]      \\
+\Hij{D}{D_p^r} = \sum_{i=1}^N \Big [ (pr|ii) - (pi|ri) \Big ]      \\
+\Hij{D}{D_{pq}^{rs}} = (pr|qs) - (ps|qr)
+\end{align}
+
+with
+%\Hij[\hat h]{\varphi_i \varphi_j}{\varphi_k \varphi_l} = \int d{\bf r}_1 \int d{\bf r}_2 \; \varphi^*_i({\bf r}_1)\varphi^*_j({\bf r}_2) \frac{1}{|{\bf r}_1 - {\bf r}_2|} \varphi_k({\bf r}_1)\varphi_l({\bf r}_2)
+\begin{equation}
+(ij|kl) = \int d{\bf r}_1 \int d{\bf r}_2 \; \varphi^*_i({\bf r}_1)\varphi_j({\bf r}_1) \frac{1}{|{\bf r}_1 - {\bf r}_2|} \varphi^*_k({\bf r}_2)\varphi_l({\bf r}_2)
+\end{equation}
+
+and $\ket {D_{pq}^{rs}}$ a determinant obtained from $\ket D$ by moving electrons from \alert{orbitals} $p,q$ to $r,s$.
+
+In spite of this, computing these integrals is a potential bottleneck. Indeed it is possible to analitycally compute an integral $(pq|rs)$ with $p,q,r,s$ atomic orbitals, but molecular orbitals are desired. The cost of computing a single one scales as $N^4$.
+
+\begin{equation}
+(ik|jl) = \sum_{pqrs} C_{pi} C_{qk} C_{rj} C_{sl} (pq|rs)
+\end{equation}
+
+A naive computation of all integrals in the MO basis would cost ${\cal O}^8$. Fortunately, computing all can be scaled down to ${\cal O}^5$ \cite{Bender_1972} :
+\begin{eqnarray}
+(iq\vert rs) & = & \sum_{p} C_{pi} (pq|rs) \nonumber \\ 
+(iq\vert js) & = & \sum_{r} C_{rj} (iq|rs) \;\; \text{half-transformed??? integrals} \\
+(ik\vert js) & = & \sum_{q} C_{qk} (iq|js) \nonumber \\ 
+(ik\vert jl) & = & \sum_{s} C_{sl} (ik|js)  \;\; \text{fully transformed integrals}
+\end{eqnarray}
+
+In addition to being very costly, this step is hard to parallelize in distributed way, because all half-transformed integrals are required to compute fully transformed integrals, which implies an "all-to-all" communication of the full set of data.
+
+FCI is only acheivable for very small systems, given that $\NFCI$ the size of the determinants basis scales factorially with the number of molecular orbitals
 \begin{equation}
 \NFCI = \frac{M!}{N_\alpha ! (M-N_\alpha)!} \times \frac{M!}{N_\beta ! (M-N_\beta)!}
 \end{equation}
 Post-Hartree-Fock methods are trying to circumvent this problem, and therefore are essentially approximations of FCI.
-%Different approaches exist.
+
+
+%Different approdavidsonaches exist.
+
 
 \alert{ Il faut mettre ici l'expression des elements de matrice de H dans la
 base des determinants.  Il faut aussi dire que pour Hartree-Fock, en utilisant
@@ -100,12 +136,15 @@ $\order{N^5}$.  }
 \section{Variational post-Hartree-Fock methods}
 
 In variational methods, Schrödinger's equation is solved in an $N$-electron basis.
-Generally speaking, solving Schrödinger's equation in a basis of Slater determinants is called \emph{configuration interaction (CI)}, the FCI being the particular case where the whole $\{\ket {D_i} \}$ set is used. The general idea of these methods is to select \textit{a priori} a relevant subset of Slater determinants in which the CI problem will be solved.
+Generally speaking, solving Schrödinger's equation in a basis of Slater determinants is called \emph{Configuration Interaction (CI)}, the FCI being the particular case where the whole $\{\ket {D_i} \}$ set is used.
+The general idea of these methods is to select \textit{a priori} a relevant subset of Slater determinants in which the CI problem will be solved.
 
 One usual approach is to effectively reduce the number of molecular orbitals, by performing a FCI in a reduced set of orbitals and freezing the occupation status for the others. This is referred to as \emph{Complete Active Space Configuration Interaction (CAS-CI)}. Choosing the CAS orbitals can require some expertise. The CAS-SCF method minimizes the energy by both performing a CAS-CI and optimizing the molecular orbitals.
 
 Another usual approach is to select determinants according to their excitation degree --- by how many occupied orbitals they differ --- with respect to some reference. If this reference is the Hartree-Fock determinant and only single and double excitations are considered, the method is known as \emph{Configuration Interaction with Single and Double excitations (CISD)}. Alternatively, the reference can be a CAS, in which case it is known as \emph{Multi-Reference Configuration Interaction (MR-CI)}.
 
+Regardless of the method, integrals involving non-frozen orbitals need to be computed in order to diagonalize $\widehat{H}$. Therefore CI methods' cost is at least $\order{N^5}$, due to the four-index transformation.
+In addition, the cost for fully diagonalizing $\widehat{H}$ is $\order{\Ndet^3}$ with $\Ndet$ the number of determinants in the considered subspace, which can be up to a few billions. This usually not feasible, but only the few eigenvectors associated with lowest eigenvalues are typically of interest, so iterative methods can be used. The Quantum Package uses the \emph{Davidson diagonalization} originally developped by Ernest R. Davidson\cite{Davidson_1975} specifically for CI methods. 
 
 \alert{On voit que pour faire un CI, on a besoin de toutes les integrales
 bielectroniques. Donc ca coute au moins $\order{N^5}$.  Il faut diagonaliser
@@ -117,7 +156,10 @@ a dans le QP, et tes reflexions sur Davidson en dans les perspectives a la fin.
 
 \section{Perturbative methods}
 
+
 \alert{Pioche un peu chez Manus pour introduire MP2 et Epstein Nesbet.}
+
+
 
 \alert{On voit que pour MP2, on n'a pas besoin de toutes les integrales
 bielectroniques : les $\braket{vv}{vv}$ ne sont pas necessaires. Donc ca coute
@@ -127,7 +169,44 @@ forcement moins cher que le CI.}
 
 These methods rely on the same principle as the usual CI approaches, except that determinants aren't chosen \textit{a priori} based on an occupation or excitation criterion, but selected \emph{on the fly} among the entire set of determinant based on their estimated contribution to the FCI wavefunction. Conventional CI methods can be seen as an exact resolution of Schrödinger's equation for a complete, well-defined set of determinants (and for a given atomic basis set), while selected CI methods are more of a truncation of the FCI.
 The main advantages of these methods compared to the more conventional \textit{a priori} selected ones, are that since the most relevant determinants are considered, they will typically yield a more accurate description of physical phenomena, and a much lower energy for an equivalent number of determinants.
-It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction. Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been implemented from the late 60s \alert{voler les refs de manus}. The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developped by \alert{voler les refs de manus}, that iteratively selects determinants by using a perturbative criterion.  \alert{Mettre ici l'algo general de CIPSI}.
+It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction. Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been implemented from the late 60s \alert{voler les refs de manus}. The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developped by \alert{voler les refs de manus}, that iteratively selects determinants by using a perturbative criterion. 
+
+Iteration $n$ can be described this way :
+\begin{enumerate}
+\item
+
+The variational function $\ket {\Psi^{(n)}}$ is defined over a set of determinants $  \mathcal{D}^{(n)}$ in which we diagonalize $\widehat{H}$
+\begin{equation}
+\ket{\Psi^{(n)}} = \sum_{S \in \mathcal{D}^{(n)}} c_S^{(n)} \ket{S}
+\end{equation}
+
+\item
+For all $\kalpha \notin \mathcal{D}^{(n)}$, we compute a perturbative contribution
+\begin{equation}
+e_\alpha = \frac{\Hij{\Psi^{(n)}}{\alpha}^2}{E^{(n)} - H_{\alpha \alpha}}
+\end{equation}
+$E^{(n)}$ is an energy that depends on the pertubation theory being used. In our case, the Epstein-Nesbet energy is used.
+
+\item
+We build $\{ \alpha^\star \}^{(n)}$ the set of $\kalpha$ of highest contributions, and add them to the wavefunction
+\begin{equation}
+\mathcal{D}^{(n+1)} = \mathcal{D}^{(n)} \cup \{ \alpha^\star \}
+\end{equation}
+
+\item
+Exit on some criterion. Note that $\EFCI$ energy can be estimated
+\begin{equation}
+\EFCI \approx E^{(n)}_0 + E_{PT2}^{(n)}
+\end{equation}
+
+
+with $E^n_0$ the variational energy of $\ket {\Psi^{(n)}}$ and
+\begin{equation}
+E_{PT2}^{(n)} = \sum_{\alpha \in \{\alpha \}^{(n)}} e_\alpha
+\end{equation}
+with $\{ \alpha \}^{(n)}$ the set of all $\kalpha$ considered at current iteration
+
+\end{enumerate}
 
 There is however a computational downside. In \textit{a priori} selected methods, the rule by which determinants are selected is known a priori, and therefore, one can map a particular determinant to some row or column index.\cite{Knowles_1984} As a consequence, it can be systematically determined to which matrix element of $\widehat{H}$ a two-electron integral contributes. This allows for the implementation of so-called \emph{intergral-driven} methods, that work essentially by iterating over integrals.
 On the contrary, in selected methods an explicit list has to be maintained, and there is no immediate way to know whether a determinant has been selected, or what its index is. Consequently, so-called \emph{determinant-driven} approaches will be used, in which iteration is done over determinants rather than integrals. This can be a lot more expensive, since the number of determinants is typically much larger than the number of integrals. The former scales as $\order{N!}$ while the latter scales as $\order{N^4}$ with the number of MOs.
@@ -135,20 +214,10 @@ Furthermore, determinant-driven methods require an effective way to compare dete
 
 Because of this high computational cost, approximations have been proposed, for example we use the one by \alert{cipsi stefano}, and recently, \alert{heat bath} have taken farther the idea of a more approximate but a lot cheaper selection.
 
-An alternate approach to selection is \alert{a clarifier}, where walkers move from determinants to determinant with probabilities dependent on the matrix elements
+\section{Monte-Carlo ?}
+\alert{a clarifier un poil...} An alternate approach to selection is, where walkers move from one determinant to another with a probabilities that depends on their interaction. The average population of walkers on a determinant converges to its coefficient in the FCI wavefuction. 
 
-\begin{equation}
-\ket{\Psi^{n}} = \sum_{i \in \mathcal{D}^n} c_i^{n} \ket{D^n_i}
-\end{equation}
-\begin{equation}
-e_\alpha = \frac{\Hij{\Psi^n}{\alpha}^2}{E^n - H_{\alpha \alpha}}
-\end{equation}
-\begin{equation}
-\mathcal{D}^{n+1} = \mathcal{D}^{n} \cup \{ \alpha^\star \}^n
-\end{equation}
-\begin{equation}
-E_{PT2}^n = \sum_{\alpha \in \{\alpha \}^n} e_\alpha
-\end{equation}
+
 
 
 \end{document}
