@@ -169,9 +169,11 @@ forcement moins cher que le CI.}
 
 These methods rely on the same principle as the usual CI approaches, except that determinants aren't chosen \textit{a priori} based on an occupation or excitation criterion, but selected \emph{on the fly} among the entire set of determinant based on their estimated contribution to the FCI wavefunction. Conventional CI methods can be seen as an exact resolution of Schrödinger's equation for a complete, well-defined set of determinants (and for a given atomic basis set), while selected CI methods are more of a truncation of the FCI.
 The main advantages of these methods compared to the more conventional \textit{a priori} selected ones, are that since the most relevant determinants are considered, they will typically yield a more accurate description of physical phenomena, and a much lower energy for an equivalent number of determinants.
-It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction. Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been implemented from the late 60s \alert{voler les refs de manus}. The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developped by \alert{voler les refs de manus}, that iteratively selects determinants by using a perturbative criterion. 
+It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction. Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been proposed from the late 60s by Bender and Davidson\cite{Bender_1969} as well as Whitten and Hackmeyer\cite{Whitten_1969}.
 
-Iteration $n$ can be described this way :
+The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developped by Huron, Rancurel and Malrieu \cite{Huron_1973}, that iteratively selects determinants by using a perturbative criterion, and computes an estimation to the electronic correlation missing from the variational energy.
+Iteration $n$ of CIPSI can be described like so:
+
 \begin{enumerate}
 \item
 
@@ -212,10 +214,16 @@ There is however a computational downside. In \textit{a priori} selected methods
 On the contrary, in selected methods an explicit list has to be maintained, and there is no immediate way to know whether a determinant has been selected, or what its index is. Consequently, so-called \emph{determinant-driven} approaches will be used, in which iteration is done over determinants rather than integrals. This can be a lot more expensive, since the number of determinants is typically much larger than the number of integrals. The former scales as $\order{N!}$ while the latter scales as $\order{N^4}$ with the number of MOs.
 Furthermore, determinant-driven methods require an effective way to compare determinants in order to extract the corresponding excitation operators, and a way to rapidly fetch the associated integrals.
 
-Because of this high computational cost, approximations have been proposed, for example we use the one by \alert{cipsi stefano}, and recently, \alert{heat bath} have taken farther the idea of a more approximate but a lot cheaper selection.
+Because of this high computational cost, approximations have been proposed \cite{Evangelisti_1983},  . And recently, the \emph{Heat-Bath Configuration Interaction (HCI)} algorithm has taken farther the idea of a more approximate but extremely cheap selection\cite{Holmes_2016, Sharma_2017}. Compared to CIPSI, the selection criterion is simplified to
+\begin{equation}
+e^{HCI}_\alpha = \text{max} \big  {(|} c_i \Hij{D_i}{\alpha} \big {|)}
+\end{equation}
+with $D_i$ a determinant from the variational wavefunction and $c_i$ its associated coefficient.
 
 \section{Monte-Carlo ?}
-\alert{a clarifier un poil...} An alternate approach to selection is, where walkers move from one determinant to another with a probabilities that depends on their interaction. The average population of walkers on a determinant converges to its coefficient in the FCI wavefuction. 
+FCI-QMC is an alternate approach to selection recently proposed in 2009 by Alavi \textit{et al.}\cite{Booth_2009,Cleland_2010}, where walkers move from one determinant to another with a probability that is function of the associated matrix element. \alert{The average population of walkers on a determinant converges to its coefficient in the FCI wavefuction?}.
+
+\alert{verifier citation, j'ai pas Coe mais Greer?} A more ``bruteforce'' approach at stochastical selection is \emph{Monte-Carlo CI (MCCI)} \cite{Greer_1995}, where determinants are randomly added to the variational wavefunction. After diagonalization, the determinants of smaller coefficient are removed, and new random determinants are added.
 
 
 
