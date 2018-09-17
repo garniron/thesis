@@ -127,9 +127,11 @@ respectively.
 Molecular orbitals are typically defined as linear combinations of \emph{atomic orbitals}, or \emph{AO}, here noted $\chi_k$
 \begin{equation}
  \varphi_i({\bf r}) = \sum_k C_{ki} \chi_k({\bf r}).
+\label{eq:def_mo}
 \end{equation}
 These functions qualify the used \emph{basis set}, and are usually themselves pre-defined linear combinations of Gaussian functions. This is a restriction put on the form of the wavefunction, therefore it is known as the \emph{finite basis set approximation}.
-In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy, which can be achieved for closed-shell molecules using Roothaan's equations.\cite{Roothaan_1951} This method, however is missing some important physical effects. For instance, using Eq.\eqref{eq:slater} one can see that in this model opposite-spin electrons are statistically independent (or \emph{uncorrelated}):
+In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy
+This method, however is missing some important physical effects. For instance, using Eq.\eqref{eq:slater} one can see that in this model opposite-spin electrons are statistically independent (or \emph{uncorrelated}):
 \begin{equation}
 \begin{split}
 \left[ \Psi_\textrm{HF}({\bf r}_1,\dots,{\bf r}_{\Na},{\bf r}_{\Na+1},\dots,{\bf r}_N;
@@ -140,13 +142,12 @@ In the Hartree-Fock method, the wave function is a single Slater determinant, wh
 \end{equation}
 
 \section{Electron correlation}
-Even though typically, only one or a few $\ket{\Psi_n}$ associated with lowest eigenvalues are of interest, the Shrödinger's equation cannot be solved exactly (except for a few small systems), and more or less drastic approximations need to be used. 
 
 Electron correlation is defined as\cite{Lowdin_1959}
 \begin{equation}
 \Ecor = E_\text{exact} - E_\text{HF}
 \end{equation}
-where $E_\text{HF}$ is the \emph{Hartree-Fock limit}, i.e. the limit to which the Hartree-Fock energy converges when the size of the basis set increases.
+where $E_\text{HF}$ is the \emph{Hartree-Fock limit}, i.e. the limit to which the Hartree-Fock energy converges when the size of the one-electron basis set increases.
 
 To include electron correlation effects, $\Psi$ may be expanded in
 $\{\ket D_i \}$, the set of all the possible Slater determinants that can be built by putting $N_\alpha$ electrons in $M$ orbitals and $N_\beta$ electrons in $M$ orbitals.
@@ -154,63 +155,65 @@ The eigenvectors of $\widehat{H}$ are consequently expressed as a linear combina
 \begin{equation}
 \ket{\Psi_n} = \sum_{i} c_i^n \ket{D_i}.
 \end{equation}
-Solving the eigenequation for state $n$ in this basis is referred to as \emph{Full Configurations Interaction (FCI)} and yields a solution for Schrödinger's equation that is exact for the given atomic basis set.
-Matrix elements of $\widehat H$ are integrals over $3N$ dimensions. However, given its bi-electronic nature, Slater determinants that differ by more than 2 electrons are known to have null matrix elements, and the others can be expressed as sums of integrals over \alert{3 or 6} dimensions, which can be computed for a reasonable cost. These simplifications are known as \emph{Slater-Condon rules} \alert{a re-checker imperativement}
+Solving the eigenvalue equations in this basis is referred to as \emph{Full Configurations Interaction (FCI)} and yields solutions for Schrödinger's equation that are exact for the given atomic basis set.
+But the FCI is usually computationally intractable because of its factorial scaling as
+\begin{equation}
+\NFCI = \frac{M!}{\Nalpha ! (M-\Nalpha)!} \times \frac{M!}{\Nbeta ! (M-\Nbeta)!}
+\end{equation}
+Post-Hartree-Fock methods are trying to circumvent this problem, and therefore
+are essentially approximations of FCI.
+
+\section{Matrix elements}
+In the $N$-electron basis of Slater determinants, one expects the matrix elements of $\widehat H$ to be integrals over $3N$ dimensions.
+However, given the two-electron nature of the Hamiltonian, and because the set of molecular orbitals is orthogonal, Slater determinants that differ by more than two electrons yield a zero matrix element, and the other elements can be expressed as sums of integrals over 3 or 6 dimensions, which can be computed for a reasonable cost. These simplifications are known as \emph{Slater-Condon's rules}.
 
 % \Hij[\hat h]{\varphi_i \varphi_j}{\varphi_i \varphi_j} - \Hij[\hat h]{\varphi_i \varphi_j}{\varphi_j \varphi_i} 
 \begin{align}
-\Hij{D}{D} = \frac{1}{2} \sum_{i=1}^N \sum_{j=1}^N \Big [ (ii|jj) - (ij|ij) \Big ]      \\
-\Hij{D}{D_p^r} = \sum_{i=1}^N \Big [ (pr|ii) - (pi|ri) \Big ]      \\
-\Hij{D}{D_{pq}^{rs}} = (pr|qs) - (ps|qr)
+\Hij{D}{D} & = \sum_{i\in D} \mel{i}{\hat{h}}{i} + \frac{1}{2} \sum_{i\in D} \sum_{j\in D} \Big [ (ii|jj) - (ij|ij) \Big ]      \\
+\Hij{D}{D_p^r} & = \mel{p}{\hat{h}}{r} + \sum_{i\in D} \Big [ (pr|ii) - (pi|ri) \Big ]        \\
+\Hij{D}{D_{pq}^{rs}} & = (pr|qs) - (ps|qr)
 \end{align}
-
-with
-%\Hij[\hat h]{\varphi_i \varphi_j}{\varphi_k \varphi_l} = \int d{\bf r}_1 \int d{\bf r}_2 \; \varphi^*_i({\bf r}_1)\varphi^*_j({\bf r}_2) \frac{1}{|{\bf r}_1 - {\bf r}_2|} \varphi_k({\bf r}_1)\varphi_l({\bf r}_2)
+where $\hat{h}$ is the one-electron part of the Hamiltonian (kinetic energy and
+electron-nucleus potential), $i \in D$ means that $\phi_i$ belongs to the
+Slater determinant $D$, $\ket {D_{pq}^{rs}}$ is a determinant obtained from $\ket
+D$ by substituting orbitals $\varphi_p$ and $\varphi_q$ by $\varphi_r$ and
+$\varphi_s$, and
 \begin{equation}
-(ij|kl) = \int d{\bf r}_1 \int d{\bf r}_2 \; \varphi^*_i({\bf r}_1)\varphi_j({\bf r}_1) \frac{1}{|{\bf r}_1 - {\bf r}_2|} \varphi^*_k({\bf r}_2)\varphi_l({\bf r}_2)
+(ij|kl) = \int d{\bf r}_1 \int d{\bf r}_2 \; \varphi^*_i({\bf r}_1)\varphi_j({\bf r}_1) \frac{1}{|{\bf r}_1 - {\bf r}_2|} \varphi^*_k({\bf r}_2)\varphi_l({\bf r}_2).
 \end{equation}
 
-and $\ket {D_{pq}^{rs}}$ a determinant obtained from $\ket D$ by moving electrons from \alert{orbitals} $p,q$ to $r,s$.
+\section{Two-electron integrals}
 
-In spite of this, computing these integrals is a potential bottleneck. Indeed it is possible to analytically compute an integral $(pq|rs)$ with $p,q,r,s$ atomic orbitals, but molecular orbitals are desired. The cost of computing a single one scales as $N^4$.
+In the Hartree-Fock method, Roothaan's equations allow to solve the problem in the basis of 
+\emph{atomic} orbitals.\cite{Roothaan_1951}
+In this context, one needs to compute the $\order{M^4}$ two-electron integrals $(pq|rs)$ over the
+atomic orbitals. Thanks to a large effort in algorithmic development and
+implementation,\cite{Obara_1986,Head_Gordon_1988,Ten_no_1993,Gill_1989,Gill_1991,Libint2,Zhang_2018}
+these integrals can now be computed very fast on modern computers.
 
+But for post-Hartree-Fock methods, the computation of the two-electron
+integrals is a potential bottleneck.
+Indeed, when computing matrix elements of the Hamiltonian in the basis of
+Slater determinants, integrals over \emph{molecular} orbitals are desired. Using
+Eq.\eqref{eq:def_mo},
+the cost of computing a single integral scales as $\order{M^4}$:
 \begin{equation}
-(ik|jl) = \sum_{pqrs} C_{pi} C_{qk} C_{rj} C_{sl} (pq|rs)
+(ij|kl) = \sum_{pqrs} C_{pi} C_{qj} C_{rk} C_{sl} (pq|rs)
 \end{equation}
 
-A naive computation of all integrals in the MO basis would cost ${\cal O}(N^8)$. Fortunately, computing all can be scaled down to ${\cal O}(N^8)$ \cite{Bender_1972} :
+A naive computation of all integrals in the MO basis would cost ${\cal O}(M^8)$. Fortunately, computing all of them can be scaled down to ${\cal O}(N^5)$ by transforming the indices one by one\cite{Wilson_1987}:
 \begin{eqnarray}
 (iq\vert rs) & = & \sum_{p} C_{pi} (pq|rs) \nonumber \\ 
-(iq\vert js) & = & \sum_{r} C_{rj} (iq|rs) \;\; \text{semi-transformed integrals} \\
-(ik\vert js) & = & \sum_{q} C_{qk} (iq|js) \nonumber \\ 
-(ik\vert jl) & = & \sum_{s} C_{sl} (ik|js)  \;\; \text{fully transformed integrals}
+(iq\vert ks) & = & \sum_{r} C_{rk} (iq|rs) \;\; \text{semi-transformed integrals} \\
+(ij\vert ks) & = & \sum_{q} C_{qj} (iq|ks) \nonumber \\ 
+(ij\vert kl) & = & \sum_{s} C_{sl} (ij|ks)  \;\; \text{fully transformed integrals}
 \end{eqnarray}
-
-In addition to being very costly, this step is hard to parallelize in distributed way, because all half-transformed integrals are required to compute fully transformed integrals, which implies an "all-to-all" communication of the full set of data.
-
-FCI is only achievable for very small systems, given that $\NFCI$ the size of the determinants basis scales factorially with the number of molecular orbitals
-\begin{equation}
-\NFCI = \frac{M!}{N_\alpha ! (M-N_\alpha)!} \times \frac{M!}{N_\beta ! (M-N_\beta)!}
-\end{equation}
-Post-Hartree-Fock methods are trying to circumvent this problem, and therefore are essentially approximations of FCI.
+This step is known as the \emph{four-index integral transformation}.  
+In addition to being very costly, this step is hard to parallelize in
+distributed way, because it implies many collective communications.\cite{Rajbhandari_2017,Limaye_1994,Fletcher_1999,Covick_1990}
 
 
-%Different approdavidsonaches exist.
 
-
-\alert{ Il faut mettre ici l'expression des elements de matrice de H dans la
-base des determinants.  Il faut aussi dire que pour Hartree-Fock, en utilisant
-les equations de Roothan on peut resoudre le probleme dans la base des AOs.
-Par contre, le probleme est beaucoup complique dans une base de fonctions a
-N-electrons car chaque element de matrice doit faire intervenir des integrales
-a N electrons.  Si les fonctions de base a N-electrons sont des determinants
-fabriques a partir de fonctions a 1 electron orthonormales, telles que les
-determinants de Slater, le calcul des elements de matrice de H devient beaucoup
-plus simple grace aux regles de Slater-Condon qui permettent de ne faire
-intervenir que des integrales a 2 electrons. Il faut donc introduire les regles
-de Slater-Condon.  Il faut aussi introduire ici la four-index transformation,
-qui est un des bottlenecks des methodes post-HF a cause de son scaling en
-$\order{N^5}$.  } 
 
 \section{Variational post-Hartree-Fock methods}
 
@@ -241,7 +244,7 @@ a dans le QP, et tes reflexions sur Davidson en dans les perspectives a la fin.
 
 
 \alert{On voit que pour MP2, on n'a pas besoin de toutes les integrales
-bielectroniques : les $\braket{vv}{vv}$ ne sont pas necessaires. Donc ca coute
+bielectroniques: les $\braket{vv}{vv}$ ne sont pas necessaires. Donc ca coute
 forcement moins cher que le CI.}
 
 \section{Selected CI methods}
