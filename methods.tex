@@ -6,34 +6,107 @@
 Quantum chemistry aims at describing the electronic structures of molecular
 systems.  The velocity of the nuclei is considered negligible compared to that
 of the electrons (Born-Oppenheimer approximation), and for atoms of the first
-rows of the periodic table, relativistic effects can be neglected.  In this
+rows of the periodic table relativistic effects can be neglected.  In this
 context, the model system is a cloud of $N$ electrons and a set of $M$ nuclei
 considered punctual, immobile charges. It can be described by solving
 Shrödinger's equation for electrons~:
 \begin{equation}
  \widehat{H} \Psi({\bf x}_1,\dots,{\bf x}_N) = E \Psi_n({\bf x}_1,\dots,{\bf x}_N)
 \end{equation}
-where $\Psi$ is the electronic wave function, $E$ the associated energy, and $\bf{x}_i = {x,y,z,m_s}$
-contains the Cartesian coordinates of the electrons, as well as a spin variable $m_s$.
+where $\Psi$ is the electronic wave function, $E$ the associated energy, and $\mathbf{x}_i = (\textbf{r},m_s)$
+contains the spatial coordinates of the electrons $\textbf{r}$, as well as a spin variable $m_s$.
 $\widehat H$ is the non-relativistic electronic Hamiltonian operator
 \begin{equation}
 \widehat{H} = \sum_{i=1}^{N} \Big ( -\frac{1}{2} \Delta_i - \sum_{j=1}^M \frac{Z_j}{|{\bf r}_i - {\bf R}_j|} \Big ) + \sum_{i=1}^{N} \sum_{k>i}^{N} \frac{1}{|{\bf r}_i - {\bf r}_k|}
 \end{equation}
-${\bf r}_i$ the spatial coordinates of electron $i$, ${\bf R}_j$ and $Z_j$ respectively the spatial coordinate and charge of nuclei $j$.
+where ${\bf R}_j$ and $Z_j$ are respectively the spatial coordinate and charge of nucleus $j$.
 
 \section{Slater determinants}
 
-Because of the fermionic nature of electrons, $\Psi$ must satisfy the condition of being anti-symmetric with respect to electron permutation of same-spin electrons.
+The simplest description of the wave function is the Hartree product. This consists in 
+building the product of orthonormal one-electron functions, each function describing the state of
+one electron:
 \begin{equation}
-\Psi({\bf x}_1, {\bf x}_2,\dots,{\bf x}_N) = -\Psi({\bf x}_2, {\bf x}_1,\dots,{\bf x}_N)
+\Psi_{\text{Hartree}}({\bf x}_1,\dots,{\bf x}_{N})  = \prod_{i=1}^N \phi_i(\textbf{x}_i).
 \end{equation}
-Throughout this thesis, we will use the so-called \emph{spin-free} formalism, in which the above condition is achieved by defining two types of electrons, $\alpha$ and $\beta$, and writing the wavefunction as a \emph{Waller-Hartree double determinant},\cite{Pauncz_1989} namely the product of two determinants associated with $\alpha$ and $\beta$ electrons respectively.
+Because of the fermionic nature of electrons, $\Psi$ must satisfy the condition of being antisymmetric with respect to the permutation of electrons coordinates, which is not verified by the Hartree product.
+Antisymmetrizing the Hartree product yields the so-called Slater determinant:
+\begin{equation}
+\begin{array}{c}
+ \Psi({\bf x}_1,\dots,{\bf x}_{N}) = 
+\frac{1}{\sqrt{N}!} \left|
+ \begin{array}{ccc}
+ \phi_1({\bf x}_1) & \dots & \phi_1({\bf x}_{N}) \\
+ \vdots              & \ddots &   \vdots             \\
+ \phi_{N}({\bf x}_1) & \dots & \phi_N({\bf x}_{N}) \\
+ \end{array}
+\right| \\ 
+\end{array} 
+\label{eq:slater1}
+\end{equation}
+which is the simplest possible antisymmetric wave function.
+The functions $\phi_i$ are called \emph{spinorbitals}:
+\begin{equation}
+\phi_i(\textbf{x}) = \varphi_i(\textbf{r}) \, \sigma_i(m_s)
+\end{equation}
+where $\varphi_i$ is a spatial function, or \emph{molecular orbital (MO)}, and $\sigma_i$ is a
+discrete spin function describing the spin state of the electron ($m_s = \pm \frac{1}{2}$). The spin
+function can be either $\alpha(m_s)$ or $\beta(m_s)$ defined as
+\begin{align}
+\alpha \qty(\frac{1}{2}) = 1  \; &; \;  \alpha \qty(-\frac{1}{2}) = 0   \\ \nonumber
+\beta  \qty(\frac{1}{2}) = 0  \; &; \;  \beta  \qty(-\frac{1}{2}) = 1,
+\end{align}
+and for convenience, one will rewrite
+\begin{align}
+\phi_i(\textbf{x}) & = \varphi_i(r) \alpha(m_s) \\ \nonumber
+\overline{\phi}_i(\textbf{x}) & = \varphi_i(r) \beta(m_s).
+\end{align}
+
+Packing together the $\alpha$ spinorbitals, and then the $\beta$ spinorbitals in the representation of
+the determinant, one can express the Slater determinant as
+\begin{equation}
+\frac{1}{\sqrt{N}!} \left|
+ \begin{array}{cccccc}
+ \phi_1({\bf x}_1)  & \dots & \phi_1({\bf x}_{\Nalpha}) & \phi_1({\bf x}_{\Nalpha+1}) & \dots & \phi_1({\bf x}_{N}) \\
+ \vdots             & \ddots& \vdots                    & \vdots                      &\ddots & \vdots  \\         
+ \phi_{\Nalpha}({\bf x}_1)  & \dots & \phi_{\Nalpha}({\bf x}_{\Nalpha}) & \phi_{\Nalpha}({\bf x}_{\Nalpha+1}) & \dots & \phi_{\Nalpha}({\bf x}_{N}) \\
+ \overline{\phi}_{\Nalpha+1}({\bf x}_1)  & \dots & \overline{\phi}_{\Nalpha+1}({\bf x}_{\Nalpha}) & \overline{\phi}_{\Nalpha+1}({\bf x}_{\Nalpha+1}) & \dots & \overline{\phi}_{\Nalpha+1}({\bf x}_{N}) \\
+ \vdots             & \ddots& \vdots                    & \vdots                      &\ddots & \vdots  \\         
+ \overline{\phi}_{\N}({\bf x}_1)  & \dots & \overline{\phi}_{N}({\bf x}_{\Nalpha}) & \overline{\phi}_{N}({\bf x}_{\Nalpha+1}) & \dots & \overline{\phi}_{N}({\bf x}_{N}) \\
+ \end{array}
+\right| \\ 
+\end{array} 
+\end{equation}
+where $\Nalpha$ is the number of $\alpha$ electrons, i.e. the number of electrons with $m_s=1/2$.
+If one chooses the permutation in which the first $\Nalpha$ electrons have $m_s=1/2$, and the other electrons haev $m_s=-1/2$, one always has
+\begin{align}
+\phi_i(x_j) & = 0 \; \text{ for } 1 \le i \le \Nalpha \text{ and } \Nalpha < j \le N \\ \nonumber
+\overline{\phi}_i(x_j) & = 0 \; \text{ for }  \Nalpha < i \le N \text{ and }  1 \le j \le \Nalpha,
+\end{align}
+and the Slater determinant becomes block-diagonal:
+\begin{equation}
+\frac{1}{\sqrt{N}!} \left|
+ \begin{array}{cccccc}
+ \phi_1({\bf x}_1)  & \dots & \phi_1({\bf x}_{\Nalpha}) &   & &   \\
+ \vdots             &\ddots & \vdots                    & &  0    & \\         
+ \phi_{\Nalpha}({\bf x}_1)  & \dots & \phi_{\Nalpha}({\bf x}_{\Nalpha}) &   & &   \\
+   & & & \overline{\phi}_{\Nalpha+1}({\bf x}_{\Nalpha+1}) & \dots & \overline{\phi}_{\Nalpha+1}({\bf x}_{N}) \\
+ & 0 & & \vdots                      &\ddots & \vdots  \\         
+   & &   & \overline{\phi}_{N}({\bf x}_{\Nalpha+1}) & \dots & \overline{\phi}_{N}({\bf x}_{N}) \\
+ \end{array}
+\right|. 
+\end{array}
+\end{equation}
+This allows us to rewrite the Slater determinant in a spin-free formalism as
+the \emph{Waller-Hartree double determinant},\cite{Pauncz_1989} namely the
+product of two determinants associated with $\alpha$ and $\beta$ electrons
+respectively.
 \begin{equation}
 \begin{array}{c}
  \Psi({\bf r}_1,\dots,{\bf r}_{\Na},{\bf r}_{\Na+1},\dots,{\bf r}_N;
       \alpha_1,\dots,\alpha_{\Na},\beta_{\Na+1},\dots,\beta_N) = \\
-D_\alpha({\bf r}_1,\dots,{\bf r}_{\Na}) \times D_\beta({\bf r}_{\Na+1},\dots,{\bf r}_N) = \\
-\left|
+\frac{1}{\sqrt{N!}} D_\alpha({\bf r}_1,\dots,{\bf r}_{\Na}) \times D_\beta({\bf r}_{\Na+1},\dots,{\bf r}_N) = \\
+\frac{1}{\sqrt{N!}} \left|
  \begin{array}{ccc}
  \varphi_1({\bf r}_1) & \dots & \varphi_1({\bf r}_{\Na}) \\
  \vdots               & \ddots &   \vdots             \\
@@ -50,14 +123,13 @@ D_\alpha({\bf r}_1,\dots,{\bf r}_{\Na}) \times D_\beta({\bf r}_{\Na+1},\dots,{\b
 \end{array} \\
 \label{eq:slater}
 \end{equation}
-with $\{ \varphi_i \}$ a set of one-electron functions referred to as \emph{molecular orbitals}, or \emph{MO}, typically chosen orthogonal. This type of wavefunction is the spin-free formulation of a \emph{Slater determinant}. We call $N_\alpha$ and $N_\beta \leq N_\alpha$ the number of $\alpha$ and $\beta$ electrons.
 
 Molecular orbitals are typically defined as linear combinations of \emph{atomic orbitals}, or \emph{AO}, here noted $\chi_k$
 \begin{equation}
  \varphi_i({\bf r}) = \sum_k C_{ki} \chi_k({\bf r}).
 \end{equation}
 These functions qualify the used \emph{basis set}, and are usually themselves pre-defined linear combinations of Gaussian functions. This is a restriction put on the form of the wavefunction, therefore it is known as the \emph{finite basis set approximation}.
-In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy, which can be achieved for closed-shell molecules using Roothaan equations \cite{Roothaan_1951}. This method, however is missing some important physical effects. For instance, using Eq.\eqref{eq:slater} one can see that in this model opposite-spin electrons are statistically independent (or \emph{uncorrelated}):
+In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy, which can be achieved for closed-shell molecules using Roothaan's equations.\cite{Roothaan_1951} This method, however is missing some important physical effects. For instance, using Eq.\eqref{eq:slater} one can see that in this model opposite-spin electrons are statistically independent (or \emph{uncorrelated}):
 \begin{equation}
 \begin{split}
 \left[ \Psi_\textrm{HF}({\bf r}_1,\dots,{\bf r}_{\Na},{\bf r}_{\Na+1},\dots,{\bf r}_N;
