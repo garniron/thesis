@@ -99,7 +99,7 @@ In spite of this, computing these integrals is a potential bottleneck. Indeed it
 (ik|jl) = \sum_{pqrs} C_{pi} C_{qk} C_{rj} C_{sl} (pq|rs)
 \end{equation}
 
-A naive computation of all integrals in the MO basis would cost ${\cal O}^8$. Fortunately, computing all can be scaled down to ${\cal O}^5$ \cite{Bender_1972} :
+A naive computation of all integrals in the MO basis would cost ${\cal O}(N^8)$. Fortunately, computing all can be scaled down to ${\cal O}(N^8)$ \cite{Bender_1972} :
 \begin{eqnarray}
 (iq\vert rs) & = & \sum_{p} C_{pi} (pq|rs) \nonumber \\ 
 (iq\vert js) & = & \sum_{r} C_{rj} (iq|rs) \;\; \text{half-transformed??? integrals} \\
