@@ -72,10 +72,9 @@ the determinant, one can express the Slater determinant as
  \phi_{\Nalpha}({\bf x}_1)  & \dots & \phi_{\Nalpha}({\bf x}_{\Nalpha}) & \phi_{\Nalpha}({\bf x}_{\Nalpha+1}) & \dots & \phi_{\Nalpha}({\bf x}_{N}) \\
  \overline{\phi}_{\Nalpha+1}({\bf x}_1)  & \dots & \overline{\phi}_{\Nalpha+1}({\bf x}_{\Nalpha}) & \overline{\phi}_{\Nalpha+1}({\bf x}_{\Nalpha+1}) & \dots & \overline{\phi}_{\Nalpha+1}({\bf x}_{N}) \\
  \vdots             & \ddots& \vdots                    & \vdots                      &\ddots & \vdots  \\         
- \overline{\phi}_{\N}({\bf x}_1)  & \dots & \overline{\phi}_{N}({\bf x}_{\Nalpha}) & \overline{\phi}_{N}({\bf x}_{\Nalpha+1}) & \dots & \overline{\phi}_{N}({\bf x}_{N}) \\
+ \overline{\phi}_{N}({\bf x}_1)  & \dots & \overline{\phi}_{N}({\bf x}_{\Nalpha}) & \overline{\phi}_{N}({\bf x}_{\Nalpha+1}) & \dots & \overline{\phi}_{N}({\bf x}_{N}) \\
  \end{array}
-\right| \\ 
-\end{array} 
+\right| 
 \end{equation}
 where $\Nalpha$ is the number of $\alpha$ electrons, i.e. the number of electrons with $m_s=1/2$.
 If one chooses the permutation in which the first $\Nalpha$ electrons have $m_s=1/2$, and the other electrons haev $m_s=-1/2$, one always has
@@ -95,7 +94,6 @@ and the Slater determinant becomes block-diagonal:
    & &   & \overline{\phi}_{N}({\bf x}_{\Nalpha+1}) & \dots & \overline{\phi}_{N}({\bf x}_{N}) \\
  \end{array}
 \right|. 
-\end{array}
 \end{equation}
 This allows us to rewrite the Slater determinant in a spin-free formalism as
 the \emph{Waller-Hartree double determinant},\cite{Pauncz_1989} namely the
@@ -214,30 +212,36 @@ distributed way, because it implies many collective communications.\cite{Rajbhan
 
 
 
-
 \section{Variational post-Hartree-Fock methods}
 
-In variational methods, Schrödinger's equation is solved in an $N$-electron basis.
-Generally speaking, solving Schrödinger's equation in a basis of Slater determinants is called \emph{Configuration Interaction (CI)}, the FCI being the particular case where the whole $\{\ket {D_i} \}$ set is used.
-The general idea of these methods is to select \textit{a priori} a relevant subset of Slater determinants in which the CI problem will be solved.
+In variational methods, one tries to minimize the \emph{variational energy}
+\begin{equation}
+\Evar = \frac{\mel{\Psi}{\hat{H}}{\Psi}}{\braket{\Psi}{\Psi}} \ge \EFCI
+\label{eq:evar}
+\end{equation}
+by optimizing the parameters of the wave function.
+Generally speaking, solving Schrödinger's equation in a basis of Slater determinants is called \emph{Configuration Interaction (CI)}.
+In these methods, the molecular orbitals are kept fixed and the variational parameters are the coefficients associated with the Slater determinants.
+The general idea of CI methods is to select \textit{a priori} a relevant subset
+of Slater determinants in which the CI problem will be solved, the FCI being
+the particular case where the whole $\{\ket {D_i} \}$ set is used.
 
-One usual approach is to effectively reduce the number of molecular orbitals, by performing a FCI in a reduced set of orbitals and freezing the occupation status for the others. This is referred to as \emph{Complete Active Space Configuration Interaction (CAS-CI)}. Choosing the CAS orbitals can require some expertise. The CAS-SCF method minimizes the energy by both performing a CAS-CI and optimizing the molecular orbitals.
+One usual approach is to perform a FCI in a reduced set of orbitals and freezing the occupation status for the others. This is referred to as \emph{Complete Active Space Configuration Interaction (CAS-CI)}. Choosing the CAS orbitals often requires some chemical expertise. The CAS-SCF method minimizes the energy by both performing a CAS-CI and optimizing the molecular orbitals.
 
-Another usual approach is to select determinants according to their excitation degree --- by how many occupied orbitals they differ --- with respect to some reference. If this reference is the Hartree-Fock determinant and only single and double excitations are considered, the method is known as \emph{Configuration Interaction with Single and Double excitations (CISD)}. Alternatively, the reference can be a CAS, in which case it is known as \emph{Multi-Reference Configuration Interaction (MR-CI)}.
+Another usual CI approach is to select determinants according to their excitation degree --- by how many occupied orbitals they differ --- with respect to some reference. If the reference is the Hartree-Fock determinant and if only single and double excitations are considered, the method is known as \emph{Configuration Interaction with Single and Double excitations (CISD)}. Alternatively, the reference can be a CAS-CI, in which case it is known as \emph{Multi-Reference Configuration Interaction (MR-CI)}.
 
-Regardless of the method, integrals involving non-frozen orbitals need to be computed in order to diagonalize $\widehat{H}$. Therefore CI methods' cost is at least $\order{N^5}$, due to the four-index transformation.
-In addition, the cost for fully diagonalizing $\widehat{H}$ is $\order{\Ndet^3}$ with $\Ndet$ the number of determinants in the considered subspace, which can be up to a few billions. This usually not feasible, but only the few eigenvectors associated with lowest eigenvalues are typically of interest, so iterative methods can be used. The Quantum Package uses the \emph{Davidson diagonalization} originally developped by Ernest R. Davidson\cite{Davidson_1975} specifically for CI methods. 
+Regardless of the method, integrals involving all orbitals implied in at least one Slater determinant need to be computed in order to diagonalize $\widehat{H}$. Therefore CI methods cost is at least $\order{M^5}$, due to the four-index transformation.
+In addition, the cost for fully diagonalizing $\widehat{H}$ is $\order{\Ndet^3}$ with $\Ndet$ the number of determinants in the considered subspace, which can be up to a few billions. This usually not feasible, but only the few eigenvectors associated with lowest eigenvalues are typically of interest, so iterative methods can be used. The standard choice in quantum chemistry is to use the \emph{Davidson diagonalization} originally developed by Ernst R. Davidson\cite{Davidson_1975} specifically for CI methods. 
 
-\alert{On voit que pour faire un CI, on a besoin de toutes les integrales
-bielectroniques. Donc ca coute au moins $\order{N^5}$.  Il faut diagonaliser
-$H$ dans la base des determinants, et il y en a souvent un tres grand nombre
-(plusieurs millions, voire milliards). Donc je pense qu'il faut introduire
-Davidson ici. Mettre dans la partie 'determiant driven' l'implementations qu'on
-a dans le QP, et tes reflexions sur Davidson en dans les perspectives a la fin.
-}
 
 \section{Perturbative methods}
 
+%In perturbative methods, one computes the energy by projection on a reference $\Psi_0$:
+%\begin{equation}
+%\E = \frac{\mel{\Psi_0}{\hat{H}}{\Psi}}{\braket{\Psi_0}{\Psi}}
+%\label{eq:evar}
+%\end{equation}
+%and one uses the intermediate normalization convention: $\braket{\Psi_0}{\Psi} = 1$.
 
 \alert{Pioche un peu chez Manus pour introduire MP2 et Epstein Nesbet.}
 
