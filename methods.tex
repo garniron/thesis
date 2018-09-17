@@ -3,12 +3,19 @@
 \begin{document}
 
 
-Quantum chemistry aims at describing the electronic structures of molecular systems.
-For atoms of the first 3 rows of the periodic table, relativistic effects can be neglected and the velocity of the nuclei is considered negligible compared to that of the electrons (Born-Oppenheimer approximation). In this context, the model system is a cloud of $N$ electrons and a set of $M$ nuclei considered punctual, immobile charges. It can be described by solving Shrödinger's equation for electrons~:
+Quantum chemistry aims at describing the electronic structures of molecular
+systems.  The velocity of the nuclei is considered negligible compared to that
+of the electrons (Born-Oppenheimer approximation), and for atoms of the first
+rows of the periodic table, relativistic effects can be neglected.  In this
+context, the model system is a cloud of $N$ electrons and a set of $M$ nuclei
+considered punctual, immobile charges. It can be described by solving
+Shrödinger's equation for electrons~:
 \begin{equation}
  \widehat{H} \Psi({\bf x}_1,\dots,{\bf x}_N) = E \Psi_n({\bf x}_1,\dots,{\bf x}_N)
 \end{equation}
-where $\Psi$ is the electronic wave function, $E$ the associated energy, and $\bf x$ . $\widehat H$ is the non-relativistic electronic Hamiltonian operator
+where $\Psi$ is the electronic wave function, $E$ the associated energy, and $\bf{x}_i = {x,y,z,m_s}$
+contains the Cartesian coordinates of the electrons, as well as a spin variable $m_s$.
+$\widehat H$ is the non-relativistic electronic Hamiltonian operator
 \begin{equation}
 \widehat{H} = \sum_{i=1}^{N} \Big ( -\frac{1}{2} \Delta_i - \sum_{j=1}^M \frac{Z_j}{|{\bf r}_i - {\bf R}_j|} \Big ) + \sum_{i=1}^{N} \sum_{k>i}^{N} \frac{1}{|{\bf r}_i - {\bf r}_k|}
 \end{equation}
@@ -18,7 +25,7 @@ ${\bf r}_i$ the spatial coordinates of electron $i$, ${\bf R}_j$ and $Z_j$ respe
 
 Because of the fermionic nature of electrons, $\Psi$ must satisfy the condition of being anti-symmetric with respect to electron permutation of same-spin electrons.
 \begin{equation}
-\Psi({\bf r}_1, {\bf r}_2,\dots,{\bf r}_N) = -\Psi({\bf r}_2, {\bf r}_1,\dots,{\bf r}_N)
+\Psi({\bf x}_1, {\bf x}_2,\dots,{\bf x}_N) = -\Psi({\bf x}_2, {\bf x}_1,\dots,{\bf x}_N)
 \end{equation}
 Throughout this thesis, we will use the so-called \emph{spin-free} formalism, in which the above condition is achieved by defining two types of electrons, $\alpha$ and $\beta$, and writing the wavefunction as a \emph{Waller-Hartree double determinant},\cite{Pauncz_1989} namely the product of two determinants associated with $\alpha$ and $\beta$ electrons respectively.
 \begin{equation}
@@ -50,7 +57,7 @@ Molecular orbitals are typically defined as linear combinations of \emph{atomic 
  \varphi_i({\bf r}) = \sum_k C_{ki} \chi_k({\bf r}).
 \end{equation}
 These functions qualify the used \emph{basis set}, and are usually themselves pre-defined linear combinations of Gaussian functions. This is a restriction put on the form of the wavefunction, therefore it is known as the \emph{finite basis set approximation}.
-In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy, which can be acheived for closed-shell molecules using Roothan equations \cite{Roothaan_1951}. This method, however is missing some important physical effects. For instance, using Eq.\eqref{eq:slater} one can see that in this model opposite-spin electrons are statistically independent (or \emph{uncorrelated}):
+In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy, which can be achieved for closed-shell molecules using Roothaan equations \cite{Roothaan_1951}. This method, however is missing some important physical effects. For instance, using Eq.\eqref{eq:slater} one can see that in this model opposite-spin electrons are statistically independent (or \emph{uncorrelated}):
 \begin{equation}
 \begin{split}
 \left[ \Psi_\textrm{HF}({\bf r}_1,\dots,{\bf r}_{\Na},{\bf r}_{\Na+1},\dots,{\bf r}_N;
@@ -93,7 +100,7 @@ with
 
 and $\ket {D_{pq}^{rs}}$ a determinant obtained from $\ket D$ by moving electrons from \alert{orbitals} $p,q$ to $r,s$.
 
-In spite of this, computing these integrals is a potential bottleneck. Indeed it is possible to analitycally compute an integral $(pq|rs)$ with $p,q,r,s$ atomic orbitals, but molecular orbitals are desired. The cost of computing a single one scales as $N^4$.
+In spite of this, computing these integrals is a potential bottleneck. Indeed it is possible to analytically compute an integral $(pq|rs)$ with $p,q,r,s$ atomic orbitals, but molecular orbitals are desired. The cost of computing a single one scales as $N^4$.
 
 \begin{equation}
 (ik|jl) = \sum_{pqrs} C_{pi} C_{qk} C_{rj} C_{sl} (pq|rs)
@@ -102,14 +109,14 @@ In spite of this, computing these integrals is a potential bottleneck. Indeed it
 A naive computation of all integrals in the MO basis would cost ${\cal O}(N^8)$. Fortunately, computing all can be scaled down to ${\cal O}(N^8)$ \cite{Bender_1972} :
 \begin{eqnarray}
 (iq\vert rs) & = & \sum_{p} C_{pi} (pq|rs) \nonumber \\ 
-(iq\vert js) & = & \sum_{r} C_{rj} (iq|rs) \;\; \text{half-transformed??? integrals} \\
+(iq\vert js) & = & \sum_{r} C_{rj} (iq|rs) \;\; \text{semi-transformed integrals} \\
 (ik\vert js) & = & \sum_{q} C_{qk} (iq|js) \nonumber \\ 
 (ik\vert jl) & = & \sum_{s} C_{sl} (ik|js)  \;\; \text{fully transformed integrals}
 \end{eqnarray}
 
 In addition to being very costly, this step is hard to parallelize in distributed way, because all half-transformed integrals are required to compute fully transformed integrals, which implies an "all-to-all" communication of the full set of data.
 
-FCI is only acheivable for very small systems, given that $\NFCI$ the size of the determinants basis scales factorially with the number of molecular orbitals
+FCI is only achievable for very small systems, given that $\NFCI$ the size of the determinants basis scales factorially with the number of molecular orbitals
 \begin{equation}
 \NFCI = \frac{M!}{N_\alpha ! (M-N_\alpha)!} \times \frac{M!}{N_\beta ! (M-N_\beta)!}
 \end{equation}
@@ -121,7 +128,7 @@ Post-Hartree-Fock methods are trying to circumvent this problem, and therefore a
 
 \alert{ Il faut mettre ici l'expression des elements de matrice de H dans la
 base des determinants.  Il faut aussi dire que pour Hartree-Fock, en utilisant
-les equations de Roothaan on peut resoudre le probleme dans la base des AOs.
+les equations de Roothan on peut resoudre le probleme dans la base des AOs.
 Par contre, le probleme est beaucoup complique dans une base de fonctions a
 N-electrons car chaque element de matrice doit faire intervenir des integrales
 a N electrons.  Si les fonctions de base a N-electrons sont des determinants
