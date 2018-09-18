@@ -3,6 +3,59 @@
  
 \begin{document}
 
+
+
+While CI methods are common ways to account for electron correlation, they suffer a severe size consistency problem.
+
+
+The logics of the electronic Many-Body problem has been clarified a long time
+ago in the situations where  the  wave  function  may  be  generated  from  a
+single  determinant  (or  single  reference).  Perturbative  developments,
+translated  in  terms  of  diagrams,  led  to  the  formulation  of  the
+fundamental  linked  cluster  theorem,\cite{Goldstone}  and  clarified  the  defects  of
+truncated  Configuration Interaction  methods.  The  conditions  for  a  good
+scaling  of  the  correlation  energy  and  for  the  strict separability  into
+closed  shell  fragments  were  established.
+
+By  strict  separability  (which
+is  less ambiguous than the terms size-extensivity and size consistency) we
+mean that at the non-interacting limit of an $A\cdots B$ problem the energies are
+additive, $E_{A\cdots B} = E_A+E_B$, and that the amplitudes associated with the single
+and  double excitation operators  are  the  same  as  those  obtained  for  the  isolated  $A$
+and  $B$  problems.
+
+Why this is not the case in CI methods can be easily understood as the absence of some excitations simulatenously on all subsystems.
+
+Considering a supersystem $C$ made of two non-interacting subsystems $A$ and $B$, and write its CID wavefunction (Hartree-Fock determinant and all its double excitations).
+
+\begin{equation}
+\Psi^C = \Psi_{HF}^C + \Psi_{D}^C
+\end{equation}
+
+with $\Psi_{HF}^C$ the Hartree-Fock determinant for system $C$, and $\Psi_{D}^C$ the sum of all double excitation with respect to $\Psi_{HF}^C$.
+
+If we now write $\Psi^{A+B}$ the product of the two separate CID wavefunctions of $A$ and $B$
+
+
+\begin{align}
+\Psi^{A+B} = & \Psi^A  \Psi^B \\
+ = & \Psi_{HF}^A\Psi_{HF}^B  + \Psi_{HF}^A\Psi_{D}^B + \Psi_{D}^A\Psi_{HF}^B + \Psi_{D}^A \Psi_{D}^B \\
+ = & \Psi^C_{HF} + \Psi^C_D + \Psi_{D}^A \Psi_{D}^B
+\end{align}
+
+As can be seen, $C$ isn't described as the product of $A+B$ as it should, since simultaneous double excitations on $A$ and $B$ cannot be accounted for
+
+\begin{equation}
+\Psi^{A+B} - \Psi^C  = \Psi_{D}^A \Psi_{D}^B
+\end{equation}
+
+Some methods aim at partially or fully correct this size-consistency error by eliminating the unlinked effects of the CISD. The so-called \emph{Davidson corrections}, that are essentially correction to the energy\cite{Langhoff_1974}. \alert{citation a verif}, and the so-called \emph{Coulpled Electron Pair Approximations (CEPA)} that correct the CI equations\cite{Kelly_1963,Kelly_1964,Meyer_1971,Meyer_1973,Meyer_1974,Ahlrichs_1975}. \alert{grosse biblio pour un truc dont on parle pas?...}. Many different variations have been proposed, for a review see \cite{Koch_1981}.
+
+
+
+
+
+
 \begin{algorithm}
 \KwData{$\kalpha$ the considered exernal determinant}
 \KwData{$D_i$ the list of $N$ internal determinants connected to $\kalpha$}
