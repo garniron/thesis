@@ -271,12 +271,14 @@ After drawing $n$ random numbers forming the set $\mathcal{U}$, and given $\math
 
 \alert{A VERIFIERXXXXXXXXXXXXXXXXXXXXXXXX}
 \begin{equation}
-\sqrt{(S_{t}^{(2)} - S_{t}) n^{-1} }
-\end{equation}		
+\EPT = (S_{t} / n) \pm \text{err}
+\end{equation}
 
+with
 \begin{align}
- S_{t} = \sum_{u \in \{\mathcal{U}\}_n} B_{t}(u) \\
- S^{(2)}_{t} = \sum_{u \in \{\mathcal{U}\}_n} B_{t}(u)^2
+err = \sqrt{(S_{t}^{(2)} - {S_{t}}^2) (n-1)^{-1} } \\
+S_{t} = \sum_{u \in \{\mathcal{U}\}_n} B_{t}(u) \\
+S^{(2)}_{t} = \sum_{u \in \{\mathcal{U}\}_n} B_{t}(u)^2
 \end{align}
 
 
@@ -343,6 +345,13 @@ This is an empirical mechanism to balance the stochastic and deterministic aspec
 
 combs are drawn. Thus, teeth containing thousands of determinants are very hard to move to $\mathcal{D}$. A tooth containing 10000 samples with a single uncomputed one, only needs computation that sample to be moved to $\mathcal{D}$, but it will take on average 10000 more combs to be drawn until this happens by chance.
 A convenient way to avoid this frustrating situation is, everytime a comb is drawn, to additionally compute the first uncomputed sample of the whole space. This ensures smooth filling of teeth, and that that the full deterministic computation will be achieved before $\Ngen$ combs are drawn.
+
+
+\subsection*{comb drawing order}
+
+It must be noted that combs can only be taken into account in an initially defined random order (that is, the order of $u[i]$).
+It can happen that a comb becomes computable (as in, all needed $e_I$ are known) even though it is later down the list. Taking it into account would introduce a bias, as the subset of ``computable combs'' is biased toward the presence certain samples - the computed ones - and thus isn't a random set of combs.
+
 
 \section{implementation}
 
