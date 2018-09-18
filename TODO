@@ -1,0 +1,42 @@
+1) Exp dressing
+CISD -> CCSD
+Quand Ref n'est pas HF mais CAS -> MR-CCSD.
+On peut calculer E par projection et exprimer <REF|H|exp(T) REF> / <REF| exp(T) REF>
+et donner une expression des c_alpha de la fonction d'onde MRCC => Dans la moulinette de dressing et
+on fait un MR-CCSD
+* Choix des c_alpha => Trouver les amplitudes des single et double exictations en faisant une SVD du MR-CISD
+* Repetition des simples et doubles pour exp(T)
+
+
+3) Matrix dressing
+
+a) Principe du dressing de matrice
+b) Remaquer que on n'a pas besoin de stocker Delta, mais on n'a besoin que de Delta.Psi => Stockage d'un vecteur et non d'une matrice
+c) Remaquer que on peut utiliser l'algo du PT2 avec des vecteurs a la place des scalaires
+d) Avec des vecteurs, la communication et le stockage scale avec Ndet => Reuction de comm avec checkpoints
+e) Critere de convergence calcule comme produit scalaire sur les clients pour minimiser les comms.
+
+5) CIPSI
+
+Grosse intro tres claire
+Starting point
+Figures moches
+TiKz
+
+
+
+
+4) PT2
+
+Revoir un peu le debut
+mettre le papier
+ajuster la fin
+
+
+2) Perf analysis
+
+a) Davidson
+b) Pt2
+c) Dressing ???
+d) MRCC stochastique : Copmarer les temps complet et stoch suf petits exemples
+
