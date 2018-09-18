@@ -3,7 +3,12 @@
 #24 electrons (12a, 12b). 3 core MOs (6 frozen electrons)
 
 # Ndet   seconds  
-#
+   29409      0.906
+  168595      7.150
+ 1322537     59.315
+ 8495334    
+ 9356952
+42959496  12361.680
 
 # Parallel scaling done with the 42959496-det wavefunction
 # Nnode  seconds  (state 1)

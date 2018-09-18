@@ -1,0 +1,7 @@
+﻿\begin{tikzpicture}
+\draw (0,10)node[draw](Psi){$\Psi = \sum_I c_I D_I$};
+
+\coordinate (k) at (0,0);
+\fill (k)+(0,0) -- (k)+(1,0) -- (k)+(1,0.5) -- (k)+(0,0.5) -- cycle;
+draw[->,>=latex] (Psi) |- (Box1);
+\end{tikzpicture}
