@@ -10,8 +10,8 @@
 #    	gnuplot home:     http://www.gnuplot.info
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
-# set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
-# set output 'figures/perf/scaling_pt2_det.pdf'
+# set terminal qt 0 font "Sans,9"
+# set output
 unset clip points
 set clip one
 unset clip two
@@ -41,7 +41,7 @@ set tics back
 set grid nopolar
 set grid xtics nomxtics ytics nomytics noztics nomztics \
  nox2tics nomx2tics noy2tics nomy2tics nocbtics nomcbtics
-set grid layerdefault   lt 0 linewidth 0.500 dashtype solid,  lt 0 linewidth 0.500 dashtype solid
+set grid layerdefault   lt 0 linewidth 0.500,  lt 0 linewidth 0.500
 set raxis
 set style parallel front  lt black linewidth 2.000 dashtype solid
 set key title "" center
@@ -58,8 +58,6 @@ set style histogram clustered gap 2 title textcolor lt -1
 unset object
 set style textbox transparent margins  1.0,  1.0 border
 unset logscale
-set logscale x 10
-set logscale y 10
 set offsets 0, 0, 0, 0
 set pointsize 1
 set pointintervalbox 1
@@ -126,13 +124,13 @@ set rrange [ * : * ] noreverse nowriteback
 set trange [ * : * ] noreverse nowriteback
 set urange [ * : * ] noreverse nowriteback
 set vrange [ * : * ] noreverse nowriteback
-set xlabel "Number of determinants" 
+set xlabel "Number of 36-core nodes" 
 set xlabel  font "" textcolor lt -1 norotate
 set x2label "" 
 set x2label  font "" textcolor lt -1 norotate
-set xrange [ 100.000 : 1.00000e+07 ] noreverse nowriteback
+set xrange [ * : * ] noreverse nowriteback
 set x2range [ * : * ] noreverse nowriteback
-set ylabel "Wall clock time (s)" 
+set ylabel "Speedup" 
 set ylabel  font "" textcolor lt -1 rotate by -270
 set y2label "" 
 set y2label  font "" textcolor lt -1 rotate by -270
@@ -171,6 +169,6 @@ set psdir
 set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap v5
 GNUTERM = "qt"
 x = 0.0
-## Last datafile plotted: "data_pt2"
-plot 'data_pt2' index 2 u 1:5 w lp title "Ground state", 'data_pt2' index 2 u 1:9 w lp title "Excited state", (x**1.45)*exp(-12.5) title '{/Symbol a}N_{det}^{1.45}'
+## Last datafile plotted: "data_davidson"
+plot x title "Ideal", 'data_davidson' index 2 u 1:(12361.68/$2) title '42 959 496 dets' w lp, 'data_davidson' index 1 u 1:(955.578/$2) title '9 356 952 dets' w lp
 #    EOF

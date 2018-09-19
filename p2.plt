@@ -11,7 +11,7 @@
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
 set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
-set output 'figures/pt2/cn3_energy.pdf'
+set output 'figures/perf/cn3_energy.pdf'
 unset clip points
 set clip one
 unset clip two
@@ -129,7 +129,7 @@ set xlabel "Number of determinants"
 set xlabel  font "" textcolor lt -1 norotate
 set x2label "" 
 set x2label  font "" textcolor lt -1 norotate
-set xrange [ 1000.00 : 1.10000e+06 ] noreverse nowriteback
+set xrange [ 1000.00 : 1.00000e+07 ] noreverse nowriteback
 set x2range [ * : * ] noreverse nowriteback
 set ylabel "Energy (au)" 
 set ylabel  font "" textcolor lt -1 rotate by -270

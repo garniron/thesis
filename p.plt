@@ -11,7 +11,7 @@
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
 set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
-set output 'figures/pt2/scaling_node.pdf'
+set output 'figures/perf/scaling_pt2_node.pdf'
 unset clip points
 set clip one
 unset clip two
@@ -121,7 +121,7 @@ set rrange [ * : * ] noreverse nowriteback
 set trange [ * : * ] noreverse nowriteback
 set urange [ * : * ] noreverse nowriteback
 set vrange [ * : * ] noreverse nowriteback
-set xlabel "Number of nodes" 
+set xlabel "Number of 36-core nodes" 
 set xlabel  font "" textcolor lt -1 norotate
 set x2label "" 
 set x2label  font "" textcolor lt -1 norotate
@@ -169,5 +169,5 @@ set grid
 GNUTERM = "qt"
 x = 0.0
 ## Last datafile plotted: "data_pt2"
-plot 'data_pt2' index 0 u 1:(5341.9917/$2) w lp title 'Ground state', 'data_pt2' index 1 u 1:(4310.0066/$2) w lp title 'Excited state', x w l title 'Ideal'
+plot  x w l title 'Ideal', 'data_pt2' index 0 u 1:(44873.5377/$2) w lp title 'Ground state', 'data_pt2' index 1 u 1:(50361.7078/$2) w lp title 'Excited state'
 #    EOF

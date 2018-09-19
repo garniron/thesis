@@ -1,5 +1,7 @@
 \documentclass[./thesis.tex]{subfiles}
 
+\begin{document}
+
 In this chapter, we discuss the efficiency of the implementation. The system
 we chose for these numerical experiments is a cyanine dye,
 [(NH$_2$)(CH)(NH$_2$)]$^+$ in its ground state and in its first excited state.
@@ -64,41 +66,114 @@ determinants, with and without the second order perturbative contribution.
 \section{Davidson diagonalization}
 
 \begin{table}[t]
-\caption{Time (in seconds) to run one Davidson's iteration in parallel on the largest wave function
-with an increasing number of 36-core compute nodes.}
-\label{tab:time_davidson}
+\caption{Wall-clock time (in seconds) to run one Davidson's iteration in parallel with increasingly large wave functions.}
+\label{tab:time_davidson_ndet}
 \begin{center}
 \begin{tabular}{rr}
 \hline
-\tabc{Nodes} & \tabc{Wall-clock time (s)} \\
+\tabc{$\Ndet$} & \tabc{seconds} \\
 \hline
-$ 1$ &$12~361.68$ \\
-$ 5$ &$ 2~580.70$ \\
-$10$ &$ 1~363.24$ \\
-$20$ &$   746.36$ \\
-$30$ &$   542.91$ \\
-$40$ &$   442.11$ \\
-$50$ &$   381.92$ \\
+$    29~409$ &       $0.91$ \\
+$   168~595$ &       $7.15$ \\
+$ 1~322~537$ &      $59.32$ \\
+$ 8~495~334$ &     $802.02$ \\
+$ 9~356~952$ &     $955.58$ \\
+$42~959~496$ &  $12~361.68$ \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[t]
+\caption{Wall-clock time (in seconds) to run one Davidson's iteration in parallel on two different wave functions 
+with an increasing number of 36-core compute nodes.}
+\label{tab:time_davidson}
+\begin{center}
+\begin{tabular}{rrr}
+\hline
+\tabc{Nodes} & \tabc{9~356~952 determinants} & \tabc{42~959~496 determinants} \\
+\hline
+$ 1$ &$955.58$ &$12~361.68$\\
+$ 5$ &$215.02$ &$ 2~580.71$\\
+$10$ &$121.28$ &$ 1~363.25$\\
+$20$ &$ 75.59$ &$   746.36$\\
+$30$ &$ 61.42$ &$   542.92$\\
+$40$ &$ 51.97$ &$   442.12$\\
+$50$ &$ 48.66$ &$   381.92$\\
 \hline
 \end{tabular}
 \end{center}
 \end{table}
 
 \begin{figure}[h]
-	\begin{center}
-		\includegraphics[width=0.8\columnwidth]{figures/perf/speedup_davidson}
-		\caption{Speedup of one Davidson iteration as a function of the number of 36-core
-compute nodes.}
-		\label{fig:speedup_davidson}
-	\end{center}
+    \begin{center}
+      \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_davidson_ndet}
+      \caption{Wall-clock time of one Davidson iteration as a function of the number of
+determinants in the wave function.}
+      \label{fig:speedup_davidson_ndet}
+    \end{center}
 \end{figure}
 
-We took a wavefunction with 42~959~496 determinants, and measured the wall-clock time required to
+\begin{figure}[h]
+    \begin{center}
+      \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_davidson}
+      \caption{Speedup of one Davidson iteration as a function of the number of
+36-core compute nodes.}
+      \label{fig:speedup_davidson}
+    \end{center}
+\end{figure}
+
+We took a wave function with 42~959~496 determinants, and measured the wall-clock time required to
 perform one iteration of the Davidson diagonalization, with an increasing number of compute nodes.
 The timings are reported in table~\ref{tab:time_davidson} and the parallel speedup curve is represented in figure~\ref{fig:speedup_davidson}.
 
 
 \section{Selection}
+
+\begin{table}
+\caption{Single-node (36-core) CIPSI selection for increasingly large wave functions. Time is given in seconds.}
+\label{tab:time_selection}
+\begin{center}
+\begin{tabular}{rr}
+\hline
+\tabc{$\Ndet$} & \tabc{seconds} \\
+\hline
+$      123$ & $     0.18$ \\
+$    3~083$ & $     6.23$ \\
+$    7~036$ & $    16.32$ \\
+$   17~174$ & $    40.46$ \\
+$   40~692$ & $   102.76$ \\
+$   98~186$ & $   253.56$ \\
+$  240~422$ & $   654.87$ \\
+$  639~269$ & $ 1~802.61$ \\
+$1~928~131$ & $ 5~258.16$ \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}
+\caption{Time (in seconds) to run parallel CIPSI selections on the
+9~356~952-determinant wave function with an increasing number of 36-core
+compute nodes.}
+\label{tab:selection_parallel}
+\begin{center}
+\begin{tabular}{rr}
+\hline
+\tabc{Nodes} & \tabc{seconds}  \\
+\hline
+$ 1$ & $14~945.80$ \\
+$ 5$ & $ 3~419.55$ \\
+$10$ & $ 1~655.23$ \\
+$20$ & $   943.97$ \\
+$30$ & $   748.88$ \\
+$40$ & $   666.26$ \\
+$50$ & $   748.99$ \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
 
 
 \section{PT2 calculations}
@@ -117,14 +192,13 @@ is typically around $5\%$.
 \end{figure}
 
 \begin{table}
-\caption{Single-node (36-core) $\EPT$ calculations for increasingly large wave functions. Time is given in seconds, and energies are given in atomic units.}
+\caption{Single-node (36-core) $\EPT$ calculations for increasingly large wave functions. Time is given in seconds.}
 \label{tab:time_pt2}
 \begin{center}
 \begin{tabular}{rrr}
 \hline
 \tabc{$\Ndet$} & \tabc{Ground state} & \tabc{Excited state} \\
 \hline
-$        7$ &  $     0.00$ & $     0.00$ \\
 $      123$ &  $     0.48$ & $     0.53$ \\
 $    3~083$ &  $     1.53$ & $     2.05$ \\
 $   29~409$ &  $    13.71$ & $    23.75$ \\
@@ -137,10 +211,26 @@ $9~356~952$ &  $44~873.53$ & $50~361.70$ \\
 \end{center}
 \end{table}
 
+Table~\ref{tab:time_pt2} reports the wall-clock time required to compute $\EPT$
+on a single node.
+From these data, one can evaluate the scaling of the cost of $\EPT$ 
+with the number of determinants, as plotted in figure~\ref{fig:scaling_det_pt2}.
+
+The number of $\ket{\alpha}$ determinants is proportional to the
+number of determinants in the variational wave function, and each
+$\ket{\alpha}$ needs to be compared to all the determinants 
+in the computation of $\mel{\alpha}{H}{\Psi}$.
+But when the wave function becomes large enough, the second point is not true any more because only a limited number of determinants $\ket{I}$ of $\Psi$ have a non-zero
+value $\mel{\alpha}{H}{I}$, and this number is bounded by the number of single and double excitations, characteristic of the basis set.
+Fitting the last points with a log-log plot shows an asymptotic scaling as
+$\order{\Ndet^{1.45}}$, which is consistent with the fact that the scaling is
+expected to be going from $\order{\Ndet^2}$ for small sizes to $\order{\Ndet}$.
+
+
 \begin{table}
 \caption{Time (in seconds) to run parallel $\EPT$ calculations on the largest wave function with an
 increasing number of 36-core compute nodes.}
-\label{tab:energy_pt2}
+\label{tab:pt2_parallel}
 \begin{center}
 \begin{tabular}{rrr}
 \hline
@@ -157,21 +247,6 @@ $50$ & $ 1~154.97$ & $ 1~273.66$ \\
 \end{tabular}
 \end{center}
 \end{table}
-
-Table~\ref{tab:time_pt2} reports the wall-clock time required to compute the
-PT2 contribution on a single node.
-
-From these data, one can evaluate the scaling of the cost of the PT2 contribution
-with the number of determinants, as plotted in figure~\ref{fig:scaling_det_pt2}.
-We first remark an $\order{N^2}$-like behavior for small sizes, which is consistent
-with the fact that
-\begin{enumerate}
-\item the number of $\ket{\alpha}$ determinants is proportional to the
-number of generators, and 
-\item each $\ket{\alpha}$ needs to be compared to all the determinants of the wave function in the computation of $\mel{\alpha}{H}{\Psi}$.
-\end{enumerate}
-But when the wave function becomes large enough, the second point is not true any more because only a limited number of determinants $\ket{I}$ of $\Psi$ have a non-zero
-value $\mel{\alpha}{H}{I}$, and this number is bounded by the number of single and double excitations, characteristic of the basis set. This explains the asymptotic linear scaling behavior one can observe.
 \begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_pt2_node}
@@ -180,11 +255,10 @@ value $\mel{\alpha}{H}{I}$, and this number is bounded by the number of single a
 	\end{center}
 \end{figure}
 
-To analyze the parallel efficiency of the $\EPT$ calculation, we have made the parallel speedup curve using up to 48 nodes (1728 CPU cores), plotted in figure~\ref{fig:scaling_node_pt2}. One obtains a speedup of 42.6 with 48 nodes with respect to the single-node reference. This corresponds to a parallel efficiency of 88.7\%.
+To analyze the parallel efficiency of the $\EPT$ calculation, we have made the parallel speedup curve using up to 50 nodes (1800 CPU cores), plotted in figure~\ref{fig:scaling_node_pt2}. With 50 nodes, one obtains a speedup with respect to the single-node reference of $38.8\times$ for the ground state and $39.5\times$ for the excited state. This corresponds to a parallel efficiency of 77.7\% and 79.1\%.
 
 \section{Shifted-Bk}
 
 \section{Multi-reference Coupled-Cluster}
-
 
 \end{document}

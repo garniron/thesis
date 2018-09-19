@@ -10,8 +10,8 @@
 #    	gnuplot home:     http://www.gnuplot.info
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
-# set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
-# set output 'figures/perf/scaling_pt2_det.pdf'
+# set terminal qt 0 font "Sans,9"
+# set output
 unset clip points
 set clip one
 unset clip two
@@ -45,7 +45,7 @@ set grid layerdefault   lt 0 linewidth 0.500 dashtype solid,  lt 0 linewidth 0.5
 set raxis
 set style parallel front  lt black linewidth 2.000 dashtype solid
 set key title "" center
-set key inside right bottom vertical Right noreverse enhanced autotitle nobox
+set key inside right top vertical Right noreverse enhanced autotitle nobox
 set key noinvert samplen 4 spacing 1 width 0 height 0 
 set key maxcolumns 0 maxrows 0
 set key noopaque
@@ -130,9 +130,9 @@ set xlabel "Number of determinants"
 set xlabel  font "" textcolor lt -1 norotate
 set x2label "" 
 set x2label  font "" textcolor lt -1 norotate
-set xrange [ 100.000 : 1.00000e+07 ] noreverse nowriteback
+set xrange [ * : * ] noreverse nowriteback
 set x2range [ * : * ] noreverse nowriteback
-set ylabel "Wall clock time (s)" 
+set ylabel "Wall-clock time (s)" 
 set ylabel  font "" textcolor lt -1 rotate by -270
 set y2label "" 
 set y2label  font "" textcolor lt -1 rotate by -270
@@ -171,6 +171,6 @@ set psdir
 set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap v5
 GNUTERM = "qt"
 x = 0.0
-## Last datafile plotted: "data_pt2"
-plot 'data_pt2' index 2 u 1:5 w lp title "Ground state", 'data_pt2' index 2 u 1:9 w lp title "Excited state", (x**1.45)*exp(-12.5) title '{/Symbol a}N_{det}^{1.45}'
+## Last datafile plotted: "data_davidson"
+plot 'data_davidson' index 0 u 1:2 w lp title '', x**1.5*exp(-17) title '{/Symbol a} N_{det}^{1.5}'
 #    EOF
