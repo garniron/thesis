@@ -1,0 +1,139 @@
+﻿\begin{tikzpicture}
+\coordinate (A) at (0,0.5);
+
+
+\draw (A) node[draw] (Psi){$\Psi = \sum_I c_I D_I$};
+
+\draw (A)+(0,-1.5) node[right] (S){$S= D_J$};
+\draw (A)+(5,-2) node[right] (G){$G= D_I$};
+\draw[dashed] (A)+(-5,-2) -- (G);
+
+%-----------------
+
+%Rectangle
+\coordinate (k) at (-4,-4);
+\draw (k) node[draw,fill] (K){$\phantom{xxx}$};
+
+%Rectangle
+\coordinate (l) at (3,-4);
+\draw (l) node[draw,fill] (L){$\phantom{xxx}$};
+
+% Angular arrows
+\coordinate (Ap) at (0,-3);
+\draw[-] (Psi) -- (Ap);  \draw[->,>=latex] (Ap) -| (K);
+\draw (Ap)+(0,0.3) node[left] (f){$f_G^S \le 2$};
+
+\coordinate (Ap) at (0,-2.5);
+\draw (Ap)+(0,0.3) node[right] (f){$(f_G^S \le 4) \wedge$ selector};
+\draw[->,>=latex] (Ap) -| (L);
+
+\draw (L.south)+(3,0) node[right] (G){$G_p$};
+\draw[dashed] (K.south)+(-1,0) -- (G);
+
+%-----------------
+
+%Rectangle
+\coordinate (m) at (-1,-8);
+\draw (m) node[draw,fill] (M){$\phantom{xxx}$};
+\coordinate (mp) at (-0.9,-8);
+\draw (mp) node[draw,fill] (Mp){$\phantom{x}$};
+
+%Rectangle
+\coordinate (n) at (4,-8);
+\draw (n) node[draw,fill] (N){$\phantom{xxx}$};
+
+\coordinate (p) at (1,-8);
+\draw (p) node (P) {drop $G_p$};
+
+%Circle
+\coordinate (c) at (3,-5.5);
+\draw (c) node[draw,fill,circle] (C){$\phantom{.}$};
+
+
+% Angular arrows
+
+\coordinate (Ap) at (-2,-5.5);
+\draw[-] (K) |- (Ap);  \draw[->,>=latex] (Ap) -| (M);
+\draw (Ap)+(0,0.5) node[left] (f){$f_{G_p}^S \le 2$};
+
+\coordinate (Ap) at (4,-5.5);
+\draw[-] (L) |- (Ap);  \draw[->,>=latex] (Ap) -| (N);
+\draw (C)+(0,0.5) node[right] (f){$f_{G_p}^S \le 4$};
+\draw (C)+(0,0.5) node[left] (f){$f_{G_p}^S \le 2$};
+
+\draw[->,>=latex] (C) -| (Mp);
+\coordinate (App) at (-0.9,-7);
+\draw[->,>=latex] (App) -| (P);
+
+\draw (App)+(0,0.5) node[right] (f){$(f_{G_p}^S =1) \wedge$ past};
+
+\draw (N.south)+(2,0) node[right] (G){$G_{pq}$};
+\draw[dashed] (M.south)+(-4,0) -- (G);
+
+%-----------------
+
+\coordinate (a) at (-2.5,-9.5);
+\coordinate (s) at (-2.5,-12);
+\draw (s) node[below] (S) {
+  \begin{tabular}{l}
+  $S=a^\dagger_i a^\dagger_j G_{pq}$ \\
+  tag $P_{ij}(G_{pq})$
+  \end{tabular}
+};
+\draw (a)+(-0.3,0) node[above right] (A) {$f^S_{G_{pq}}=2$};
+
+\draw[-] (M) |- (a);  \draw[->,>=latex] (a) -| (S);
+
+\coordinate (p) at (-2.5,-10);
+
+\coordinate (drop) at (-4,-14);
+\draw (drop) node (DROP) {drop $G_{pq}$};
+\draw[->,>=latex] (p) -| (DROP);
+\draw (p)+(-0.3,0) node[above left] (A) {past};
+
+
+
+
+\coordinate (a) at (2.5,-9.5);
+\coordinate (s) at (2.5,-12);
+\draw (s) node[below] (S) {increment $P(G_{pq})$ };
+\draw (a)+(-0.3,0) node[above right] (A) {$f^S_{G_{pq}}\le 4$};
+
+\draw[-] (N) |- (a);  \draw[->,>=latex] (a) -| (S);
+
+\coordinate (p) at (2.5,-10);
+
+\coordinate (drop) at (0,-14);
+\draw (drop) node (DROP) {tag $P(G_{pq})$};
+\draw[->,>=latex] (p) -| (DROP);
+\draw (p)+(-0.3,0) node[above left] (A) {past};
+
+% Key
+
+\draw (-5,-15.5) rectangle (7,-20.8) ;
+
+\draw (-5,-16) node[right] {$S\phantom{_{|pq}}$ : selector};
+\draw (-5,-16.5) node[right] {$G\phantom{_{pq}}$ : generator};
+\draw (-5,-17) node[right] {$G_{p\phantom{q}}$ : singly ionized generator};
+\draw (-5,-17.5) node[right] {$G_{pq}$ : doubly ionized generator};
+
+\draw[dashed] (1,-16) -- (1.5,-16);
+\draw (1.5,-16) node[right] {$X$ : loop over all possible $X$};
+\draw[->,>=latex] (1,-16.7) -- ++(1,0);
+\draw (1.5,-16.7) node[above] {$c$};
+\draw (2.,-16.7) node[right] {: path taken if $c$ is true};
+\draw (1.,-17.4) node[right] {drop $X$ : cycle loop over $X$};
+
+\draw (-5,-18) node[right] {past : $J<I$, so $S$ has already been treated as a generator};
+\draw (-5,-18.5) node[right] {selector : $S$ is a selector};
+\draw (-5,-19) node[right] {$f^S_X$ : Excitation degree between $X$ and $S$};
+\draw (-4.9,-19.7) node[draw,fill,right] (N){$\phantom{xxx}$};
+\draw (-4.,-19.7) node[right] { : Filtered list of determinants to be used in the inner loop};
+
+\draw (-4.6,-20.4) node[draw,fill,circle,right] (N){$\phantom{.}$};
+\draw (-4.,-20.4) node[right] { : Possible duplication of $S$};
+
+
+
+
+\end{tikzpicture}

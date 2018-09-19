@@ -532,6 +532,9 @@ phase(S,i\bar jk\bar l) = P^S_i \oplus P^S_{\bar j} \oplus P^S_{k+1} \oplus P^S_
 \newcommand{\Gpbq}{G_{p \bar q}}
 
 \begin{table} 
+\caption{\alert{legende TODO}}
+\label{tab:cipsi_update}
+\begin{center}
 	\begin{tabular}{ c|c|c }
 		\hline \hline \rule{0pt}{3ex}
 		$S$									&$ r, s$ 	& $\Hij{S}{\Gpq^{rs}}$	\\
@@ -573,6 +576,7 @@ phase(S,i\bar jk\bar l) = P^S_i \oplus P^S_{\bar j} \oplus P^S_{k+1} \oplus P^S_
 		\hline \rule{0pt}{3ex}
 		$\an {a  \bar b} \ac {ij \bar k \bar l} \Gpbq$			&$i,\bar k$		&$(a \bar b \rightarrow j \bar l)$		\\
 	\end{tabular}
+\end{center}
 \end{table}
 
 
@@ -580,21 +584,14 @@ phase(S,i\bar jk\bar l) = P^S_i \oplus P^S_{\bar j} \oplus P^S_{k+1} \oplus P^S_
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=1.00\columnwidth]{figures/cipsi/selection}
-		\caption{\label{fig:selection}}
-		S is the selector currently flowing down the chart.
-		Note that $M^{G_{pq}}$ is fully computed, and "drop $G_{pq}$" eventually reached, before any update is done to $P^{G_{pq}}$.
-		
+		\includegraphics[height=0.90\textheight]{figures/cipsi/selection}
 	\end{center}
+        \caption{\label{fig:selection}
+        $S$ is the selector currently flowing down the chart.
+        Note that $M^{G_{pq}}$ is fully computed, and ``drop $G_{pq}$'' eventually reached, before any update is done to $P^{G_{pq}}$.
+	}	
 \end{figure}
 
-\begin{figure}[ph!]
-	\begin{center}
-		\includegraphics[width=1.00\columnwidth]{figures/cipsi/selection_key}
-		\caption{\label{fig:selection_key}}
-	\end{center}
-\end{figure}
-    
 Parallelisation \\
 as seen, practical necessity to compute all alphas of the same generator at once \\
 1 task = 1 generator, as simple \\

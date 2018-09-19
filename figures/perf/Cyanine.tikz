@@ -1,0 +1,10 @@
+﻿\begin{tikzpicture}
+
+\node (N1) at (0,0) {H$_2$N$^+$};
+\coordinate (C) at (1,0.65) ;
+\node (N2) at (2,0) {NH$_2$};
+
+\draw[thick,double] (N1) -- (C); 
+\draw[thick] (C) -- (N2);
+
+\end{tikzpicture}

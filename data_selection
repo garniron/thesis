@@ -1,0 +1,27 @@
+#H2N=C-NH2+
+#aug-cc-pVDZ : 120 AOs, 114 MOs
+#24 electrons (12a, 12b). 3 core MOs (6 frozen electrons)
+
+# Parallel scaling made with the 9356952-det wf
+# Nnode  seconds
+1    
+5     3149.550
+10    1655.226 
+20     943.974
+30     748.884
+40     666.258 
+50     748.986
+
+
+# Ndet     seconds
+123         0.179
+3083        6.23134
+7036       16.3193
+17174      40.4621
+40692     102.756
+98186     253.5564
+240422    654.87
+639269   1802.61
+1928131  5258.16
+
+
