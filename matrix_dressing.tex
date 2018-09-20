@@ -17,12 +17,105 @@ alphas are generated through repeating excitations \\
 
 microlisted \\
 \section{def}
-Idea is to create an external space and compute its influence on our selected space.
-External space is only defined by c\_I\_alpha ; user should be able to only define that
-By design, intern->extern and extern->extern influence isn't taken into account ( that's why it's called "external space"... )
-Take into account c\_I\\alpha in the diagonalization of H : Matrix dressing
-Matrix dressing
-c\_I\\alpha may be derived from c ; in which case self-consistence/iteration
+
+So far we have used second order perturbation to build a zeroth-order wavefunction $\ket \Psi$ using CISPI, and estimate its distance to the FCI energy with a stochastic estimation of $\EPT$.
+
+In both cases we have computed the interaction between $\ket \Psi$ and the external space, but we have not let $\ket \Psi$ be revised under those interactions.
+
+This can be achieved using the intermediate Hamiltonian theory\cite{0305-4470-18-5-014}, intermediate Hamiltonians being a class of effective Hamiltonians\cite{lindgren1982atomic} where not all roots are exact eigenvalues of the full Hamiltonian.
+The principle is to build a so-called intermediate Hamiltonian ${\bf \tilde H}$ which, when diagonalized, yields a wavefunction that takes into account the effect of an external space on the internal space. 
+This idea is based on the so-called Bk approximation proposed by Gershgorn and Shavitt\cite{Gershgorn_1968}. 
+
+Sticking to the state-specific case, the general principle can be understood as follow.
+Fully taking into accout the external space requires to solve 
+
+\newcommand{\Hzero}{{\bf H}^{(0)}}
+\newcommand{\hcpl}{{\bf h}}
+
+\begin{equation}
+\begin{pmatrix}
+\Hzero &  \hcpl\\ 
+^\dagger\hcpl & {\bf H}^{(1)}
+\end{pmatrix} \begin{pmatrix}
+{\bf c}\\ 
+{\bf c}^\alpha
+\end{pmatrix}=E\begin{pmatrix}
+{\bf c}\\ 
+{\bf c}^\alpha
+\end{pmatrix}
+\end{equation}
+
+With ${\bf H}^{(0)}$ and ${\bf H}^{(1)}$ the zeroth and first-order Hamiltonians, $\bf h$ the coupling term between zeroth and frist order spaces, ${\bf c}$ the coefficients for the zeroth-order space and ${\bf c}^\alpha$ the coefficients for the external space.
+
+This diagonalization is normally not feasible due to the external space being too large. However, if we are willing to neglect the external-to-external and internal-to-external influence - in other words, if we freeze the external space - we can only solve the eigenequations associated with internal determinants. As usual, associating $I$ and $J$ to internal determinants and $\alpha$ to external ones, for line $I$ we have
+
+\begin{equation}
+(\Hzero_{II} - E)c_I  + \sum_{J \neq I} {c_J \Hzero_{IJ}} + \sum_\alpha {c_\alpha \hcpl_{I \alpha}} = 0
+\label{eq:eignen_sum}
+\end{equation}
+
+
+Obviously, since we froze the external space, we need some way to esimate ${\bf c}^\alpha$. In the presented paper, we used a perturbative estimation consistently with what we used in CIPSI and $\EPT$ computations.
+
+Because $c_\alpha$ coefficients are frozen, $\sum_\alpha {c_\alpha H_{I \alpha}}$ is merely a constant added to the eigenequation of line $I$. Renaming this term $\kappa_I$, we can rewrite \ref{eq:eignen_sum}
+
+\begin{equation}
+(\Hzero_{II} - E + \frac{\kappa_I}{c_I})c_I  + \sum_{J \neq I} {c_J \Hzero_{IJ}} = 0
+\label{eq:eignen_kappa}
+\end{equation}
+
+It appears solving this new system of linear equations is equivalent to diagonalizing 
+
+\begin{equation}
+{\bf \tilde H} = \Hzero + {\bf \Delta}
+\end{equation}
+
+
+with ${\bf \Delta}$ a diagonal matrix
+
+\begin{equation}
+\begin{cases}
+{\bf \Delta}_{II}=\frac{\kappa_I}{c_I}\\
+{\bf \Delta}_{IJ}=0 & \text{if } I \neq J
+\end{cases}
+\end{equation}
+
+Here ${\bf \tilde H}$ is the intermediate Hamiltonian and ${\bf \Delta}$ the so-called \emph{dressing matrix}. Consequently ${\bf \tilde H}$ may be refered to as a \emph{dressed Hamiltonian}. 
+Note that the dressing matrix being diagonal is due to an arbitrary rewritting of equation \ref{eq:eignen_sum} into equation \ref{eq:eignen_kappa}. We can actually build ${\bf \Delta}$ in any way that fullfills
+
+\begin{equation}
+\sum_J c_J {\bf \Delta}_{IJ}  = \kappa_I
+\label{eq:arbitrary_dressing}
+\end{equation}
+
+
+While the elements of ${\bf \Delta}$ we choose to be non-null is mathematically irrelevant, it can be of importance for numerical reasons (in addition to obivous storage reasons). However, because we diagonalize ${\bf \tilde H}$ using a Davidson diagonalization, this is of no concern to us. Indeed, Davidson diagonalization only require knowledge of ${\bf \tilde H} {\bf c}$
+
+\begin{equation}
+{\bf \tilde H} {\bf c} = \Hzero {\bf c} + {\bf \Delta} {\bf c}
+\end{equation}
+
+Because of \ref{eq:arbitrary_dressing}, we have by construction
+
+\begin{equation}
+{\bf \Delta} {\bf c} = {\pmb \kappa}
+\end{equation}
+
+
+with ${\pmb \kappa}$ the vector $\kappa_1, \ldots, \kappa_{\Ndet}$.
+Algorithmically, it boils down to computing ${\pmb \kappa}$, which is more expensive to compute than ${\bf \tilde H}{\bf c}$ needed for Davidson diagonalization. But unlike ${\bf \tilde H}{\bf c}$ which is too large to be stored, and needs to be re-computed on the fly at each Davidson iteration, ${\pmb \kappa}$ can easily be stored, being only a vector size $\Ndet$.
+
+
+An improved version to this original idea was proposed by Davidson and co-workers \alert{moult citations du papier?} under the name shifted-Bk, which is the one we implemented. Details about this improvement and on how it can be generalized to a multi-state case are available in the presented article. Implementationally speaking the keypoints are
+
+\begin{itemize}
+\item
+${\pmb \kappa}_k$ needs to be computed and stored for each desired state $k$
+\item
+computing an extra ${\pmb \kappa}_k$ comes with minimal cost
+\end{itemize}
+
+
 
 \section{task splitting}
 
@@ -709,8 +802,9 @@ Care must be given that $\mathcal{C}_{r,0}$ and $\mathcal{C}_{s,0}$ may share co
 
 
 
-\section{Alpha-factory (rename?)}
+\section{concluage}
 
+But the proposed algorithm does not put any restriction. This same approach could be used to compute an exponential dressing. 
 
 General framework which allows to create methods with minimal effort 
 
