@@ -4,19 +4,8 @@
  
 \begin{document}
 
-since alpha/alpha interactions are by design ignored, computation of a c\_alpha should only require knowledge of it's connection with internal space \\
-SUPER costly done naively \\
-list of connection supplied by QP \\
-general mode \\
-mircolist for connection \\
-feuille de PQ to avoid duplicates \\
-( custom buffers for more complex cases ) \\
-repeated excitation mode(?)  \\
-existing excitations are listed \\
-alphas are generated through repeating excitations \\
 
-microlisted \\
-\section{def}
+\section{The $B_k$ approximation}
 
 So far we have used second order perturbation to build a zeroth-order wavefunction $\ket \Psi$ using CISPI, and estimate its distance to the FCI energy with a stochastic estimation of $\EPT$.
 
@@ -24,7 +13,7 @@ In both cases we have computed the interaction between $\ket \Psi$ and the exter
 
 This can be achieved using the intermediate Hamiltonian theory\cite{0305-4470-18-5-014}, intermediate Hamiltonians being a class of effective Hamiltonians\cite{lindgren1982atomic} where not all roots are exact eigenvalues of the full Hamiltonian.
 The principle is to build a so-called intermediate Hamiltonian ${\bf \tilde H}$ which, when diagonalized, yields a wavefunction that takes into account the effect of an external space on the internal space. 
-This idea is based on the so-called Bk approximation proposed by Gershgorn and Shavitt\cite{Gershgorn_1968}. 
+This idea is based on the so-called $B_k$ approximation proposed by Gershgorn and Shavitt\cite{Gershgorn_1968}. 
 
 Sticking to the state-specific case, the general principle can be understood as follow.
 Fully taking into accout the external space requires to solve 
@@ -112,7 +101,7 @@ An improved version to this original idea was proposed by Davidson and co-worker
 \item
 ${\pmb \kappa}_k$ needs to be computed and stored for each desired state $k$
 \item
-computing an extra ${\pmb \kappa}_k$ comes with minimal cost
+Computing an extra ${\pmb \kappa}_k$, if exact result is desired, comes with minimal cost. Unfortunately, the stochastic approach used forces to compute each ${\pmb \kappa}_k$ individually.
 \end{itemize}
 
 
@@ -800,23 +789,12 @@ Care must be given that $\mathcal{C}_{r,0}$ and $\mathcal{C}_{s,0}$ may share co
 \end{algorithm}
 
 
-
-
 \section{concluage}
 
-But the proposed algorithm does not put any restriction. This same approach could be used to compute an exponential dressing. 
+In this chapter we have implemented a stochastic version of the shifted-Bk algorithm, using the same algorithm we used for computation of $\EPT$, and were able to get acceptable accuracies performing a few percent of the full computation.
+The additional difficulties of estimating a vector rather than a scalar were solved by setting a limited number of pre-determined checkpoints between which no result is available.
 
-General framework which allows to create methods with minimal effort 
-
-\section{parallel}
-just like pt2 stoch, 1 task = 1 generator \\
-however, 1 result = 1 vector instead of 1 scalar \\
-additional difficulties \\
-memory: \\
-to avoid N\_det\^2, checkpoints \\
-communication \\
-4 scalars per checkpoint \\
-
+The fact that we implemented the shifted-Bk method boils down to our choice to build the external space using Epstein-Nesbet perturbative estimation for $c_\alpha$. However, the proposed algorithm do not put any particular restriction on $c_\alpha$. From this stemed the idea of a more general framework to allow easy experimentation of the effect different external spaces.
 
 
 \end{document}
