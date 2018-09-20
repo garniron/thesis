@@ -3,8 +3,12 @@
 \begin{document}
 
 In this chapter, we discuss the efficiency of the implementation. The system
-we chose for these numerical experiments is a cyanine dye,
-[(NH$_2$)(CH)(NH$_2$)]$^+$ in its ground state and in its first excited state.
+we chose for these numerical experiments is a cyanine dye, \\
+\begin{center}
+\includegraphics[]{figures/perf/Cyanine} \\
+\end{center}
+%[(NH$_2$)(CH)(NH$_2$)]$^+$
+in its ground state and in its first excited state.
 The geometry is the equilibrium geometry of the ground state, optimized at the
 PBE0/cc-pVQZ level. The ground state is a closed shell, well described by a
 single reference, and the excited state is singly excited and requires two
@@ -13,7 +17,7 @@ calculations were performed in the aug-cc-pVDZ basis set with state-averaged
 natural orbitals obtained from an initial CIPSI calculation.
 The $1s$ orbitals of the carbon and the nitrogen atoms were frozen, so
 the FCI space which is explored is a CAS(18,111). The reference excitation
-energy, obtained at the CC3/ANO-L-VQZP level is 7.18~eV\cite{Send_2011}.
+energy, obtained at the CC3/ANO-L-VQZP level is 7.18~eV.\cite{Send_2011}
 The measurements were made on the Olympe supercomputer (CALMIP). Each node is 
 a dual-socket Intel(R) Xeon(R) Gold 6140 CPU @ 2.30GHz with 192GiB of RAM, and
 contains 36 physical CPU cores.
@@ -62,6 +66,12 @@ $9~356~952$ &  $-150.015~95(4)$ &  $-149.750~68(4)$ & $7.22$ \\
 In figure~\ref{fig:energy_pt2}, we plot the convergence of the energies of
 the ground and excited states as a function of the number of
 determinants, with and without the second order perturbative contribution.
+From these data, one can see that although $\EPT$ is still large ($\sim 0.04$~au)
+the excitation energies both at the variational level and with the perturbative
+correction converge to a value of $7.22$~eV compatible with the reference
+energy obtained in a larger basis set.
+
+
 
 \section{Davidson diagonalization}
 
