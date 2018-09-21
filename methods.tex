@@ -11,7 +11,7 @@ context, the model system is a cloud of $N$ electrons and a set of $M$ nuclei
 considered punctual, immobile charges. It can be described by solving
 Shrödinger's equation for electrons~:
 \begin{equation}
- \widehat{H} \Psi({\bf x}_1,\dots,{\bf x}_N) = E \Psi_n({\bf x}_1,\dots,{\bf x}_N)
+ \widehat{H} \Psi({\bf x}_1,\dots,{\bf x}_N) = E_N \Psi_n({\bf x}_1,\dots,{\bf x}_N)
 \end{equation}
 where $\Psi$ is the electronic wave function, $E$ the associated energy, and $\mathbf{x}_i = (\textbf{r},m_s)$
 contains the spatial coordinates of the electrons $\textbf{r}$, as well as a spin variable $m_s$.
@@ -173,14 +173,14 @@ However, given the two-electron nature of the Hamiltonian, and because the set o
 where $\hat{h}$ is the one-electron part of the Hamiltonian (kinetic energy and
 electron-nucleus potential),
 \begin{equation}
-\mel{p}{\hat{h}}{x} = \int d{\bf x}\; \phi^*_p(\mathbf{x}) \qty( -\frac{1}{2}\nabla + V_1(\mathbf{x})) \phi_h(\mathbf{x}),
+\mel{p}{\hat{h}}{r} = \int d{\bf x}\; \phi^*_p(\mathbf{x}) \qty( -\frac{1}{2}\nabla + V_1(\mathbf{x})) \phi_h(\mathbf{x}),
 \end{equation}
 $i \in D$ means that $\phi_i$ belongs to the
 Slater determinant $D$, $\ket {D_{pq}^{rs}}$ is a determinant obtained from $\ket
 D$ by substituting orbitals $\phi_p$ and $\phi_q$ by $\phi_r$ and
 $\phi_s$, and
 \begin{equation}
-(ij|kl) = \int d{\bf x}_1 \int d{\bf x}_2 \; \phi^*_i({\bf x}_1)\phi_j({\bf x}_1) \frac{1}{|{\bf x}_1 - {\bf x}_2|} \phi^*_k({\bf x}_2)\phi_l({\bf x}_2).
+(ij|kl) = \int d{\bf x}_1 \int d{\bf x}_2 \; \phi^*_i({\bf x}_1)\phi_j({\bf x}_1) \frac{1}{|{\bf r}_1 - {\bf r}_2|} \phi^*_k({\bf x}_2)\phi_l({\bf x}_2).
 \end{equation}
 
 \section{Two-electron integrals}
@@ -202,7 +202,7 @@ the cost of computing a single integral scales as $\order{M^4}$:
 (ij|kl) = \sum_{pqrs} C_{pi} C_{qj} C_{rk} C_{sl} (pq|rs)
 \end{equation}
 
-A naive computation of all integrals in the MO basis would cost ${\cal O}(M^8)$. Fortunately, computing all of them can be scaled down to ${\cal O}(N^5)$ by transforming the indices one by one\cite{Wilson_1987}:
+A naive computation of all integrals in the MO basis would cost ${\cal O}(M^8)$. Fortunately, computing all of them can be scaled down to ${\cal O}(N^5)$ by transforming the indices one by one:\cite{Wilson_1987}
 \begin{eqnarray}
 (iq\vert rs) & = & \sum_{p} C_{pi} (pq|rs) \nonumber \\ 
 (iq\vert ks) & = & \sum_{r} C_{rk} (iq|rs) \;\; \text{semi-transformed integrals} \\
@@ -279,16 +279,16 @@ There is however a computational downside. In \textit{a priori} selected methods
 On the contrary, in selected methods an explicit list has to be maintained, and there is no immediate way to know whether a determinant has been selected, or what its index is. Consequently, so-called \emph{determinant-driven} approaches will be used, in which iteration is done over determinants rather than integrals. This can be a lot more expensive, since the number of determinants is typically much larger than the number of integrals. The former scales as $\order{M!}$ while the latter scales as $\order{M^4}$ with the number of MOs.
 Furthermore, determinant-driven methods require an effective way to compare determinants in order to extract the corresponding excitation operators, and a way to rapidly fetch the associated integrals.
 
-Because of this high computational cost, approximations have been proposed \cite{Evangelisti_1983},  . And recently, the \emph{Heat-Bath Configuration Interaction (HCI)} algorithm has taken farther the idea of a more approximate but extremely cheap selection\cite{Holmes_2016, Sharma_2017}. Compared to CIPSI, the selection criterion is simplified to
+Because of this high computational cost, approximations have been proposed.\cite{Evangelisti_1983} And recently, the \emph{Heat-Bath Configuration Interaction (HCI)} algorithm has taken farther the idea of a more approximate but extremely cheap selection.\cite{Holmes_2016, Sharma_2017} Compared to CIPSI, the selection criterion is simplified to
 \begin{equation}
 e^{HCI}_\alpha = \max \qty( \qty| c_i \Hij{D_i}{\alpha} | )
 \end{equation}
 with $D_i$ a determinant from the variational wavefunction and $c_i$ its associated coefficient. This algorithmically allows for a much faster selection.
 
 \section{Monte-Carlo methods}
-FCI-QMC is an alternate approach to selection recently proposed in 2009 by Alavi \textit{et al.}\cite{Booth_2009,Booth_2010,Cleland_2010}, where walkers spawn from one determinant to a connected one, with a probability that is function of the associated matrix element. The average proportion of walkers on a determinant converges to its coefficient in the FCI wavefuction.
+FCI-QMC is an alternate approach to selection recently proposed in 2009 by Alavi \textit{et al.},\cite{Booth_2009,Booth_2010,Cleland_2010} where walkers spawn from one determinant to a connected one, with a probability that is function of the associated matrix element. The average proportion of walkers on a determinant converges to its coefficient in the FCI wavefunction.
 
-A more ``bruteforce'' approach at stochastical selection is \emph{Monte-Carlo CI (MCCI)} \cite{Greer_1995,Greer_1998}, where determinants are randomly added to the variational wavefunction. After diagonalization, the determinants of smaller coefficient are removed, and new random determinants are added.
+A more ``bruteforce'' approach at stochastic selection is \emph{Monte-Carlo CI (MCCI)},\cite{Greer_1995,Greer_1998} where determinants are randomly added to the variational wavefunction. After diagonalization, the determinants of smaller coefficient are removed, and new random determinants are added.
 
 
 
