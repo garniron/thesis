@@ -45,6 +45,104 @@ integer*8 :: Isn
 All the program is built such that the $\alpha$ and $\beta$ spinorbitals share the same space part. In other words, spinorbitals $i$ and $\bar{i}$ both refer to orbital $\phi_i(\br)$.
 
 
+%----------------------------------------------------------------
+\section{Storage of the two-electron integrals}
+%----------------------------------------------------------------
+
+In all the algorithms presented, all the needed two-electron integrals are kept in memory
+and require a fast random access.
+A hash table is the natural choice which allows the storage of only non-zero
+values with a retrieval of data in nearly constant time, but standard hashing
+algorithms tend to shuffle the data to limit the probability of collisions.
+Here, we favor instead the locality of the data over the probability of collision
+using the hash function given in Algorithm~\ref{alg:hash}.  It returns the same
+value for all the keys which are related by the permutation symmetry of the
+indices, keeps some locality in the storage of the data, and can be evaluated
+in the order of 10 CPU cycles if the integer division by two is replaced by a
+bit shift instruction.
+
+\begin{algorithm}
+ \caption{HASH}
+ \label{alg:hash}
+	\SetKwFunction{FMain}{HASH}
+	\SetKwProg{Fn}{Function}{:}{}
+\Fn(\tcc*[h]{Hash function for two-electron integrals.}){\FMain{$i,j,k,l$}}{
+		\KwData{ $i,j,k,l$ are the orbital indices}
+		\KwResult{ The corresponding hash}
+        $p \gets \min (i,k)$ \;
+        $r \gets \max (i,k)$ \;
+        $t \gets p + \frac{1}{2} r (r-1)$ \;
+        $q \gets \min (j,l)$ \;
+        $s \gets \max (j,l)$ \;
+        $u \gets q + \frac{1}{2} s (s-1)$ \;
+        $v \gets \min (t,u)$ \;
+        $w \gets \max (t,u)$ \;
+        \KwRet{$v + \frac{1}{2} w (w-1)$} \;
+}
+\end{algorithm}
+
+The hash table is such that each bucket can potentially store $2^{15}$
+consecutive key-value pairs. The 15 least significant bits of the hash value
+are removed to give the index of the bucket ($i_\text{bucket} =
+\ishft{\text{hash}(i,j,k,l)}{-15}$), and only those 15 bits need to be
+stored in the bucket for the storage of the key ($\iand{\text{key}}{(2^{16}-1)}$).
+Hence, the storage of the keys only requires two bytes per key.
+The keys within a bucket are sorted in increasing order, enabling a binary
+search within the bucket. The search of the key is always fast
+since the binary search is bounded by 15 misses and the maximum size of the
+array of keys is 64~kiB, the typical size of the L1 cache.
+
+\begin{table}
+\caption{Time to access the integrals (in ns/integral) with different access patterns. The time to generate random numbers (measured as 67~ns/integral) was not counted in the random access results.}
+\label{tab:integrals}
+\begin{center}
+  \begin{tabular}{lrr}
+    \hline
+   Access  & Array  & Hash table  \\ 
+\hline
+ $i,j,k,l$ &  9.72  &  125.79     \\ 
+ $i,j,l,k$ &  9.72  &  120.64     \\ 
+ $i,k,j,l$ & 10.29  &  144.65     \\ 
+ $l,k,j,i$ & 88.62  &  125.79     \\ 
+ $l,k,i,j$ & 88.62  &  120.64     \\ 
+   Random  & 170.00 &  370.00     \\ 
+    \hline
+  \end{tabular}
+\end{center}
+\end{table}
+
+% Random function :   6.999999930000001E-008
+% Random access :   1.699999983000000E-007
+% loop ijkl :   9.719805175081564E-009
+% loop ikjl :   1.029155842067460E-008
+% loop ijlk :   9.719805175081564E-009
+% loop lkji :   8.862175306692014E-008
+% loop lkij :   8.862175306692014E-008
+%Wall time : 6.72291m
+
+% Random function :   6.999999930000001E-008
+% Random access :   3.699999963000001E-007
+% loop ijkl :   1.257857140304673E-007
+% loop ikjl :   1.446535711350374E-007
+% loop ijlk :   1.206399348201300E-007
+% loop lkji :   1.257857140304673E-007
+% loop lkij :   1.206399348201300E-007
+%Wall time : 19.6351m
+
+The efficiency of the storage as a hash table was measured on a dual socket Intel Xeon E5-2680 v2 @ 2.80GHz processor, taking the water molecule with the cc-pVQZ basis set (115 molecular orbitals). The time to access all the integrals was measured by looping over all integrals using different loop orderings. The results are given in table~\ref{tab:integrals}, the reference being the storage as a plain four-dimensional array.
+
+In the array storage,
+the value of $170$~ns/integral in the random access case is typical of the latency to fetch a value in the RAM modules when the data is not in any level of cache.
+When the data is accessed with a stride of one (the $i,j,l,k$ storage) the cache levels accelerate the access by a factor of $18 \times$, down to $9.71$~ns/integral, corresponding mostly to the overhead of the function call, the retrieval of the data being negligible.
+
+With the hash table, the random access is only $2.18\times$ slower than the random access in the array. Indeed, two random accesses are required: one for the first element of the bucket of keys one for the corresponding value. The rest of the extra time corresponds to the binary search. The locality of the data can be exploited: when the access is done with a regular access pattern, the data is fetched $\sim 3\times$ faster than using a random access.
+
+A CIPSI calculation was run with the array storage and with the hash table storage. With the hash storage, the total wall clock time was increased only by a factor of two.
+
+So to accelerate the access to the most frequently used integrals, all the
+integrals involving the $128$ MOs closest to the Fermi
+level are copied in a dense array of $128^4$ elements ($2$~GiB).
+
 \section{Determinant internal representation}
 \label{sec:det_representation}
 
@@ -57,20 +155,21 @@ Because of the fermionic nature of electrons, permutation of two contiguous crea
 \ac{j} \ac{i} & = -\ac{i} \ac{j} \\
 \ac{j} \ac{i} \ac{k} \vac &=  -\kI
 \end{align}
-This effectively allows to make any $\Nperm$ permutations (even of non-contiguous operators), and always get $-1^{\Nperm} \kI.$
-
+This effectively allows to make any $\Nperm$ permutations
+%(even of non-contiguous operators),
+and always get $-1^{\Nperm} \kI.$
 We see a determinant can be broken down into two pieces of information:
 \begin{itemize}
 \item
 A set of creation operators, corresponding to the set of occupied spinorbitals in the determinant.
 \item
-An ordering of the creation operators, responsible for the sign of the determinant. Once a common ordering operator $\ordering$ is chosen, it is sufficient to store the sign change that will occur when this operator is applied to the string of creation operators. This sign will be referred to as the \emph{phase factor}.
+An ordering of the creation operators, responsible for the sign of the determinant. Once an ordering operator $\ordering$ is chosen and applied to all the determinants, it is sufficient to store the sign change that will occur when this operator is applied to the string of creation operators. This sign will be referred to as the \emph{phase factor}.
 \end{itemize}
-Determinants are always associated with a coefficient, so
-if the determinants are always built after applying them the same common ordering operator,
+Determinants are always associated with a coefficient. So
+if the determinants are always built after applying them the same ordering operator,
 we don't need to make the phase factor part of the determinant's internal representation. The sign may simply be reported on the associated coefficient.
 
-In this thesis, all the determinants will be built using the order where all the $\alpha$ spinorbitals are placed before the $\beta$ spinorbitals:
+All the determinants will be built using the order where all the $\alpha$ spinorbitals are placed before the $\beta$ spinorbitals, as in the Waller-Hartree determinant representation:
 \begin{equation}
 \label{eq:spinpack}
 \ordering \kI = \hat{I} \vac = \hat{I}_\alpha \hat{I}_\beta \vac 
@@ -87,7 +186,7 @@ If we happen to encounter such a determinant, our choice of representation impos
 and the sign change (or \emph{phase factor}) will need to be handled.
 
 The indices of the creation operators (or equivalently the
-occupations of the spinorbitals), are stored using the so-called \emph{bitstring} encoding. A bitstring is an array of bits ; typically, the 64-bit binary representation of an integer is a bitstring of size 64.
+occupations of the spinorbitals), are stored using the so-called \emph{bitstring} encoding. A bitstring is an array of bits~; typically, the 64-bit binary representation of an integer is a bitstring of size 64.
 Quite simply, the idea is to map each spinorbital to a single bit, whose value is set to its occupation number. In other words \texttt{0} and \texttt{1} are associated with the \emph{unoccupied} and \emph{occupied} states.
 By this definition, bitstrings are essentially lists of occupation numbers, which is a convenient way to
 store the set of occupied spinorbitals in a determinant, with the predefined ordering.
@@ -135,7 +234,7 @@ The Fortran representation of an $\alpha \beta$-bitstring is a two dimensional a
 
 In formulas or algorithms, depending on the level of detail desired, a bitstring may also be treated as a single mathematical integer (in $\mathbb{Z}$), avoiding the cumbersome separation into 64-bit packs. However, in algorithms we will usually try to stay closer to the actual implementation. $\bitI$ being the $\alpha \beta$-bitstring associated with $\kI$, we can explicitly refer to a single element of the 64-bit integer array as
 \begin{equation}
-\bitI_{\sigma}[i]\; ;\; \sigma \in \{\alpha, \beta\}\; ;\; i \in [0, \Nint[
+\bitI_{\sigma}[i]\; ;\; \sigma \in \{\alpha, \beta\}\; ;\; 0 \le i < \Nint
 \end{equation}
 which is the bitstring representation of the $\sigma$ spinorbitals of determinant $\kI$ in the range $[1+i \times 64, \min \left( (i+1) \times 64, \Norb \right)]$, indexed from $0$ to $63$.
 
@@ -188,57 +287,33 @@ In many of the presented algorithms, some Fortran intrinsics will be of use. Eac
 \end{sloppypar}
       
       
-Those intrinsics apply to integers at most 64-bits. This however is a purely implementational limitation, so depending on the level of detail desired, this constraint can be unambiguously lifted in formulas or algorithms. Different notations will be used for the 64-bit and the infinite size cases, as they are not always equivalent.
+Those intrinsics apply to integers with at most 64-bits. This however is a purely implementational limitation, so depending on the level of detail desired, this constraint can be unambiguously lifted in formulas or algorithms. Different notations will be used for the 64-bit and the infinite size cases, as they are not always equivalent.
 For example, the $\ISHFT{\_}{\_}$ Fortran intrinsic always returns zero for shifts larger than 64 bits, which is not the case for the $\ishft{\_}{\_}$ function over mathematical integers.
-So it is convenient to introduce functions and notations acting on mathematical integers. All binary operators are of same precedence and left-associative.
+%So it is convenient to introduce functions and notations acting on mathematical integers.
+All binary operators are of same precedence and left-associative.
 
-\begin{table}[H]
-	\begin{tabularx}{\textwidth}{X|X}
-		\hline
-		
-		\hline
-		\rule{0pt}{3ex}
-		$\ISHFT{\bitI}{n}$ & $\ishft{I}{n}$  \\ 
-		
-		\hline
-		\rule{0pt}{3ex}
-		$\TRAILZ{\bitI}$ & $\trailz{I}$  \\ 
-		
-		\hline
-		\rule{0pt}{3ex}
-		$\IBCLR{\bitI}{n}$ & $\ibclr{I}{n}$  \\ 
-		
-		\hline
-		\rule{0pt}{3ex}
-		$\BTEST{\bitI}{n}$ & $\btest{I}{n}$  \\ 
-		
-		\hline
-		\rule{0pt}{3ex}
-		$\NOT{\bitI}$ & $\neg I $  \\ 
-		
-		\hline
-		\rule{0pt}{3ex}
-		$\IAND{\bitI}{\bitJ}$ & $\iand{I}{J}$ \\
-		
-		\hline
-		\rule{0pt}{3ex}
-		$\IOR{\bitI}{\bitJ}$ & $\ior{I}{J}$ \\
-		
-		\hline
-		\rule{0pt}{3ex}
-		$\IEOR{\bitI}{\bitJ}$ & $\ieor{I}{J}$ \\
-		
-		\hline
-		\rule{0pt}{3ex}
-		$\POPCNT{\bitI}$ & $\popcnt{I}$ \\
-		\hline
-	\end{tabularx}
-\end{table}
+\begin{center}
+  \begin{tabular}{l@{\hskip 10ex}l}
+\hline
+  64-bit variant  &  mathematical variant \\
+\hline
+    $\ISHFT{\bitI}{n}$ & $\ishft{I}{n}$  \\ 
+    $\TRAILZ{\bitI}$ & $\trailz{I}$  \\ 
+    $\IBCLR{\bitI}{n}$ & $\ibclr{I}{n}$  \\ 
+    $\BTEST{\bitI}{n}$ & $\btest{I}{n}$  \\ 
+    $\NOT{\bitI}$ & $\neg I $  \\ 
+    $\IAND{\bitI}{\bitJ}$ & $\iand{I}{J}$ \\
+    $\IOR{\bitI}{\bitJ}$ & $\ior{I}{J}$ \\
+    $\IEOR{\bitI}{\bitJ}$ & $\ieor{I}{J}$ \\
+    $\POPCNT{\bitI}$ & $\popcnt{I}$ \\
+\hline
+  \end{tabular}
+\end{center}
 
 
-Some examples of how these instructions can be used are given below. They are key to understand how we can determine the holes and particles involved in the $\excdet{I}{J}$ excitation operator defined as
+Some examples of how these instructions can be used are given below. They are key to understand how we can determine the holes and particles involved in the $\excdet{I}{J}$ excitation operator defined by
 \begin{equation}
-\excdet{I}{J} \kI = \kJ.
+\kJ = \ordering \excdet{I}{J} \kI.
 \end{equation}
 Let $\bitI$ and $\bitJ$ be the bitstring representations of $\kI$ and $\kJ$, and $\bit{P}$ a bitstring with $\Nint=1$. 
 
@@ -278,7 +353,7 @@ Because computing excitations is a hotspot of the program, and because we are ty
 	
 	\Fn(\tcc*[h]{Computes the excitation degree between two determinants}){\FMain{$I, J$}}{
 		\KwData {$I, J$ bitstring representations of determinants $\kI$ and $\kJ$}
-		\KwResult{ Returns the excitation degree between $\kI$ and $\kJ$ }
+		\KwResult{ Returns the excitation degree between $\kI$ and $\kJ$, namely $\frac{1}{2}\popcnt{\ieor{I}{J}} }
 
 		$X \gets 0$   \;
 		\For{$\sigma \in \{\alpha, \beta\}$}{
@@ -299,8 +374,10 @@ Because computing excitations is a hotspot of the program, and because we are ty
 	\SetKwProg{Fn}{Function}{:}{}
 	
 	\Fn(\tcc*[h]{Returns the holes and particles created in an excitation, as bitstrings}){\FMain{$I$,$J$}}{
-	\KwData{ $I$ and $J$, the bitstring representations of determinants $\kI$ and $\kJ = \excdet{I}{J} \kI$}
-	\KwResult{ Returns a tuple $(P,H)$, where $P$ and $H$ are respectively the sets of particles and holes created by $\excdet{I}{j}$, as $\alpha \beta$-bitstrings}
+	\KwData{ $I$ and $J$, the bitstring representations of determinants $\kI$ and $\kJ = \ordering \excdet{I}{J} \kI$}
+	\KwResult{ Returns a tuple $(P,H)$, where $P$ and $H$ are respectively the sets of particles and holes created by $\excdet{I}{j}$, as $\alpha \beta$-bitstrings.
+            $H = \iand{(\ieor{I}{J})}{I}$ and 
+            $P = \iand{(\ieor{I}{J})}{J}$.}
 		\For{$\sigma \in \{\alpha, \beta\}$}{
 		\For{$i \gets 0, \Nint-1$}{
 			$C \gets \IEOR{I_{\sigma}[i], J_{\sigma}[i]}$\;
@@ -360,7 +437,7 @@ For example, the double excitation $\excorb{ab}{cd}$ with $a<b<c<d$ is expressed
 \hat T_{ab}^{cd} = \ac{c} \an{a} \ac{d} \an{b} = \hat T_a^c \hat T_b^d.
 \end{equation}
 
-We now can express $\hat T \kI$ as a series of operators.
+We can now express $\hat T$ as a series of operators.
 In most cases, permuting contiguous operators will still just result in a sign change.
 \begin{align}
 \an{j} \an{i} & = -\an{i} \an{j} \\
@@ -444,7 +521,7 @@ So the phase factors can be easily computed by reordering separately $\hat{T}_\a
 
 \subsection{Single excitations}
 
-%In the case of a monoexcitation, only one spin part is involved. All indices refer to spinorbitals of same, arbitrary spin $\sigma \in \{\alpha, \beta\}$
+%In the case of a single excitation, only one spin part is involved. All indices refer to spinorbitals of same, arbitrary spin $\sigma \in \{\alpha, \beta\}$
 
 For a given determinant $\kI$ and a singly excited determinant $\kalpha = \ordering \excorb{i'}{j'} \kI$ where both 
 use the ordering of spinorbitals defined previously, the phase factor can be determined by the parity of
@@ -485,13 +562,13 @@ So the phase factor to be applied when going from $\kI$ to $\kalpha$ is
 \begin{equation}
 \phase{\kI}{\kalpha} = -1^{p(N^I_{ij})}.
 \end{equation}
-Using the above formulas and taking into account the bitstring's internal representation as arrays of $\Nint$ \lstinline{integer*8}'s, we get algorithm~\ref{alg:PHASE_MONO}.   
+Using the above formulas and taking into account the bitstring's internal representation as arrays of $\Nint$ \lstinline{integer*8}'s, we get algorithm~\ref{alg:PHASE_SINGLE}.   
 
 
 \begin{algorithm}
-	\caption{PHASE\_MONO}	
-	\label{alg:PHASE_MONO}
-				\SetKwFunction{FMain}{PHASE\_MONO}
+	\caption{PHASE\_SINGLE}	
+	\label{alg:PHASE_SINGLE}
+				\SetKwFunction{FMain}{PHASE\_SINGLE}
 	\SetKwProg{Fn}{Function}{:}{}
 	
 	\Fn(\tcc*[h]{Compute phase factor of $\ordering \excorb{a}{b} \kI$}){\FMain{$I_\sigma, a, b$}}{
@@ -528,7 +605,7 @@ Using the above formulas and taking into account the bitstring's internal repres
 \subsection{Phasemasks}
 
 
-Algorithm \ref{alg:PHASE_MONO} is a general one, efficient for computing the phase factor for two arbitrary determinants. However, a phase computation is typically needed every time two determinants are compared, resulting in a vast amount of computational power being consumed. When only this method was used in the quantum package, it was not uncommon to find that a large fraction of the computational time was spent in phase computations.
+Algorithm \ref{alg:PHASE_SINGLE} is a general one, efficient for computing the phase factor for two arbitrary determinants. However, a phase computation is typically needed every time two determinants are compared, resulting in a vast amount of computational power being consumed. When only this method was used in the \QP, it was not uncommon to find that a large fraction of the computational time was spent in phase computations.
 Advantage can be taken of the fact that, in most cases, the considered determinants aren't actually arbitrary. Usually, the phase computation will be performed repeatedly with the same determinant. For a fairly modest computational price, it is possible to compress the phase information from a particular determinant and make it cheaper to extract. The underlying principle is little more than a cumulative sum. If, for a determinant $\ket{S}$ that is going to be used repeatedly for phase computations, we pre-compute
 \begin{equation}
 E^S(i) = \sum_{k=1}^{i-1} \occ{k}{S}
@@ -563,7 +640,7 @@ E^S(i) & = 2 \times  \lfloor \frac{E^S(i)}{2} \rfloor + P^S(i) \\
  & = 2 \times \qty( \lfloor \frac{E^S(j)}{2} \rfloor - \lfloor \frac{E^S(i+1)}{2} \rfloor ) + P^S(j) - P^S(i+1)
 \end{align}
 	    
-In the last equation, $\tilde N^S_{ij}$ is expressed as a sum of 3 terms. The first one being even by construction, the parity of $\tilde N^S_{ij}$ is the parity of the rest of the sum.
+In the last equation, $\tilde N^S_{ij}$ is expressed as a sum of 3 terms. The first one being even by construction, the parity of $\tilde N^S_{ij}$ is the parity of the rest of the sum:
 \begin{equation}
 p(\tilde N^S_{ij})=p(P^S_j - P^S_{i+1})
 \end{equation}
@@ -677,7 +754,7 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
                 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.6\columnwidth]{figures/determinant_driven/phase}
+		\includegraphics[width=0.5\columnwidth]{figures/determinant_driven/phase}
 		\caption{
 		\label{generators_selectors}
 		phasemask
@@ -746,170 +823,71 @@ As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ resul
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.4\columnwidth]{figures/determinant_driven/biphasefactor}
+		\includegraphics[width=0.2\columnwidth]{figures/determinant_driven/biphasefactor}
 		\caption{
 		\label{fig:biphasefactor}%
-		Crossing of two single excitations
-		}
+		Crossing of two single excitations.
 		The third situation doesn't fit the ordering we imposed on excitation operators. $p \leftrightarrow s$ is either lowest electron to highest orbital, or highest electron to lowest orbital.
+		}
 	\end{center}
 \end{figure}
 
 So we add an extra permutation if
 \begin{equation}
-\ior{[\ieor{(p-r)}{(p-s)}]}{[\ieor{(q-r)}{(q-s)}]} > 0
+\ior{[\ieor{(p-r)}{(p-s)}]}{[\ieor{(q-r)}{(q-s)}]} > 0.
 \end{equation}
 
 
 
-%----------------------------------------------------------------
-\section{Storage of the two-electron integrals}
-%----------------------------------------------------------------
 
-In all the algorithms presented, all the needed two-electron integrals are kept in memory
-and require a fast random access.
-A hash table is the natural choice which allows the storage of only non-zero
-values with a retrieval of data in nearly constant time, but standard hashing
-algorithms tend to shuffle the data to limit the probability of collisions.
-Here, we favor instead the locality of the data over the probability of collision
-using the hash function given in Algorithm~\ref{alg:hash}.  It returns the same
-value for all the keys which are related by the permutation symmetry of the
-indices, keeps some locality in the storage of the data, and can be evaluated
-in the order of 10 CPU cycles if the integer division by two is replaced by a
-bit shift instruction.
-
-\begin{algorithm}
- \caption{HASH}
- \label{alg:hash}
-	\SetKwFunction{FMain}{HASH}
-	\SetKwProg{Fn}{Function}{:}{}
-\Fn(\tcc*[h]{Hash function for two-electron integrals.}){\FMain{$i,j,k,l$}}{
-		\KwData{ $i,j,k,l$ are the orbital indices}
-		\KwResult{ The corresponding hash}
-        $p \gets \min (i,k)$ \;
-        $r \gets \max (i,k)$ \;
-        $t \gets p + \frac{1}{2} r (r-1)$ \;
-        $q \gets \min (j,l)$ \;
-        $s \gets \max (j,l)$ \;
-        $u \gets q + \frac{1}{2} s (s-1)$ \;
-        $v \gets \min (t,u)$ \;
-        $w \gets \max (t,u)$ \;
-        \KwRet{$v + \frac{1}{2} w (w-1)$} \;
-}
-\end{algorithm}
-
-The hash table is such that each bucket can potentially store $2^{15}$
-consecutive key-value pairs. The 15 least significant bits of the hash value
-are removed to give the index of the bucket ($i_\text{bucket} =
-\ishft{\text{hash}(i,j,k,l)}{-15}$), and only those 15 bits need to be
-stored in the bucket for the storage of the key ($\iand{\text{key}}{(2^{16}-1)}$).
-Hence, the storage of the keys only requires two bytes per key.
-The keys within a bucket are sorted in increasing order, enabling a binary
-search within the bucket. The search of the key is always fast
-since the binary search is bounded by 15 misses and the maximum size of the
-array of keys is 64~kiB, the typical size of the L1 cache.
-
-\begin{table}
-\caption{Time to access the integrals (in ns/integral) with different access patterns. The time to generate random numbers (measured as 67~ns/integral) was not counted in the random access results.}
-\label{tab:integrals}
-\begin{center}
-  \begin{tabular}{lrr}
-    \hline
-   Access  & Array  & Hash table  \\ 
-\hline
- $i,j,k,l$ &  9.72  &  125.79     \\ 
- $i,j,l,k$ &  9.72  &  120.64     \\ 
- $i,k,j,l$ & 10.29  &  144.65     \\ 
- $l,k,j,i$ & 88.62  &  125.79     \\ 
- $l,k,i,j$ & 88.62  &  120.64     \\ 
-   Random  & 170.00 &  370.00     \\ 
-    \hline
-  \end{tabular}
-\end{center}
-\end{table}
-
-% Random function :   6.999999930000001E-008
-% Random access :   1.699999983000000E-007
-% loop ijkl :   9.719805175081564E-009
-% loop ikjl :   1.029155842067460E-008
-% loop ijlk :   9.719805175081564E-009
-% loop lkji :   8.862175306692014E-008
-% loop lkij :   8.862175306692014E-008
-%Wall time : 6.72291m
-
-% Random function :   6.999999930000001E-008
-% Random access :   3.699999963000001E-007
-% loop ijkl :   1.257857140304673E-007
-% loop ikjl :   1.446535711350374E-007
-% loop ijlk :   1.206399348201300E-007
-% loop lkji :   1.257857140304673E-007
-% loop lkij :   1.206399348201300E-007
-%Wall time : 19.6351m
-
-The efficiency of the storage as a hash table was measured on a dual socket Intel Xeon E5-2680 v2 @ 2.80GHz processor, taking the water molecule with the cc-pVQZ basis set (115 molecular orbitals). The time to access all the integrals was measured by looping over all integrals using different loop orderings. The results are given in table~\ref{tab:integrals}, the reference being the storage as a plain four-dimensional array.
-
-In the array storage,
-the value of $170$~ns/integral in the random access case is typical of the latency to fetch a value in the RAM modules when the data is not in any level of cache.
-When the data is accessed with a stride of one (the $i,j,l,k$ storage) the cache levels accelerate the access by a factor of $18 \times$, down to $9.71$~ns/integral, corresponding mostly to the overhead of the function call, the retrieval of the data being negligible.
-
-With the hash table, the random access is only $2.18\times$ slower than the random access in the array. Indeed, two random accesses are required: one for the first element of the bucket of keys one for the corresponding value. The rest of the extra time corresponds to the binary search. The locality of the data can be exploited: when the access is done with a regular access pattern, the data is fetched $\sim 3\times$ faster than using a random access.
-
-A CIPSI calculation was run with the array storage and with the hash table storage. With the hash storage, the total wall clock time was increased only by a factor of two.
-
-So to accelerate the access to the most frequently used integrals, all the
-integrals involving the $128$ closest MOs (molecular orbitals) to the Fermi
-level are copied in a dense array of $128^4$ elements ($2$~GiB).
-
-%TODO : J'en suis la
-
-\section{Generating a subspace of determinants}
-\alert{
-duplicates are avoided by checking connection to the past \\
-******** (ptet exemple avec generator\_CAS versus generator\_full PSI is filtered with different function and supplied to the module using cas\_sd ( cas\_sd, mrcc ) or full\_ci ( pt2 stoch ) )?? \\
-================
-}
-
-Generally speaking, a subspace of determinants is defined by a reference and a class of excitation applied to it.
-\alert{
-Because of the determinant-driven approach, it may not be possible to store all the determinants of the considered subspace. \textbf{Pourquoi c'est lie au determinant-driven?}
-}
-
-
-
-\paragraph{Reference space}
-The \QP allows to define either a determinants of a CAS (Complete Active Space) or the full-CI space as the reference.\footnote{Although the full-CI space is a particular CAS, it is treated differently at the code level.}
-
-\paragraph{Excitation class}
-The excitations to be applied to determinants of the reference space are defined by sets of orbitals describing:
-\begin{itemize}
-\item
-Single excitations
-\item
-The first excitation of a double excitation
-\item
-The second excitation of a double excitation
-\end{itemize}
-For each set category, there is one set for the allowed holes and one set for the allowed particles.
-This defines the rules used to generate determinants of the external space from the reference determinants.
-
-Typically, to define a CAS-SD (CAS augmented with all single and double excitations applied to all the determinants of the CAS), one defines:
-\begin{description}
-\item [Core orbitals:]
-Orbitals always doubly occupied. They are not part of any of the sets.
-\item [Inactive orbitals:]
-Orbitals in which one or two holes may be created. They are part of the all the \emph{hole} sets.
-\item [Active orbitals:]
-Orbitals defining the CAS. They are part of all the sets.
-\item [Virtual orbitals:]
-Orbitals in which one or two particles may be created. They are part of the all the \emph{particle} sets.
-\item [Deleted orbitals:]
-Orbitals removed from the calculation, always unoccupied. They are not part of any set.
-\end{description}
-
-
- As will be seen later, determinants are selected iteratively. The general procedure is shown 
-
-
+%\section{Generating a subspace of determinants}
+%\alert{
+%duplicates are avoided by checking connection to the past \\
+%******** (ptet exemple avec generator\_CAS versus generator\_full PSI is filtered with different function and supplied to the module using cas\_sd ( cas\_sd, mrcc ) or full\_ci ( pt2 stoch ) )?? \\
+%================
+%}
+%
+%Generally speaking, a subspace of determinants is defined by a reference and a class of excitation applied to it.
+%\alert{
+%Because of the determinant-driven approach, it may not be possible to store all the determinants of the considered subspace. \textbf{Pourquoi c'est lie au determinant-driven?}
+%}
+%
+%
+%
+%\paragraph{Reference space}
+%The \QP allows to define either a determinants of a CAS (Complete Active Space) or the full-CI space as the reference.\footnote{Although the full-CI space is a particular CAS, it is treated differently at the code level.}
+%
+%\paragraph{Excitation class}
+%The excitations to be applied to determinants of the reference space are defined by sets of orbitals describing:
+%\begin{itemize}
+%\item
+%Single excitations
+%\item
+%The first excitation of a double excitation
+%\item
+%The second excitation of a double excitation
+%\end{itemize}
+%For each set category, there is one set for the allowed holes and one set for the allowed particles.
+%This defines the rules used to generate determinants of the external space from the reference determinants.
+%
+%Typically, to define a CAS-SD (CAS augmented with all single and double excitations applied to all the determinants of the CAS), one defines:
+%\begin{description}
+%\item [Core orbitals:]
+%Orbitals always doubly occupied. They are not part of any of the sets.
+%\item [Inactive orbitals:]
+%Orbitals in which one or two holes may be created. They are part of the all the \emph{hole} sets.
+%\item [Active orbitals:]
+%Orbitals defining the CAS. They are part of all the sets.
+%\item [Virtual orbitals:]
+%Orbitals in which one or two particles may be created. They are part of the all the \emph{particle} sets.
+%\item [Deleted orbitals:]
+%Orbitals removed from the calculation, always unoccupied. They are not part of any set.
+%\end{description}
+%
+%
+% As will be seen later, determinants are selected iteratively. The general procedure is shown 
+%
+%
 
 \begin{algorithm}
 	\caption{GENERAL\_SELECTION}	
