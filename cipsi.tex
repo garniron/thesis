@@ -4,23 +4,6 @@
 \begin{document}
 \label{chap:CIPSI}
 
-Need to have a list of reasonable size = need a general way to select determinants. 
-
-Unlike for Davidson, connections aren't inside a given set but by an intermediary external determinant $\alpha$ or $\ket \alpha$ ...; 
-
-=======
-
-'alpha' = like creating PSI, apply excitation masks on generators. in CIPSI, "full\_generators". \\
-approximate by taking only biggest generators/selectors. Very qualitative, no big deal \\
-first idea : disconnect "a priori" a piece of wavefunction ( minilist ). ?\\
-Balance between size of sample VS size of removed piece of wavefunction. \\
-by extension, iterative filtering ( generator, first hole, second hole ) \\
-then, have some systematic definition of alpha / I ( microlist ). \\
-avoid explicitely comparing I and alpha ( feuille de PQ ). \\
-
-==========
-
-
 
 \begin{algorithm}
 	\caption{Simple CIPSI}
@@ -51,35 +34,69 @@ avoid explicitely comparing I and alpha ( feuille de PQ ). \\
 
 \section{def}
 
-\section{notation(?)}
+\alert{deplacer l'algo de base de "methods" a ici?}
+
+My initial and most important work has been the improvement of the CIPSI algorithm present in the Quantum Package, that had been implemented by my predecessor\cite{giner:tel-01077016}.
 
 
+and computes an estimation to the electronic correlation missing from the variational energy.
+Iteration $n$ of CIPSI can be described like so:
+
+\begin{enumerate}
+\item
+
+The variational function $\ket {\Psi^{(n)}}$ is defined over a set of determinants $  \mathcal{D}^{(n)}$ in which we diagonalize $\widehat{H}$
 \begin{equation}
-\Psi = \sum_I {c_I | D_I \rangle}
+\ket{\Psi^{(n)}} = \sum_{S \in \mathcal{D}^{(n)}} c_S^{(n)} \ket{S}
+\end{equation}
+
+\item
+For all $\kalpha \notin \mathcal{D}^{(n)}$, we compute a perturbative contribution
+\begin{equation}
+e_\alpha = \frac{\Hij{\Psi^{(n)}}{\alpha}^2}{E^{(n)} - H_{\alpha \alpha}}
+\end{equation}
+$E^{(n)}$ is an energy that depends on the pertubation theory being used. In our case, the Epstein-Nesbet energy is used.
+
+\item
+We build $\{ \alpha^\star \}^{(n)}$ the set of $\kalpha$ of highest contributions, and add them to the wavefunction
+\begin{equation}
+\mathcal{D}^{(n+1)} = \mathcal{D}^{(n)} \cup \{ \alpha^\star \}
+\end{equation}
+
+\item
+Exit on some criterion. Note that $\EFCI$ energy can be estimated
+\begin{equation}
+\EFCI \approx E^{(n)}_0 + E_{PT2}^{(n)}
 \end{equation}
 
 
-Indices $p,q,r,s$ refer to SPINorbitals, $p$ and $r$ being of same spin, $q$ and $s$ being of same spin. 
+with $E^n_0$ the variational energy of $\ket {\Psi^{(n)}}$ and
+\begin{equation}
+E_{PT2}^{(n)} = \sum_{\alpha \in \{\alpha \}^{(n)}} e_\alpha
+\end{equation}
+with $\{ \alpha \}^{(n)}$ the set of all $\kalpha$ considered at current iteration
+
+\end{enumerate}
 
 
-$G = D_I$ generator determinant
+CIPSI involves creation of an external space and precise knowledge of how it interacts with the internal space, which has been the basis for other subsequent works presented in the next chapters.
+As can be told by the expression of $\epsilon(\alpha)$, which is the heart of CIPSI
 
-$S = D_J$ selector determinant
+\begin{equation}
+e_\alpha = \frac{\Hij{\Psi^{(n)}}{\alpha}^2}{E^{(n)} - H_{\alpha \alpha}}
+\end{equation}
 
-$\alpha$ external determinant
+algorithmically speaking, we will need to enumerate all connections between all internal and all external determinants. There are \alert{schematically?} two ways to do this :
 
-\section{base issue}
-As can be told by the formula of $\epsilon(\alpha)$, selection requires to enumerate all connections between all internal and all external determinants.
-The simplest solution to achieve this, would be using an ``internal to external'' approach.
 \begin{itemize}
 \item
-loop over generators $\ket G$
+``external to internal'', looping over all possible $\kalpha$ and computing naively $e_\alpha$.
 \item
-loop over double excitations $\hat T$
-\item increment $\epsilon(\alpha = \hat T \ket G \notin \Psi)$ accordingly.
-
+``internal to external'', looping over all internal determiants $\ket G$ and all double excitations $\hat T$, creating $\kalpha = \hat T \ket G$ then incrementing $e_{\alpha \notin \Psi}$ by $\frac{\Hij{G}{\alpha}}{E^{(n)} - H_{\alpha \alpha}}$. 
 \end{itemize}
-Unfortnately, keeping track of all $\epsilon(\alpha)$ at the same time is not feasible, since their numbers scales as $\Ngen \times \mathcal{O}_{virt}^2 \times \mathcal{O}_{occ}^2$.
+
+While the later approach sounds more efficient, it has the obvious issue of requiring all $e_\alpha$ to be stored in memory simultaneously. Unfortunately this is usually not feasible, since their numbers scales as $\Ndet \times \mathcal{O}_{virt}^2 \times \mathcal{O}_{occ}^2$.
+While the later approach is simpler, it begs the question of how to generate all possible $\kalpha$ not simultaneously and with no duplicates.
 
 
 \section{Previous version}

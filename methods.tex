@@ -77,7 +77,7 @@ the determinant, one can express the Slater determinant as
 \right| 
 \end{equation}
 where $\Nalpha$ is the number of $\alpha$ electrons, i.e. the number of electrons with $m_s=1/2$.
-If one chooses the permutation in which the first $\Nalpha$ electrons have $m_s=1/2$, and the other electrons haev $m_s=-1/2$, one always has
+If one chooses the permutation in which the first $\Nalpha$ electrons have $m_s=1/2$, and the other electrons have $m_s=-1/2$, one always has
 \begin{align}
 \phi_i(x_j) & = 0 \; \text{ for } 1 \le i \le \Nalpha \text{ and } \Nalpha < j \le N \\ \nonumber
 \overline{\phi}_i(x_j) & = 0 \; \text{ for }  \Nalpha < i \le N \text{ and }  1 \le j \le \Nalpha,
@@ -255,46 +255,17 @@ forcement moins cher que le CI.}
 
 These methods rely on the same principle as the usual CI approaches, except that determinants aren't chosen \textit{a priori} based on an occupation or excitation criterion, but selected \emph{on the fly} among the entire set of determinant based on their estimated contribution to the FCI wavefunction. Conventional CI methods can be seen as an exact resolution of Schrödinger's equation for a complete, well-defined set of determinants (and for a given atomic basis set), while selected CI methods are more of a truncation of the FCI.
 The main advantages of these methods compared to the more conventional \textit{a priori} selected ones, are that since the most relevant determinants are considered, they will typically yield a more accurate description of physical phenomena, and a much lower energy for an equivalent number of determinants.
-It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction. Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been proposed from the late 60s by Bender and Davidson\cite{Bender_1969} as well as Whitten and Hackmeyer\cite{Whitten_1969}.
+It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction. Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been proposed from the late 60s by Bender and Davidson\cite{Bender_1969} as well as Whitten and Hackmeyer\cite{Whitten_1969} and is still very much under investigation, we can name the very recent \emph{Machine Learning Configuration Interaction (MLCI)}\cite{1808.05787}.
 
-The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developped by Huron, Rancurel and Malrieu \cite{Huron_1973}, that iteratively selects determinants by using a perturbative criterion, and computes an estimation to the electronic correlation missing from the variational energy.
-Iteration $n$ of CIPSI can be described like so:
+The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developped by Huron, Rancurel and Malrieu \cite{Huron_1973}, that iteratively selects determinants by using a perturbative criterion
 
-\begin{enumerate}
-\item
-
-The variational function $\ket {\Psi^{(n)}}$ is defined over a set of determinants $  \mathcal{D}^{(n)}$ in which we diagonalize $\widehat{H}$
 \begin{equation}
-\ket{\Psi^{(n)}} = \sum_{S \in \mathcal{D}^{(n)}} c_S^{(n)} \ket{S}
+e_\alpha = \frac{\Hij{\Psi}{\alpha}^2}{E^{(n)} - H_{\alpha \alpha}}
 \end{equation}
 
-\item
-For all $\kalpha \notin \mathcal{D}^{(n)}$, we compute a perturbative contribution
-\begin{equation}
-e_\alpha = \frac{\Hij{\Psi^{(n)}}{\alpha}^2}{E^{(n)} - H_{\alpha \alpha}}
-\end{equation}
-$E^{(n)}$ is an energy that depends on the pertubation theory being used. In our case, the Epstein-Nesbet energy is used.
-
-\item
-We build $\{ \alpha^\star \}^{(n)}$ the set of $\kalpha$ of highest contributions, and add them to the wavefunction
-\begin{equation}
-\mathcal{D}^{(n+1)} = \mathcal{D}^{(n)} \cup \{ \alpha^\star \}
-\end{equation}
-
-\item
-Exit on some criterion. Note that $\EFCI$ energy can be estimated
-\begin{equation}
-\EFCI \approx E^{(n)}_0 + E_{PT2}^{(n)}
-\end{equation}
+with $\Psi$ the variational wavefunction and $\alpha$ the external determinant being considered.
 
 
-with $E^n_0$ the variational energy of $\ket {\Psi^{(n)}}$ and
-\begin{equation}
-E_{PT2}^{(n)} = \sum_{\alpha \in \{\alpha \}^{(n)}} e_\alpha
-\end{equation}
-with $\{ \alpha \}^{(n)}$ the set of all $\kalpha$ considered at current iteration
-
-\end{enumerate}
 
 There is however a computational downside. In \textit{a priori} selected methods, the rule by which determinants are selected is known a priori, and therefore, one can map a particular determinant to some row or column index.\cite{Knowles_1984} As a consequence, it can be systematically determined to which matrix element of $\widehat{H}$ a two-electron integral contributes. This allows for the implementation of so-called \emph{intergral-driven} methods, that work essentially by iterating over integrals.
 On the contrary, in selected methods an explicit list has to be maintained, and there is no immediate way to know whether a determinant has been selected, or what its index is. Consequently, so-called \emph{determinant-driven} approaches will be used, in which iteration is done over determinants rather than integrals. This can be a lot more expensive, since the number of determinants is typically much larger than the number of integrals. The former scales as $\order{N!}$ while the latter scales as $\order{N^4}$ with the number of MOs.
@@ -307,9 +278,9 @@ e^{HCI}_\alpha = \text{max} \big  {(|} c_i \Hij{D_i}{\alpha} \big {|)}
 with $D_i$ a determinant from the variational wavefunction and $c_i$ its associated coefficient.
 
 \section{Monte-Carlo ?}
-FCI-QMC is an alternate approach to selection recently proposed in 2009 by Alavi \textit{et al.}\cite{Booth_2009,Cleland_2010}, where walkers move from one determinant to another with a probability that is function of the associated matrix element. \alert{The average population of walkers on a determinant converges to its coefficient in the FCI wavefuction?}.
+FCI-QMC is an alternate approach to selection recently proposed in 2009 by Alavi \textit{et al.}\cite{Booth_2009,Booth_2010,Cleland_2010}, where walkers move from one determinant to another with a probability that is function of the associated matrix element. \alert{The average population of walkers on a determinant converges to its coefficient in the FCI wavefuction?}.
 
-\alert{verifier citation, j'ai pas Coe mais Greer?} A more ``bruteforce'' approach at stochastical selection is \emph{Monte-Carlo CI (MCCI)} \cite{Greer_1995}, where determinants are randomly added to the variational wavefunction. After diagonalization, the determinants of smaller coefficient are removed, and new random determinants are added.
+A more ``bruteforce'' approach at stochastical selection is \emph{Monte-Carlo CI (MCCI)} \cite{Greer_1995,Greer_1998}, where determinants are randomly added to the variational wavefunction. After diagonalization, the determinants of smaller coefficient are removed, and new random determinants are added.
 
 
 

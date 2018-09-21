@@ -5,17 +5,17 @@
 \begin{document}
 
 
-\section{The $B_k$ approximation}
+\section{Matrix dressing}
 
 So far we have used second order perturbation to build a zeroth-order wavefunction $\ket \Psi$ using CISPI, and estimate its distance to the FCI energy with a stochastic estimation of $\EPT$.
 
-In both cases we have computed the interaction between $\ket \Psi$ and the external space, but we have not let $\ket \Psi$ be revised under those interactions.
+In both cases we have computed the interaction between $\ket \Psi$ and the external space, but we have not let $\ket \Psi$ be revised under those interactions. This idea is based on the so-called $B_k$ approximation proposed by Gershgorn and Shavitt\cite{Gershgorn_1968}.
 
 This can be achieved using the intermediate Hamiltonian theory\cite{0305-4470-18-5-014}, intermediate Hamiltonians being a class of effective Hamiltonians\cite{lindgren1982atomic} where not all roots are exact eigenvalues of the full Hamiltonian.
 The principle is to build a so-called intermediate Hamiltonian ${\bf \tilde H}$ which, when diagonalized, yields a wavefunction that takes into account the effect of an external space on the internal space. 
-This idea is based on the so-called $B_k$ approximation proposed by Gershgorn and Shavitt\cite{Gershgorn_1968}. 
 
-Sticking to the state-specific case, the general principle can be understood as follow.
+
+Sticking to the state-specific case, the general principle can be understood as follow. This formulation, as it is limited to state-specific case, is somewhat different and wishes to be more intuitive than the one presented in the article.
 Fully taking into accout the external space requires to solve 
 
 \newcommand{\Hzero}{{\bf H}^{(0)}}
@@ -36,7 +36,7 @@ Fully taking into accout the external space requires to solve
 
 With ${\bf H}^{(0)}$ and ${\bf H}^{(1)}$ the zeroth and first-order Hamiltonians, $\bf h$ the coupling term between zeroth and frist order spaces, ${\bf c}$ the coefficients for the zeroth-order space and ${\bf c}^\alpha$ the coefficients for the external space.
 
-This diagonalization is normally not feasible due to the external space being too large. However, if we are willing to neglect the external-to-external and internal-to-external influence - in other words, if we freeze the external space - we can only solve the eigenequations associated with internal determinants. As usual, associating $I$ and $J$ to internal determinants and $\alpha$ to external ones, for line $I$ we have
+This diagonalization is normally not feasible due to the external space being too large. However, if we are willing to neglect the external-to-external and internal-to-external influences - in other words, if we freeze the external space - we can only solve the eigenequations associated with internal determinants. As usual, associating $I$ and $J$ to internal determinants and $\alpha$ to external ones, for line $I$ we have
 
 \begin{equation}
 (\Hzero_{II} - E)c_I  + \sum_{J \neq I} {c_J \Hzero_{IJ}} + \sum_\alpha {c_\alpha \hcpl_{I \alpha}} = 0
@@ -44,7 +44,7 @@ This diagonalization is normally not feasible due to the external space being to
 \end{equation}
 
 
-Obviously, since we froze the external space, we need some way to esimate ${\bf c}^\alpha$. In the presented paper, we used a perturbative estimation consistently with what we used in CIPSI and $\EPT$ computations.
+Obviously, since we froze the external space, we need some way to esimate ${\bf c}^\alpha$. In the presented paper, we used a perturbative estimation consistently with what we used in CIPSI and $\EPT$ computations. Because of this, whenever $\bf c$ is revised, ${\bf c}^\alpha$ needs to be revised as well. This makes Bk an iterative method.
 
 Because $c_\alpha$ coefficients are frozen, $\sum_\alpha {c_\alpha H_{I \alpha}}$ is merely a constant added to the eigenequation of line $I$. Renaming this term $\kappa_I$, we can rewrite \ref{eq:eignen_sum}
 
@@ -95,15 +95,31 @@ with ${\pmb \kappa}$ the vector $\kappa_1, \ldots, \kappa_{\Ndet}$.
 Algorithmically, it boils down to computing ${\pmb \kappa}$, which is more expensive to compute than ${\bf \tilde H}{\bf c}$ needed for Davidson diagonalization. But unlike ${\bf \tilde H}{\bf c}$ which is too large to be stored, and needs to be re-computed on the fly at each Davidson iteration, ${\pmb \kappa}$ can easily be stored, being only a vector size $\Ndet$.
 
 
-An improved version to this original idea was proposed by Davidson and co-workers \alert{moult citations du papier?} under the name shifted-Bk, which is the one we implemented. Details about this improvement and on how it can be generalized to a multi-state case are available in the presented article. Implementationally speaking the keypoints are
+An improved version to this original idea was proposed by Davidson and co-workers \alert{moult citations du papier?} under the name shifted-Bk, which is the one we implemented. Details about this improvement and on how it can be generalized to a multi-state case are available in the presented article.
 
-\begin{itemize}
-\item
-${\pmb \kappa}_k$ needs to be computed and stored for each desired state $k$
-\item
-Computing an extra ${\pmb \kappa}_k$, if exact result is desired, comes with minimal cost. Unfortunately, the stochastic approach used forces to compute each ${\pmb \kappa}_k$ individually.
-\end{itemize}
 
+\section{Selected configuration interaction dressed by perturbation}
+
+\includepdf[page=2-]{article_sbk}
+
+\includepdf[page=-]{article_sbk_sup}
+
+
+\section{implementational details}
+
+Implementationally speaking, just like the state-specific version require computing a single ${\pmb \kappa}$ vector, the multi-state version requires a ${\pmb \kappa}_k$ vector to be computed for each desired state $k$. This, in principle, should come with minimal cost, since the loop over states can be set as the more internal one.
+
+\begin{algorithm}[h!]
+\While{}{
+	costly computation to find $\ket I$ and $\kalpha$ \;
+	\For{k=1,$N_{st}$}{
+		$\kappa_I^k \gets \kappa_I^k + c_\alpha^k H_{I\alpha}$ \;
+	}
+}
+\end{algorithm}
+
+
+In practice, since the exact computation of ${\pmb \kappa}_k$ is even more expensive than that of $\EPT$, we need to use the same hybrid stochastic-determinstic approach. Unfortunately, using state-average coefficients for the repartition function did not yield satisfying results, so we have to stick to state-specific repartition function and thus compute each ${\pmb \kappa}_k$ individually. The multi-state Davidson diagnalization, however, is done a single time per shifted-Bk iteration.
 
 
 \section{task splitting}
@@ -192,7 +208,7 @@ However there are a few significant difference.
 \item
 We were estimating a scalar, now we are estimating a vector. What should the error bar refer to?
 \item
-In both cases we have $N_{gen}$ samples, however for PT2 each sample is a scalar, here each sample is a vector size $N_{det}$. It is easy to store $N_{gen}$ scalars, not to store $N_{gen}$ vectors size $N_{det}$
+In both cases we have $N_{gen}$ samples, however in the case of $\EPT$ each sample is a scalar, here each sample is a vector size $N_{det}$. It is easy to store $N_{gen}$ scalars, not to store $N_{gen}$ vectors size $N_{det}$. In addition, these vectors must be transmitted from slave nodes to a master node, creating a potential network bottleneck.
 \item
 In the case of PT2 ( at least in it Epstein-Nesbet version ), each connection found, only requires an increment of some elements of $P(G_{pq})$. At no point 2 connections need to be known at the same time. This is different for methods implemented with matrix dressing( or even with other version of PT2? ). It is possible that the detail of which variational determinants a $\ket \alpha$ connects to, needs to be known in ordrer to be able to compute $delta_\alpha$.
 \end{itemize}
@@ -654,8 +670,7 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 	
 \end{algorithm}
 
-\subsection{finding connections - microlists}
-
+\section{Computing $c_\alpha$}
 
 For merely enumerating the connections between internal and external space, there are two possible ways.
 Internal to external, or External to internal
@@ -794,7 +809,7 @@ Care must be given that $\mathcal{C}_{r,0}$ and $\mathcal{C}_{s,0}$ may share co
 In this chapter we have implemented a stochastic version of the shifted-Bk algorithm, using the same algorithm we used for computation of $\EPT$, and were able to get acceptable accuracies performing a few percent of the full computation.
 The additional difficulties of estimating a vector rather than a scalar were solved by setting a limited number of pre-determined checkpoints between which no result is available.
 
-The fact that we implemented the shifted-Bk method boils down to our choice to build the external space using Epstein-Nesbet perturbative estimation for $c_\alpha$. However, the proposed algorithm do not put any particular restriction on $c_\alpha$. From this stemed the idea of a more general framework to allow easy experimentation of the effect different external spaces.
+The fact that we implemented the shifted-Bk method boils down to our choice to build the external space using Epstein-Nesbet perturbative estimation for $c_\alpha$. However, the proposed algorithm do not put any particular restriction on $c_\alpha$. From this stemed the idea of a more general framework to allow easy experimentation of the effect of different external spaces.
 
 
 \end{document}
