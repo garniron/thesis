@@ -264,8 +264,16 @@ The approach we are using is based on the \emph{Configuration Interaction using 
 \begin{equation}
 e_\alpha = \frac{\Hij{\Psi}{\alpha}^2}{\Evar - H_{\alpha \alpha}}.
 \end{equation}
+with $\Psi$ the variational wavefunction of energy $E$, and $\alpha$ the external determinant being considered. $\EPT$ an estimation to the electronic correlation missing from the variational energy is also computed
 
 
+\begin{equation}
+\EPT = \sum_{\alpha} e_\alpha
+\end{equation}
+
+\begin{equation}
+E_{FCI} \approx E + \EPT
+\end{equation}
 
 There is however a computational downside. In \textit{a priori} selected methods, the rule by which determinants are selected is known \textit{a priori}, and therefore, one can map a particular determinant to some row or column index.\cite{Knowles_1984} As a consequence, it can be systematically determined to which matrix element of $\widehat{H}$ a two-electron integral contributes. This allows for the implementation of so-called \emph{intergral-driven} methods, that work essentially by iterating over integrals.
 On the contrary, in selected methods an explicit list has to be maintained, and there is no immediate way to know whether a determinant has been selected, or what its index is. Consequently, so-called \emph{determinant-driven} approaches will be used, in which iteration is done over determinants rather than integrals. This can be a lot more expensive, since the number of determinants is typically much larger than the number of integrals. The former scales as $\order{M!}$ while the latter scales as $\order{M^4}$ with the number of MOs.
@@ -275,10 +283,10 @@ Because of this high computational cost, approximations have been proposed \cite
 \begin{equation}
 e^{HCI}_\alpha = \max \qty( \qty| c_i \Hij{D_i}{\alpha} | )
 \end{equation}
-with $D_i$ a determinant from the variational wavefunction and $c_i$ its associated coefficient.
+with $D_i$ a determinant from the variational wavefunction and $c_i$ its associated coefficient. This algorithmically allows for a much faster selection.
 
-\section{Monte-Carlo ?}
-FCI-QMC is an alternate approach to selection recently proposed in 2009 by Alavi \textit{et al.}\cite{Booth_2009,Booth_2010,Cleland_2010}, where walkers move from one determinant to another with a probability that is function of the associated matrix element. \alert{The average population of walkers on a determinant converges to its coefficient in the FCI wavefuction?}.
+\section{Monte-Carlo methods}
+FCI-QMC is an alternate approach to selection recently proposed in 2009 by Alavi \textit{et al.}\cite{Booth_2009,Booth_2010,Cleland_2010}, where walkers spawn from one determinant to a connected one, with a probability that is function of the associated matrix element. The average proportion of walkers on a determinant converges to its coefficient in the FCI wavefuction.
 
 A more ``bruteforce'' approach at stochastical selection is \emph{Monte-Carlo CI (MCCI)} \cite{Greer_1995,Greer_1998}, where determinants are randomly added to the variational wavefunction. After diagonalization, the determinants of smaller coefficient are removed, and new random determinants are added.
 

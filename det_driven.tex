@@ -353,7 +353,7 @@ Because computing excitations is a hotspot of the program, and because we are ty
 	
 	\Fn(\tcc*[h]{Computes the excitation degree between two determinants}){\FMain{$I, J$}}{
 		\KwData {$I, J$ bitstring representations of determinants $\kI$ and $\kJ$}
-		\KwResult{ Returns the excitation degree between $\kI$ and $\kJ$, namely $\frac{1}{2}\popcnt{\ieor{I}{J}} }
+		\KwResult{ Returns the excitation degree between $\kI$ and $\kJ$, namely $\frac{1}{2}\popcnt{\ieor{I}{J}}$ }
 
 		$X \gets 0$   \;
 		\For{$\sigma \in \{\alpha, \beta\}$}{
@@ -834,9 +834,8 @@ As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ resul
 
 So we add an extra permutation if
 \begin{equation}
-\ior{[\ieor{(p-r)}{(p-s)}]}{[\ieor{(q-r)}{(q-s)}]} > 0.
+\ior{[\ieor{(p-r)}{(p-s)}]}{[\ieor{(q-r)}{(q-s)}]} > 0
 \end{equation}
-
 
 
 
@@ -922,5 +921,106 @@ So we add an extra permutation if
 		diagonalize $\hat{H}$ in $\set{D}$ to obtain $\ket{\Psi}$ \;
 	}
 \end{algorithm}
+
+%----------------------------------------------------------------
+\section{Storage of the two-electron integrals}
+%----------------------------------------------------------------
+
+In all the algorithms presented, all the needed two-electron integrals are kept in memory
+and require a fast random access.
+A hash table is the natural choice which allows the storage of only non-zero
+values with a retrieval of data in nearly constant time, but standard hashing
+algorithms tend to shuffle the data to limit the probability of collisions.
+Here, we favor instead the locality of the data over the probability of collision
+using the hash function given in Algorithm~\ref{alg:hash}.  It returns the same
+value for all the keys which are related by the permutation symmetry of the
+indices, keeps some locality in the storage of the data, and can be evaluated
+in the order of 10 CPU cycles if the integer division by two is replaced by a
+bit shift instruction.
+
+\begin{algorithm}
+ \caption{HASH}
+ \label{alg:hash}
+	\SetKwFunction{FMain}{HASH}
+	\SetKwProg{Fn}{Function}{:}{}
+\Fn(\tcc*[h]{Hash function for two-electron integrals.}){\FMain{$i,j,k,l$}}{
+		\KwData{ $i,j,k,l$ are the orbital indices}
+		\KwResult{ The corresponding hash}
+        $p \gets \min (i,k)$ \;
+        $r \gets \max (i,k)$ \;
+        $t \gets p + \frac{1}{2} r (r-1)$ \;
+        $q \gets \min (j,l)$ \;
+        $s \gets \max (j,l)$ \;
+        $u \gets q + \frac{1}{2} s (s-1)$ \;
+        $v \gets \min (t,u)$ \;
+        $w \gets \max (t,u)$ \;
+        \KwRet{$v + \frac{1}{2} w (w-1)$} \;
+}
+\end{algorithm}
+
+The hash table is such that each bucket can potentially store $2^{15}$
+consecutive key-value pairs. The 15 least significant bits of the hash value
+are removed to give the index of the bucket ($i_\text{bucket} =
+\ishft{\text{hash}(i,j,k,l)}{-15}$), and only those 15 bits need to be
+stored in the bucket for the storage of the key ($\iand{\text{key}}{(2^{16}-1)}$).
+Hence, the storage of the keys only requires two bytes per key.
+The keys within a bucket are sorted in increasing order, enabling a binary
+search within the bucket. The search of the key is always fast
+since the binary search is bounded by 15 misses and the maximum size of the
+array of keys is 64~kiB, the typical size of the L1 cache.
+
+\begin{table}
+\caption{Time to access the integrals (in ns/integral) with different access patterns. The time to generate random numbers (measured as 67~ns/integral) was not counted in the random access results.}
+\label{tab:integrals}
+\begin{center}
+  \begin{tabular}{lrr}
+    \hline
+   Access  & Array  & Hash table  \\ 
+\hline
+ $i,j,k,l$ &  9.72  &  125.79     \\ 
+ $i,j,l,k$ &  9.72  &  120.64     \\ 
+ $i,k,j,l$ & 10.29  &  144.65     \\ 
+ $l,k,j,i$ & 88.62  &  125.79     \\ 
+ $l,k,i,j$ & 88.62  &  120.64     \\ 
+   Random  & 170.00 &  370.00     \\ 
+    \hline
+  \end{tabular}
+\end{center}
+\end{table}
+
+% Random function :   6.999999930000001E-008
+% Random access :   1.699999983000000E-007
+% loop ijkl :   9.719805175081564E-009
+% loop ikjl :   1.029155842067460E-008
+% loop ijlk :   9.719805175081564E-009
+% loop lkji :   8.862175306692014E-008
+% loop lkij :   8.862175306692014E-008
+%Wall time : 6.72291m
+
+% Random function :   6.999999930000001E-008
+% Random access :   3.699999963000001E-007
+% loop ijkl :   1.257857140304673E-007
+% loop ikjl :   1.446535711350374E-007
+% loop ijlk :   1.206399348201300E-007
+% loop lkji :   1.257857140304673E-007
+% loop lkij :   1.206399348201300E-007
+%Wall time : 19.6351m
+
+The efficiency of the storage as a hash table was measured on a dual socket Intel Xeon E5-2680 v2 @ 2.80GHz processor, taking the water molecule with the cc-pVQZ basis set (115 molecular orbitals). The time to access all the integrals was measured by looping over all integrals using different loop orderings. The results are given in table~\ref{tab:integrals}, the reference being the storage as a plain four-dimensional array.
+
+In the array storage,
+the value of $170$~ns/integral in the random access case is typical of the latency to fetch a value in the RAM modules when the data is not in any level of cache.
+When the data is accessed with a stride of one (the $i,j,l,k$ storage) the cache levels accelerate the access by a factor of $18 \times$, down to $9.71$~ns/integral, corresponding mostly to the overhead of the function call, the retrieval of the data being negligible.
+
+With the hash table, the random access is only $2.18\times$ slower than the random access in the array. Indeed, two random accesses are required: one for the first element of the bucket of keys one for the corresponding value. The rest of the extra time corresponds to the binary search. The locality of the data can be exploited: when the access is done with a regular access pattern, the data is fetched $\sim 3\times$ faster than using a random access.
+
+A CIPSI calculation was run with the array storage and with the hash table storage. With the hash storage, the total wall clock time was increased only by a factor of two.
+
+So to accelerate the access to the most frequently used integrals, all the
+integrals involving the $128$ closest MOs (molecular orbitals) to the Fermi
+level are copied in a dense array of $128^4$ elements ($2$~GiB).
+
+%TODO : J'en suis la
+
 
 \end{document}
