@@ -3,7 +3,7 @@
 \begin{document}
 
 
-Quantum chemistry aims at describing the electronic structures of molecular
+Quantum chemistry aims at describing the electronic structure of molecular
 systems.  The velocity of the nuclei is considered negligible compared to that
 of the electrons (Born-Oppenheimer approximation), and for atoms of the first
 rows of the periodic table relativistic effects can be neglected.  In this
@@ -79,8 +79,8 @@ the determinant, one can express the Slater determinant as
 where $\Nalpha$ is the number of $\alpha$ electrons, i.e. the number of electrons with $m_s=1/2$.
 If one chooses the permutation in which the first $\Nalpha$ electrons have $m_s=1/2$, and the other electrons have $m_s=-1/2$, one always has
 \begin{align}
-\phi_i(x_j) & = 0 \; \text{ for } 1 \le i \le \Nalpha \text{ and } \Nalpha < j \le N \\ \nonumber
-\overline{\phi}_i(x_j) & = 0 \; \text{ for }  \Nalpha < i \le N \text{ and }  1 \le j \le \Nalpha,
+\phi_i(\mathbf{x}_j) & = 0 \; \text{ for } 1 \le i \le \Nalpha \text{ and } \Nalpha < j \le N \\ \nonumber
+\overline{\phi}_i(\mathbf{x}_j) & = 0 \; \text{ for }  \Nalpha < i \le N \text{ and }  1 \le j \le \Nalpha,
 \end{align}
 and the Slater determinant becomes block-diagonal:
 \begin{equation}
@@ -128,7 +128,7 @@ Molecular orbitals are typically defined as linear combinations of \emph{atomic 
 \label{eq:def_mo}
 \end{equation}
 These functions qualify the used \emph{basis set}, and are usually themselves pre-defined linear combinations of Gaussian functions. This is a restriction put on the form of the wavefunction, therefore it is known as the \emph{finite basis set approximation}.
-In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy
+In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy.
 This method, however is missing some important physical effects. For instance, using Eq.\eqref{eq:slater} one can see that in this model opposite-spin electrons are statistically independent (or \emph{uncorrelated}):
 \begin{equation}
 \begin{split}
@@ -149,35 +149,38 @@ where $E_\text{HF}$ is the \emph{Hartree-Fock limit}, i.e. the limit to which th
 
 To include electron correlation effects, $\Psi$ may be expanded in
 $\{\ket D_i \}$, the set of all the possible Slater determinants that can be built by putting $N_\alpha$ electrons in $M$ orbitals and $N_\beta$ electrons in $M$ orbitals.
-The eigenvectors of $\widehat{H}$ are consequently expressed as a linear combination of Slater determinants 
+The eigenvectors of $\widehat{H}$ are consequently expressed as linear combinations of Slater determinants 
 \begin{equation}
 \ket{\Psi_n} = \sum_{i} c_i^n \ket{D_i}.
 \end{equation}
 Solving the eigenvalue equations in this basis is referred to as \emph{Full Configurations Interaction (FCI)} and yields solutions for Schrödinger's equation that are exact for the given atomic basis set.
-But the FCI is usually computationally intractable because of its factorial scaling as
+But the FCI is usually computationally intractable because of its scaling with the size of the basis set. Indeed, the size of the FCI space is
 \begin{equation}
-\NFCI = \frac{M!}{\Nalpha ! (M-\Nalpha)!} \times \frac{M!}{\Nbeta ! (M-\Nbeta)!}
+\NFCI = \frac{M!}{\Nalpha ! (M-\Nalpha)!} \times \frac{M!}{\Nbeta ! (M-\Nbeta)!}.
 \end{equation}
 Post-Hartree-Fock methods are trying to circumvent this problem, and therefore
 are essentially approximations of FCI.
 
 \section{Matrix elements}
 In the $N$-electron basis of Slater determinants, one expects the matrix elements of $\widehat H$ to be integrals over $3N$ dimensions.
-However, given the two-electron nature of the Hamiltonian, and because the set of molecular orbitals is orthogonal, Slater determinants that differ by more than two electrons yield a zero matrix element, and the other elements can be expressed as sums of integrals over 3 or 6 dimensions, which can be computed for a reasonable cost. These simplifications are known as \emph{Slater-Condon's rules}.
+However, given the two-electron nature of the Hamiltonian, and because the set of molecular orbitals is orthogonal, Slater determinants that differ by more than two electrons yield a zero matrix element, and the other elements can be expressed as sums of integrals over 3 or 6 spatial dimensions, which can be computed for a reasonable cost. These simplifications are known as \emph{Slater-Condon's rules}:
 
-% \Hij[\hat h]{\varphi_i \varphi_j}{\varphi_i \varphi_j} - \Hij[\hat h]{\varphi_i \varphi_j}{\varphi_j \varphi_i} 
 \begin{align}
 \Hij{D}{D} & = \sum_{i\in D} \mel{i}{\hat{h}}{i} + \frac{1}{2} \sum_{i\in D} \sum_{j\in D} \Big [ (ii|jj) - (ij|ij) \Big ]      \\
 \Hij{D}{D_p^r} & = \mel{p}{\hat{h}}{r} + \sum_{i\in D} \Big [ (pr|ii) - (pi|ri) \Big ]        \\
 \Hij{D}{D_{pq}^{rs}} & = (pr|qs) - (ps|qr)
 \end{align}
 where $\hat{h}$ is the one-electron part of the Hamiltonian (kinetic energy and
-electron-nucleus potential), $i \in D$ means that $\phi_i$ belongs to the
-Slater determinant $D$, $\ket {D_{pq}^{rs}}$ is a determinant obtained from $\ket
-D$ by substituting orbitals $\varphi_p$ and $\varphi_q$ by $\varphi_r$ and
-$\varphi_s$, and
+electron-nucleus potential),
 \begin{equation}
-(ij|kl) = \int d{\bf r}_1 \int d{\bf r}_2 \; \varphi^*_i({\bf r}_1)\varphi_j({\bf r}_1) \frac{1}{|{\bf r}_1 - {\bf r}_2|} \varphi^*_k({\bf r}_2)\varphi_l({\bf r}_2).
+\mel{p}{\hat{h}}{x} = \int d{\bf x}\; \phi^*_p(\mathbf{x}) \qty( -\frac{1}{2}\nabla + V_1(\mathbf{x})) \phi_h(\mathbf{x}),
+\end{equation}
+$i \in D$ means that $\phi_i$ belongs to the
+Slater determinant $D$, $\ket {D_{pq}^{rs}}$ is a determinant obtained from $\ket
+D$ by substituting orbitals $\phi_p$ and $\phi_q$ by $\phi_r$ and
+$\phi_s$, and
+\begin{equation}
+(ij|kl) = \int d{\bf x}_1 \int d{\bf x}_2 \; \phi^*_i({\bf x}_1)\phi_j({\bf x}_1) \frac{1}{|{\bf x}_1 - {\bf x}_2|} \phi^*_k({\bf x}_2)\phi_l({\bf x}_2).
 \end{equation}
 
 \section{Two-electron integrals}
@@ -208,7 +211,7 @@ A naive computation of all integrals in the MO basis would cost ${\cal O}(M^8)$.
 \end{eqnarray}
 This step is known as the \emph{four-index integral transformation}.  
 In addition to being very costly, this step is hard to parallelize in
-distributed way, because it implies many collective communications.\cite{Rajbhandari_2017,Limaye_1994,Fletcher_1999,Covick_1990}
+distributed way, because it implies multiple collective communications.\cite{Rajbhandari_2017,Limaye_1994,Fletcher_1999,Covick_1990}
 
 
 
@@ -220,18 +223,18 @@ In variational methods, one tries to minimize the \emph{variational energy}
 \label{eq:evar}
 \end{equation}
 by optimizing the parameters of the wave function.
-Generally speaking, solving Schrödinger's equation in a basis of Slater determinants is called \emph{Configuration Interaction (CI)}.
+Generally speaking, solving Schrö\-dinger's equation in a basis of Slater determinants is called \emph{Configuration Interaction (CI)}.
 In these methods, the molecular orbitals are kept fixed and the variational parameters are the coefficients associated with the Slater determinants.
 The general idea of CI methods is to select \textit{a priori} a relevant subset
 of Slater determinants in which the CI problem will be solved, the FCI being
 the particular case where the whole $\{\ket {D_i} \}$ set is used.
 
-One usual approach is to perform a FCI in a reduced set of orbitals and freezing the occupation status for the others. This is referred to as \emph{Complete Active Space Configuration Interaction (CAS-CI)}. Choosing the CAS orbitals often requires some chemical expertise. The CAS-SCF method minimizes the energy by both performing a CAS-CI and optimizing the molecular orbitals.
+One usual approach is to perform a FCI by allowing excitations from a reference determinant only within a reduced set of molecular orbitals. This is referred to as \emph{Complete Active Space Configuration Interaction (CAS-CI)}. Choosing the CAS orbitals often requires some chemical expertise. The CAS-SCF method minimizes the energy by performing iteratively a CAS-CI and optimizing the molecular orbitals.
 
 Another usual CI approach is to select determinants according to their excitation degree --- by how many occupied orbitals they differ --- with respect to some reference. If the reference is the Hartree-Fock determinant and if only single and double excitations are considered, the method is known as \emph{Configuration Interaction with Single and Double excitations (CISD)}. Alternatively, the reference can be a CAS-CI, in which case it is known as \emph{Multi-Reference Configuration Interaction (MR-CI)}.
 
 Regardless of the method, integrals involving all orbitals implied in at least one Slater determinant need to be computed in order to diagonalize $\widehat{H}$. Therefore CI methods cost is at least $\order{M^5}$, due to the four-index transformation.
-In addition, the cost for fully diagonalizing $\widehat{H}$ is $\order{\Ndet^3}$ with $\Ndet$ the number of determinants in the considered subspace, which can be up to a few billions. This usually not feasible, but only the few eigenvectors associated with lowest eigenvalues are typically of interest, so iterative methods can be used. The standard choice in quantum chemistry is to use the \emph{Davidson diagonalization} originally developed by Ernst R. Davidson\cite{Davidson_1975} specifically for CI methods. 
+In addition, the cost for fully diagonalizing $\widehat{H}$ is $\order{\Ndet^3}$ with $\Ndet$ the number of determinants in the considered subspace, which can be up to a few billion. This usually not feasible, but only the few eigenvectors associated with lowest eigenvalues are typically of interest, so iterative methods can be used. The standard choice in quantum chemistry is to use the \emph{Davidson diagonalization} originally developed by Ernst R. Davidson\cite{Davidson_1975} specifically for CI methods. 
 
 
 \section{Perturbative methods}
@@ -255,15 +258,12 @@ forcement moins cher que le CI.}
 
 These methods rely on the same principle as the usual CI approaches, except that determinants aren't chosen \textit{a priori} based on an occupation or excitation criterion, but selected \emph{on the fly} among the entire set of determinant based on their estimated contribution to the FCI wavefunction. Conventional CI methods can be seen as an exact resolution of Schrödinger's equation for a complete, well-defined set of determinants (and for a given atomic basis set), while selected CI methods are more of a truncation of the FCI.
 The main advantages of these methods compared to the more conventional \textit{a priori} selected ones, are that since the most relevant determinants are considered, they will typically yield a more accurate description of physical phenomena, and a much lower energy for an equivalent number of determinants.
-It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction. Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been proposed from the late 60s by Bender and Davidson\cite{Bender_1969} as well as Whitten and Hackmeyer\cite{Whitten_1969} and is still very much under investigation, we can name the very recent \emph{Machine Learning Configuration Interaction (MLCI)}\cite{1808.05787}.
+It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction. Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been proposed from the late 60's by Bender and Davidson\cite{Bender_1969} as well as Whitten and Hackmeyer\cite{Whitten_1969} and is still very much under investigation, we can name the very recent \emph{Machine Learning Configuration Interaction (MLCI)}.\cite{1808.05787}
 
-The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developped by Huron, Rancurel and Malrieu \cite{Huron_1973}, that iteratively selects determinants by using a perturbative criterion
-
+The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developped by Huron, Rancurel and Malrieu,\cite{Huron_1973} that iteratively selects \emph{external} determinants $\kalpha$ (determinants which are not present in the wavefunction $\Psi$) using a perturbative criterion
 \begin{equation}
-e_\alpha = \frac{\Hij{\Psi}{\alpha}^2}{E^{(n)} - H_{\alpha \alpha}}
+e_\alpha = \frac{\Hij{\Psi}{\alpha}^2}{\Evar - H_{\alpha \alpha}}.
 \end{equation}
-
-with $\Psi$ the variational wavefunction and $\alpha$ the external determinant being considered.
 
 
 
