@@ -81,3 +81,233 @@ Orbitals removed from the calculation, always unoccupied. They are not part of a
                 diagonalize $\hat{H}$ in $\set{D}$ to obtain $\ket{\Psi}$ \;
         }
 \end{algorithm}
+
+
+
+
+\section{excitation driven(?) - (TOTO, INUTILE DE LIRE) a reecrire/tester}
+
+There is a way to find connections using an 'excitation driven' approach, that would be closer to an integral-driven approach. Essentially, it is possible to find all determinants of an arbitrary set that connects by a particular excitation, with a complexity linear (logarithmic???) with $N_{det}$.
+To understand this approach, we will considered bitstrings as single integers of arbitrary size.
+
+SCHEMA
+
+
+\begin{equation}
+\hat T_{a}^{b} D = E
+\end{equation}
+
+\begin{equation}
+ibclr(ibset(I_D, b), a)
+\end{equation}
+ 
+ 
+\begin{equation}
+ibclr(X, a) = X - ISHFT(1,a) ; ibtest(X,a) == TRUE
+\end{equation}
+
+\begin{equation}
+ibset(X, b) = X + ISHFT(1,b) ; ibtest(X,b) == FALSE
+\end{equation}
+
+If $\hat T_{a}^b$ can be applied to $D$, 
+\begin{equation}
+ibtest(I_D,a)\ and\ not\ ibtest(I_D,b)
+\end{equation}
+
+\begin{equation}
+I_E = I_D + I_T ; I_T = ISHFT(1,b) - ISHFT(1,a)
+\end{equation}
+
+As can be seen, it is possible to have an integer representation of an excitation.
+
+\begin{equation}
+TD = E \implies I_E = I_D + I_T ; E \neq 0
+\end{equation}
+
+It must be noted that, if $T$ cannot be applied to $D$, $I_E = I_D + I_T$ will, in most cases, not be a valid reprensentation of a determinant ; that is, $popcnt(I_{E_\alpha}) \neq N_{e,\alpha} \vee popcnt(I_{E_\beta}) \neq N_{e,\beta}$. However, there are rare instances where this isn't true.
+
+EXEMPLE avec 8bit?
+
+Therefore, if $I_E - I_D = I_T$, additional checks are required to establish that $TD = E$.
+
+
+Implementing this in Fortran may not looks straightforward considering in this language, integers are always signed, thus the leftmost bit has a special status. However, it is actually of no relevance except when it comes to sorting, and merely changing the sorting order won't cause any malfunction.
+If "signed" sorting is however desired, it can easily be emulated. Be $X$ and $Y$ two 64-bit integers, $u_comp$ the unsigned comparison operator (the one used by Fortran) and $s_comp$ the signed comparison operator.
+
+\begin{equation}
+s\_comp(X,Y) = u\_comp(IEOR(X,ISHFT(1,63)), IEOR(Y,ISHFT(1,63))
+\end{equation}
+
+
+$IEOR(X,ISHFT(1,63)$ returns $X$ with bit at position 63 flipped. Bit are indexed from 0 so bit at position 63 is the leftmost one for 64-bit integers.
+
+The algorithm for "excitation driven" connection finding is detailed in algorithm XX.
+
+
+\begin{comment}
+
+
+
+
+\begin{algorithm}
+	\caption{base functions}
+		
+	\SetKwFunction{FMain}{AddBigint}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+	\Fn(\tcc*[h]{co}){\FMain{some args}}{
+		$overflow \gets 0$ \;
+		\For{$i=1,N_{int}$}{
+			$may \gets IOR(I[i], J[i])$ \;
+			$will \gets IAND(I[i], J[i])$ \;
+			$R[i] = I[i] + J[i] + overflow$ \;
+			$overflow = ISHFT(IOR(will, IAND(may, not(R[i]))), -63)$ \;
+		}
+	}
+\end{algorithm}
+
+
+\begin{algorithm}
+	\caption{base functions}
+		
+	\SetKwFunction{FMain}{AddBigint}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+	\Fn(\tcc*[h]{co}){\FMain{some args}}{
+		$i \gets 1$ \;
+		$j \gets 1$ \;
+		\While{$i \leq N_i \& j \leq N_j$}{
+			\For{$\sigma = \{\alpha, \beta\}$}{
+			$overflow \gets 0$ \;
+			\For{$k=1,N_{int}$}{
+				$m \gets I_i[k,\sigma] + E[k, \sigma] + overflow$ \;
+				\uIf{$m > J_j[k, \sigma]$}{
+					$j \gets j+1$ \;
+					cycle i,j loop \;
+				}\ElseIf{$m < J_j[k, \sigma]$}{
+					$i \gets i+1$ \;
+					cycle i,j loop \;
+				}
+				$may \gets IOR(I_i[k,\sigma], E[k, \sigma])$ \;
+				$will \gets IAND(I_i[k,\sigma], E[k, \sigma])$ \;
+				$overflow \gets ISHFT(IOR(will, IAND(may, not(m))), -63)$ \;
+			}
+			}
+			\If{$EXC(I_i, J_j) \leq 2$}{
+				$assert(J=EI)$ \;			
+			}
+		}
+	}
+\end{algorithm}
+
+
+
+
+
+\begin{algorithm}
+	\caption{base functions}
+	\label{EXCITATION_DRIVEN}
+	\SetKwFunction{FMain}{EXCITATION\_DRIVEN}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+		\Fn(\tcc*[h]{A VERIFIER}){\FMain{some args}}{
+		$i \gets 1$ \;
+		$j \gets 1$ \;
+		
+
+		\While{$i \leq N_i \& j \leq N_j$}{
+			$aim \gets APPLY(I_i, E, ok)$ \;
+			\If{$not\ ok$}{
+				$i \gets i+1$ \;
+				cycle \;
+			}
+			\While{$j \leq N_j$}{
+				\tcc{find the index of $aim$ in $J$ in the range $[j, N_j]$. If not found, return the lowest $j$ so that $detCmp(aim, J_j) = 1$, or $N_{j}+1$ if $aim > J_{N_j}$.}
+				$j \gets find(aim, J, j, N_j, ok)$ \;
+				\If{$ok$}{
+					found \;
+				}
+				%				$cmp \gets DetCmp(J_j, aim)$ \;
+%				\uIf{$cmp = 1$}{
+%					break \;
+%				}\ElseIf{$cmp = 0$}{
+%					found \;
+%					break \;
+%				}
+%				$j \gets j+1$ \;
+			}
+		}
+
+	}
+	
+			
+	\SetKwFunction{FDetCmp}{DetCmp}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+	\Fn(\tcc*[h]{co}){\FDetCmp{$I$, $J$}}{
+		\For{$\sigma = \{\alpha, \beta\}$}{
+		\For{$k=1,N_{int}$}{
+			\uIf{$I_\sigma[k] > J_\sigma[k]$}{
+				\KwRet{1} \;
+			}\uElseIf{$I_\sigma[k] < J_\sigma[k]$}{
+				\KwRet{-1} \;
+			}
+		}
+		}
+		\KwRet 0 \;
+	}
+\end{algorithm}
+\end{comment}
+
+
+
+\begin{algorithm}
+	\caption{EXCITATION\_DRIVEN}
+	\label{EXCITATION_DRIVEN}
+	\SetKwFunction{FMain}{EXCITATION\_DRIVEN}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+		\Fn(\tcc*[h]{CHECK}){\FMain{$I$, $J$}}{
+		$i \gets 1$ \;
+		$j \gets 1$ \;
+		
+
+		\While{$i \leq N_I \& j \leq N_J$}{
+			$aim \gets APPLY(I_i, E, ok)$ \;
+			$j \gets find\_first\_geq(aim, J, j, N_j, match)$ \;				
+			
+			\If{$not(match) \& j \leq N_j$}{
+				$aim \gets REVERSE\_APPLY(J_j, E, ok)$ \;
+				$i \gets find\_first\_geq(aim, I, i, N_i, match)$ \;
+				
+			}
+			\If{$match$}{
+				\If{$ok$}{
+					assert $J_j = \hat EI_i$ \;	
+				}
+				$i \gets i+1$ \;
+			}
+		}
+	}
+
+	
+	
+			
+	\SetKwFunction{FDetCmp}{DetCmp}
+	\SetKwProg{Fn}{Function}{:}{}
+	
+	\Fn(\tcc*[h]{REPLACE WITH find\_first\_geq}){\FDetCmp{$I$, $J$}}{
+		\For{$\sigma = \{\alpha, \beta\}$}{
+		\For{$k=1,N_{int}$}{
+			\uIf{$I_\sigma[k] > J_\sigma[k]$}{
+				\KwRet{1} \;
+			}\uElseIf{$I_\sigma[k] < J_\sigma[k]$}{
+				\KwRet{-1} \;
+			}
+		}
+		}
+		\KwRet 0 \;
+	}
+\end{algorithm}
+
