@@ -7,7 +7,7 @@
 
 \section{The base algorithm}
 \alert{"pas d'excitation" $\implies \hat T = 1$ ?}\\
-My initial and most important work has been the improvement of the CIPSI algorithm present in the Quantum Package, that had been implemented by my predecessor\cite{giner:tel-01077016}. As was briefely described in the previous chapter, it is an \emph{on the fly} iterative selection algorithm, where determinants are added to the variational wavefunction according to a perturbative criterion. Because it gathers a large amount of information, this CIPSI algorithm has been the basis for other subsequent works presented in the next chapters.
+My initial and most important work has been the improvement of the CIPSI algorithm present in the \QP, that had been implemented by my predecessor\cite{giner:tel-01077016}. As was briefly described in the previous chapter, it is an \emph{on the fly} iterative selection algorithm, where determinants are added to the variational wavefunction according to a perturbative criterion. Because it gathers a large amount of information, this CIPSI algorithm has been the basis for other subsequent works presented in the next chapters.
 
 Iteration $n$ of CIPSI can be described like so:
 
@@ -22,27 +22,27 @@ The variational function $\ket {\Psi^{(n)}}$ is defined over a set of determinan
 \item
 For all $\kalpha \notin \mathcal{D}^{(n)}$, we compute a perturbative contribution
 \begin{equation}
-e_\alpha = \frac{\Hij{\Psi^{(n)}}{\alpha}^2}{E^{(n)} - H_{\alpha \alpha}}
+e_\alpha = \frac{\Hij{\Psi^{(n)}}{\alpha}^2}{E^{(n)} - H_{\alpha \alpha}}.
 \end{equation}
-$E^{(n)}$ is an energy that depends on the pertubation theory being used. In our case, the Epstein-Nesbet energy is used.
+%$E^{(n)}$ is an energy that depends on the pertubation theory being used. In our case, the Epstein-Nesbet energy is used.
+As we use Epstein-Nesbet perturbation theory, $E^{(n)}=\Evar^{(n)}$ is the variational energy of the wave  function at the current iteration (note that another perturbation theory could be used here).
 
 \item
-From $\{ \alpha \}^{(n)}$ the set of all $\kalpha$ considered at current iteration, we extract $\{ \alpha^\star \}^{(n)}$ the set of $\kalpha$ of highest contributions $e_\alpha$, and add them to the wavefunction
+From $\{ \alpha \}^{(n)}$ the set of all $\kalpha$ considered at the current iteration, we extract $\{ \alpha^\star \}^{(n)}$ the set of $\kalpha$ of largest contributions $e_\alpha$, and add them to the wavefunction
 \begin{equation}
 \mathcal{D}^{(n+1)} = \mathcal{D}^{(n)} \cup \{ \alpha^\star \}
 \end{equation}
 
 \item
-$\EFCI$ energy can be estimated
+The FCI energy $\EFCI$ can be estimated
 \begin{equation}
-\EFCI \approx E^{(n)}_0 + E_{PT2}^{(n)}
+\EFCI \approx \Evar^{(n)} + \EPT^{(n)}
+\end{equation}
+with $\Evar^{(n)}$ the variational energy of $\ket {\Psi^{(n)}}$ and
+\begin{equation}
+\EPT^{(n)} = \sum_{\alpha \in \{\alpha \}^{(n)}} e_\alpha
 \end{equation}
 
-
-with $E^{(n)}_0$ the variational energy of $\ket {\Psi^{(n)}}$ and
-\begin{equation}
-E_{PT2}^{(n)} = \sum_{\alpha \in \{\alpha \}^{(n)}} e_\alpha
-\end{equation}
 \item
 Exit on some criterion (number of determinants in the wavefunction, low $\EPT^{(n)}$...).
 
@@ -50,19 +50,20 @@ Exit on some criterion (number of determinants in the wavefunction, low $\EPT^{(
 
 
 
-As can be seen, CIPSI involves creation of an external space and precise knowledge of how it interacts with the internal space. Algorithmically speaking, we will need to enumerate all connections between all internal and all external determinants.
+As can be seen, CIPSI involves the creation of an external space and a precise knowledge of how it interacts with the internal space. Algorithmically speaking, we will need to enumerate all connections between all internal and all external determinants.
 There are, perhaps schematically, two ways to do this :
 
 \begin{itemize}
 \item
 ``external to internal'', looping over all possible $\kalpha$ and computing $e_\alpha$.
 \item
-``internal to external'', looping over all internal determiants $\ket G$ and all double excitations $\hat T$, creating $\kalpha = \hat T \ket G$, then incrementing $\tilde e_{\alpha \notin \Psi}$ by $\Hij{G}{\alpha}$. Finally get $e_{\alpha \notin \Psi} = \frac{\tilde e_\alpha}{E^{(n)} - H_{\alpha \alpha}}$
+``internal to external'', looping over all internal determiants $\ket G$ and all double excitations $\hat T$, creating $\kalpha = \hat T \ket G$, then incrementing $\tilde e_{\alpha \notin \Psi}$ by $\Hij{G}{\alpha}$. Finally get $e_{\alpha \notin \Psi} = \frac{\tilde e_\alpha^2}{E^{(n)} - H_{\alpha \alpha}}$.
 \end{itemize}
 
-While the later approach sounds more efficient, it has the obvious issue of requiring all $e_\alpha$ to be stored in memory simultaneously. Unfortunately this is usually not feasible, since their numbers scales as $\Ndet \times \mathcal{O}_{virt}^2 \times \mathcal{O}_{occ}^2$.
+While the later approach sounds more efficient, it has the obvious issue of requiring all $e_\alpha$ to be stored in memory simultaneously. Unfortunately this is usually not feasible, since their number scales as $\order{\Ndet \times \mathcal{O}_{virt}^2 \times \mathcal{O}_{occ}^2}$.
 While the later approach is simpler, it begs the question of how to generate all possible $\kalpha$ not simultaneously and with no duplicates. 
 
+% J'en suis la
 
 \section{Approximations}
 

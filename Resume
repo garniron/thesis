@@ -1,0 +1,35 @@
+Cette thèse, ayant pour thème les algorithmes de la chimie quantique, s'inscrit
+dans le cade du changement de paradigme observé depuis une douzaines d'années,
+dans lequel les méthodes de calcul séquentielles se doivent d'être
+progressivement remplacées par des méthodes parallèles. En effet,
+l'augmentation de la fréquences des processeurs se heurtant à des barrières
+physiques difficilement franchissables, l'augmentation de la puissance de
+calcul se fait par l'augmentation du nombre d'unités de calcul.  Toutefois, là
+où une augmentation de la fréquence conduisait mécaniquement à une exécution
+plus rapide d'un code, l'augmentation du nombre de cœurs peut se heurter à des
+barrières algorithmiques, qui peuvent nécessiter une adaptation ou un
+changement d'algorithme. Parmi les méthodes développées afin de contourner ce
+problème, on trouve en particulier celles de type Monte-Carlo (stochastiques),
+qui sont intrinsèquement "embarassingly parallel", c'est à dire qu'elles sont
+par construction constituées d'une multitudes de tâches indépendantes, et de ce
+fait particulièrement adaptées aux architectures massivement parallèles. Elles
+ont également l'avantage, dans de nombreux cas, d'être capables de produire un
+résultat approché pour une fraction du coût calculatoire de l'équivalent
+déterministe exacte.
+Lors de cette thèse, des implémentations massivement parallèles de certains
+algorithmes déterministes de chimie quantique ont été réalisées. Ils s'agit des
+algorithmes suivants : CIPSI, diagonalisation de Davidson, calcul de la
+perturbation au second ordre, shifted-Bk, et Coupled Cluster Multi-Références.
+Pour certains, une composante stochastique a été introduite en vue dr'améliorer
+leur efficacité.
+Toutes ces méthodes ont été implémentées sur un modèle de tâches distribuées en
+TCP, où un processus central distribue des tâches par le réseau et collecte les
+résultats. En d'autres termes, des nœuds esclaves peuvent être ajoutés au
+cours du calcul depuis n'importe quelle machine accessible depuis internet.
+Même si cet aspect n'a malheureusement pas pu être implémenté dans le temps
+imparti, cela rend en principe possible le retrait (par exemple en cas de
+panne) d'un nœud esclave au cours du calcul.
+L'efficacité parallèle des algorithmes implémentés dans cette thèse a été étudiée,
+et le programme a pu donner lieu à de nombreuses applications, notamment pour
+permettre d'obtenir des énergies de références pour des systèmes moléculaire
+difficiles.
