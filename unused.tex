@@ -311,3 +311,26 @@ The algorithm for "excitation driven" connection finding is detailed in algorith
 	}
 \end{algorithm}
 
+
+
+\begin{equation}
+(ij \rightarrow kl) = \big [(ij|kl) - (ij|lk) \big ] \times phase(S,ijkl)
+\end{equation}
+
+
+\begin{equation}
+(i\bar j \rightarrow k\bar l) = (i\bar j|k\bar l) \times phase(S,i\bar jk\bar l)
+\end{equation}
+
+
+
+
+\begin{equation}
+phase(S,ijkl) = P^S_i \oplus P^S_j \oplus P^S_{k+1} \oplus P^S_{l+1} \oplus (min(k,l)>max(i,j))
+\end{equation}
+
+
+\begin{equation}
+phase(S,i\bar jk\bar l) = P^S_i \oplus P^S_{\bar j} \oplus P^S_{k+1} \oplus P^S_{\bar l+1}
+\end{equation}
+
