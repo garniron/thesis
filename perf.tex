@@ -188,6 +188,32 @@ $50$ & $   748.99$ \\
 \end{center}
 \end{table}
 
+\begin{figure}[h]
+    \begin{center}
+      \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sel_det}
+      \caption{Wall-clock time of the selection as a function of the number of
+determinants in the wave function.}
+      \label{fig:scaling_sel_ndet}
+    \end{center}
+\end{figure}
+
+\begin{figure}[h]
+    \begin{center}
+      \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sel_node}
+      \caption{Parallel speedup of the CIPSI selection. The reference is a single 36-core node.}
+      \label{fig:speedup_sel_node}
+    \end{center}
+\end{figure}
+
+We have measured the time necessary to realize a selection step, with an
+increasing number of determinants in the variational space.
+Figure~\ref{fig:scaling_sel_node} shows a linear scaling with the number of
+determinants. The parallel speedup was also measured with up to 50 nodes, but
+the maximum speedup value is $\sim 20$ with 40 nodes. This is explained by
+the overall low computational cost of the algorithm (a small wall-clock time), 
+and communications scaling as $\order{\Ndet}$, as the computation.
+
+
 
 
 \section{PT2 calculations}
