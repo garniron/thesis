@@ -15,33 +15,30 @@ At iteration $n$, identifying the most significant $\ket \alpha$ is about buildi
 \paragraph{The selection can take more approximations}
 The computation of the sum has to be more costly than just identifying the largest terms. As was said in chapter~\ref{chap:CIPSI}, the CIPSI algorithm can take pretty drastic approximations for the selection.\cite{Evangelisti_1983}
 	\begin{itemize}
-		\item{$t_g$}
+		\item{$\Ngen$}
 		allows to explore a reduced subset of $\ket \alpha$ in which we are almost sure to find those of interest.
-		\item{$t_s < t_g$}
+		\item{$\Nsel$}
 		allows for a less accurate and less expensive computation of $\epsilon(\alpha)$, which is unlikely to significantly change the identified set.
 	\end{itemize}
-	These approximations do not apply when computing $\EPT$. The very large number of smaller contributions makes them impossible to neglect without introducing a bias, and increasing the $t_g$ and $t_s$ thresholds dramatically increases the computational cost.
+	These approximations do not apply when computing $\EPT$. The very large number of smaller contributions makes them impossible to neglect without introducing a bias, and increasing the $n_g$ and $n_s$ thresholds dramatically increases the computational cost.
 
 
-Unfortunately, a partial computation of $\EPT$ always results in a biased result. Since $\epsilon(\alpha)$ is an energy contribution, it is necessarily negative, and $\EPT$ is a sum of same-sign contributions. Therefore, when $\EPT$ is truncated some correlation energy is missing but there is little clue how much exactly. The $t_g$ and $t_s$ thresholds used in CIPSI can be seen as ways of adjusting this truncation for a given computational cost.
+Unfortunately, a partial computation of $\EPT$ always results in a biased result. Since $\epsilon(\alpha)$ is an energy contribution, it is necessarily negative, and $\EPT$ is a sum of same-sign contributions. Therefore, when $\EPT$ is truncated some correlation energy is missing but there is little clue how much exactly. The $n_g$ and $n_s$ thresholds used in CIPSI can be seen as ways of adjusting this truncation for a given computational cost.
 
-Before the stochastic computation of $\EPT$ was implemented, our best choice was to set low $t_g$ and $t_s$ thresholds while performing the selection, and accept very approximate values for $\EPT$ for intermediate wavefunctions. Then, once the selection was completed, we would raise them just for a final, very expensive ``$\EPT$ only'' iteration. In fact, an exact computation with $t_g=\Ngen$ and $t_s=\Ndet$ was often prohibitively long, so the final $\EPT$ was still biased, and the biases were not well controlled. The effect was particularly important when computing atomization energies, where the $\EPT$ values were much larger on the molecule than on the atoms.
-A practical way to circumvent this problem was already proposed 20 years ago, by giving an extrapolation of $\EPT$ when $t_g$ goes to zero.\cite{Angeli_1997} However, the algorithm we propose here has the advantage of giving an unbiased result within a statistical confidence interval.
+Before the stochastic computation of $\EPT$ was implemented, our best choice was to set low values of $n_g$ and $n_s$ while performing the selection, and accept very approximate values for $\EPT$ for intermediate wavefunctions. Then, once the selection was completed, we would raise them just for a final, very expensive ``$\EPT$ only'' iteration. In fact, an exact computation with $\Ngen=\Nsel=\Ndet$ was often prohibitively long, so the final $\EPT$ was still biased, and the biases were not well controlled. The effect was particularly important when computing atomization energies, where the $\EPT$ values were much more approximate on the molecule than on the atoms.
+A practical way to circumvent this problem was already proposed 20 years ago, by giving an extrapolation of $\EPT$ when $n_g$ goes to one.\cite{Angeli_1997} However, the algorithm we propose here has the advantage of giving an unbiased result within a statistical confidence interval.
 
 \section{Stochastic estimation of $\EPT$}
 
 We eventually solved the previously discussed problem by turning the bias into an error bar. The basic idea is that, instead of trying to get the largest possible chunk of contribution, we can randomly pick $\epsilon(\alpha)$ contributions and make a Monte-Carlo estimate for the sum over all $\ket \alpha$. In this case, to avoid any bias we must set
 \begin{equation}
-t_g = \Ngen \; ; \; t_s = \Ndet.
+n_g = \Ngen \; ; \; n_s = \Ndet.
 \end{equation}
-\alert{Verifier $t_g = 0$}.
-
 Not only the estimate will be unbiased and much closer to the actual $\EPT$, but we will have an estimate for the error. Because $\EPT$ is itself used as an approximation
 \begin{equation}
 \Evar + \EPT \simeq \EFCI
 \end{equation}
 An error significantly smaller than the typical accuracy of $\Evar + \EPT$ \textit{vs} $\EFCI$ is certainly acceptable.
-
 
 The actual Monte-Carlo computation is significantly more convoluted than simply drawing random $\kalpha$.
 
@@ -57,7 +54,7 @@ e_I = \sum_{\alpha \in \mathcal{A}_I} \epsilon(\alpha)
 \end{equation}
 Indeed
 \begin{equation}
-\EPT = \sum_{I} e_I
+\EPT = \sum_{I} e_I.
 \end{equation}
 
 The $e_I$'s are already explicitly computed by our CIPSI implementation, which returns the aggregated values of $\epsilon(\alpha)$ for one task, one task being essentially associated with a generator determinant.
@@ -98,96 +95,117 @@ and the 68.2\% confidence interval (statistical error) is $\bar{F} \pm \sqrt{\fr
 
 The simplest way to compute $\EPT$ with a Monte Carlo algorithm is to express $\EPT$ as
 \begin{equation}
-\EPT = \sum_{\alpha = 1}^{N_\alpha} \frac{ \Hij{\alpha}{\Psi}^2 }{\Evar - H_{\alpha \alpha} } = \sum_{\alpha = 1}^{N_\alpha} \epsilon(\alpha) = \frac{1}{N_\alpha} \sum_{\alpha = 1}^{N_\alpha} p(\alpha) N_\alpha \epsilon(\alpha) = \langle N_\alpha\, \epsilon(\alpha) \rangle,
+\EPT % = \sum_{\alpha = 1}^{N_\alpha} \frac{ \Hij{\alpha}{\Psi}^2 }{\Evar - H_{\alpha \alpha} } 
+= \sum_{\alpha = 1}^{N_\alpha} \epsilon(\alpha)
+= \frac{1}{N_\alpha} \sum_{\alpha = 1}^{N_\alpha} N_\alpha \epsilon(\alpha)
+= \langle N_\alpha\, \epsilon(\alpha) \rangle
+= \sum_{\alpha = 1}^{N_\alpha} p(\alpha) N_\alpha \epsilon(\alpha) 
 \end{equation}
-where $p(\alpha) = 1 / N_\alpha$. This corresponds to a uniform sampling of the $\kalpha$ determinants.
+with $p(\alpha) = 1 / N_\alpha$. This corresponds to a uniform sampling of the $\kalpha$ determinants.
 
-%TODO : J'en suis la
-
-The largest the variance of $s_i$, the slowest the convergence. It is common to use a probability distribution $w$ as a convergence accelerator. We rewrite $S$ as 
-
+The largest the variance of $\epsilon_\alpha$, the slowest the convergence. Changing the sampling can reduce the variance, and one can make the sampling optimal by choosing the probability density
 \begin{equation}
-S = \sum_{i=1}^N {w_i \times \frac{s_i}{w_i}}
+p(\alpha) = \frac{\epsilon(\alpha)}{\mathcal{N}}
 \end{equation}
-
-which can be estimated by drawing sample indices $i$ with a probability of $w_i$ forming the set $\{\mathcal{S'}\}$, the associated sample values being $\frac{s_i}{w_i}$
-
+and computing
 \begin{equation}
-\tilde S' = \frac{1} {\sum_{i \in \{ \mathcal{S'} \} } w_i} \sum_{i \in \{\mathcal{S'}\}} {s_i}
+\EPT = \sum_{\alpha = 1}^{N_\alpha} p(\alpha) \times \mathcal{N}
 \end{equation}
+Unfortunately in this case, the normalization constant $\mathcal{N} =
+\sum_\alpha \epsilon_\alpha = \EPT$, and this would require to know already
+$\EPT$ before doing the calculation.
 
-Not using a partition function is the particular case of drawing $\frac{s_i}{1}$ with a uniform probability ($1$ normalized over the $N$ samples). The variance of this sample space is that of $\frac{s_i}{w_i}$ rather than $s_i$. An ideal partition function $w^\star$ would be so that
-
+Choosing a probability density which can be computed very fast and which
+approximates $\epsilon_\alpha / \EPT$ is expected to improve the convergence.
+If one takes the expression of 
 \begin{equation}
-\frac{s_i}{w^\star_i} = K
+\EPT = \sum_\alpha \sum_I \sum_J c_I c_J \frac{\Hij{I}{\alpha} \Hij{\alpha}{J}}{\Delta E_\alpha}, 
 \end{equation}
+one can remark that
+\begin{enumerate}
+\item As the determinants were selected with a CIPSI criterion, all the $\epsilon_\alpha$ are expected to be small. Hence, the $\Delta E_\alpha$ are all expected to be large enough to consider that $1/\Delta E_\alpha$ is almost constant.
+\item 
+when $I=J$, each contribution to $\epsilon_\alpha$ has a negative sign. But when $I \ne J$, the sum is a sum of terms with alternating signs, almost cancelling each other. Hence, the dominant term of the sum is the diagonal term, proportional to $c_I^2$.
+\item $\sum_\alpha \Hij{I}{\alpha} / \Delta E_\alpha$ can be seen as the correlation
+energy of determinant $\kI$, and this quantity is expected to be of the same order of magnitude among all the determinants.
+\end{enumerate}
+Therefore, we propose to use 
+\begin{equation}
+p(\alpha) = {c_I^2}
+\end{equation}
+as a probability distribution. 
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.49\columnwidth]{figures/pt2/eI}
+		\includegraphics[width=0.49\columnwidth]{figures/pt2/eici2}
+	\end{center}
+		\caption{Contribution $|e_I|$ (left) and $|e_I|/c_I^2$ (right) as a function of the uniform random number $u$ drawn. The green horizontal line is $\EPT$.}
+		\label{fig:ei}
+		$e_I$
+\end{figure}
+Figure~\ref{fig:ei} shows that using $c_I^2$ as a probability density gives less
+fluctuations in the samples.
 
-with $K$ any constant. The variance would be zero, so convergence would be reached after a single sample is drawn. Even an extremely rough approximation of $w^\star$ will improve convergence.
-
-
-
-The representation we are going to use is an horizontal series of $N$ boxes of width $w_i$, containing the sample index $i$.
-The sample index $i$ associated with drawing a random number $u \in [0,1)_\mathbb{R}$ is noted $w[u]$. It is determined using the cumulative partition function $W$
+The representation we are going to use is an horizontal series of $\Ndet$ boxes of width $w_i = c_i^2$, containing the sample index $i$.
+The sample index $i$ associated with drawing a random number $u \in [0,1)_\mathbb{R}$ is noted $w[u]$. It is determined using the cumulative probability distribution function $W$
 \begin{equation}
 W_i = \sum_{k \leq i} w_k
 \end{equation}
 
 \begin{equation}
-w[u] = i \;; W_{i-1} \leq u < W_i
+w[u] = i \; ; \; W_{i-1} \leq u < W_i
 \end{equation}
 
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.9\columnwidth]{figures/pt2/mc_representation}
-		\caption{Schematic representation of a Monte-Carlo computation}
-		\label{fig:mc_representation}
-Values inside the boxes are sample indices. Values outside are probabilities and drawn random numbers.
-
-Drawing the random number $u$ with the partition function $w$ yields sample index $i=w[u]$
+		\includegraphics[width=0.7\columnwidth]{figures/pt2/mc_representation}
 	\end{center}
+	\caption{Schematic representation of a Monte-Carlo computation
+Values inside the boxes are sample indices. Values outside are probabilities and drawn random numbers.
+Drawing the random number $u$ using the cumulative probability density $W$ yields sample index $i=w[u]$.}
+	\label{fig:mc_representation}
 \end{figure}
 
 
 
 
-\section{The sample space}
+\section{Partition of the sample space}
 
-\paragraph{``Sample'' and ``Comb''}
-Because of its original nature, this algorithm casts some ambiguity on what should be refered to as a ``sample''. We are going to estimate a sum of elementary contributions $e_I$, compute and store them individually, and draw them based on a partition function ; therefore they will be refered to as the \emph{samples} and shown as such in the previously introduced representation. But the actual sample values ($s_i$ in the previous section) are sums over several $e_I$, refered to as \emph{combs}.
+\subsection{$C_I^2$ is used as a probability distribution function}
 
 
-\paragraph{$C_I^2$ is used as a partition function}
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.7\columnwidth]{figures/pt2/P_i}
+	\end{center}
+	\caption{Contribution $e_I$ associated with each generator, where the generators are sorted in decreasing order of $c_I^2$. The determinant space is divided into equal probability domains, according do $c_I^2$.}
+	\label{fig:p_i}
+\end{figure}
+
 Generator determinants are sorted with decreasing absolute values of $C_I$.
-	As can be seen in figure \ref{fig:ei}, the values of $e_I$ span many orders of magnitude and decrease rapidly with $I$, in an exponential-looking way. Smoothed values for $e_I$ are shown in figure \ref{fig:p_i}. There are a few reasons for that.
+As can be seen in figure \ref{fig:ei}, the values of $e_I$ span many orders of magnitude and decrease rapidly with $I$, in an exponential-looking way. Smoothed values for $e_I$ are shown in figure \ref{fig:p_i}. There are a few reasons for that.
 \begin{itemize}
 	\item
-	The values for the denominator $\Delta E_\alpha$ used in the computation of $\epsilon(\alpha)$ tend to increase, as variational determinants tend to be more and more excited and to populate higher orbitals ( detailler ? )
+	The values for the denominator $\Delta E_\alpha$ used in the computation of $\epsilon(\alpha)$ tend to increase, as variational determinants tend to be more and more excited and to populate higher orbitals 
 	\item
 	The number of unique $\ket \alpha$ per generator decreases. Indeed, the more ``previous generators'' there is, the likelier it is that a generated $\ket \alpha$ was generated before.
 	\item
-	Unique $\ket \alpha$ are, by construction, disconnected from all previous generators, which mean they connect to a smaller and smaller norm of $\Psi$ ( see figure \ref{fig:a_con} ). 
+	Unique $\ket \alpha$ are, by construction, disconnected from all previous generators, which mean they connect to a smaller and smaller norm of $\Psi$.
 \end{itemize}
 
 
-The last reason given for the decrease of $e_I$ is the most important one, and tells us that the most significant $\ket \alpha$ are those connecting to $\kI$, so the dominant terms of $e_I$ are 
+\subsection{Sample and Comb}
+Because of its original nature, this algorithm casts some ambiguity on what should be referred to as a \emph{sample}. We are going to estimate a sum of elementary contributions $e_I$, compute and store them individually, and draw them based on a probability distribution function ; therefore they will be referred to as the \emph{samples} and shown as such in the previously introduced representation. But the actual sample values are sums over several $e_I$, referred to as \emph{combs}.
 
-\begin{equation}
-\frac{C_I^2 \Hij{I}{\alpha}\Hij{\alpha}{I}}{\Delta E_{\alpha}}
-\end{equation}
+In a comb, the space of generators is split into domains of equal probability (see
+domaine $P_1, \dots P_4$ in figure~\ref{fig:pi}), and
+one sample is drawn in each domain independently. Then, all those $e_I$ are added together to make the contribution of the comb. Because the function $e_I$ decreases smoothly, the contributions of the combs fluctuate less than the individual contributions, and the variance can be further reduced.
 
-Consequently we chose
 
-\begin{equation}
-\tilde w_I = C_I^2
-\end{equation}
 
-as a partition function for $e_I$. This is however not the exact partition function used in the Monte-Carlo scheme. We will later introduce some slight modification to it, for algorithmic reasons.
-As can be seen in figure \ref{fig:eici2}, $\frac{e_I}{C_I^2}$, which is very close to our sample space, indeed has a lower variance than $e_I$ but is still similar in that it spans orders of magnitude and overall decreases.
 
-\section{Partition of the sample space}
-
-\paragraph{Deterministic and stochastic ranges}
+\subsection{Deterministic and stochastic ranges}
 Because $e_I$ decreases rapidly, most of the contribution is contained in the first samples. We can compute the exact energy contribution for the first samples, and only make a stochastic estimation for the sum over the smaller ones. This effectively splits the sample space in two ranges, a deterministic one $\mathcal{D}$, then a stochastic one $\mathcal{S}$ (hence the hybrid characteristic of this method). Being ranges, they are always constituted(?) of contiguous samples. The estimated energy can be written as
 
 \begin{equation}
@@ -205,7 +223,7 @@ $\mathcal{T}_0$ is always computed before any stochastic estimation can take pla
 
 \paragraph{The stochastic range divided in $N_{teeth}$ \emph{teeth}}
 
-Because $\frac{e_I}{w_I}$ overall decreases, a range has a lower variance than the whole set. The stochastic range is split in $N_{teeth}$ ranges refered to as \emph{teeth}, noted $\mathcal{T}_1,\ldots,\mathcal{T}_{N_{teeth}}$ and sharing the same total weight $W_T$
+Because $\frac{e_I}{w_I}$ overall decreases, a range has a lower variance than the whole set. The stochastic range is split in $N_{teeth}$ ranges referred to as \emph{teeth}, noted $\mathcal{T}_1,\ldots,\mathcal{T}_{N_{teeth}}$ and sharing the same total weight $W_T$
 
 \begin{equation}
 \sum_{I \in \mathcal{T}_{t \geq 1}} w_I=W_T
@@ -281,6 +299,7 @@ S_{t} = \sum_{u \in \{\mathcal{U}\}_n} B_{t}(u) \\
 S^{(2)}_{t} = \sum_{u \in \{\mathcal{U}\}_n} B_{t}(u)^2
 \end{align}
 
+\includepdf[page=2-]{article_pt2}
 
 
 
@@ -625,15 +644,6 @@ For a massively parallel implementation, we need to create a task queue. Because
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.9\columnwidth]{figures/pt2/eI}
-		\caption{A REFAIRE NOTATION.............}
-		\label{fig:ei}
-		$e_I$
-	\end{center}
-\end{figure}
-
-\begin{figure}[h!]
-	\begin{center}
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/eici2comb}
 		\caption{A REFAIRE NOTATION.............}
 		\label{fig:eici2comb}
@@ -641,26 +651,6 @@ For a massively parallel implementation, we need to create a task queue. Because
 	\end{center}
 \end{figure}
 
-
-
-\begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=0.9\columnwidth]{figures/pt2/eici2}
-		\caption{A REFAIRE NOTATION.............}
-		\label{fig:eici2}
-		$e_I$
-	\end{center}
-\end{figure}
-
-
-\begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=0.9\columnwidth]{figures/pt2/P_i}
-		\caption{A REFAIRE NOTATION.............}
-		\label{fig:p_i}
-		$e_I$
-	\end{center}
-\end{figure}
 
 
 
