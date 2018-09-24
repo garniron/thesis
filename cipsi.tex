@@ -16,11 +16,12 @@ Iteration $n$ of CIPSI can be described like so:
 
 The variational function $\ket {\Psi^{(n)}}$ is defined over a set of determinants $  \mathcal{D}^{(n)}$ in which we diagonalize $\widehat{H}$
 \begin{equation}
-\ket{\Psi^{(n)}} = \sum_{S \in \mathcal{D}^{(n)}} c_S^{(n)} \ket{S}
+\ket{\Psi^{(n)}} = \sum_{S \in \mathcal{D}^{(n)}} c_S^{(n)} \ket{S}.
 \end{equation}
+The determinants in $\mathcal{D}^{(n)}$ will be characterized as \emph{internal}.
 
 \item
-For all $\kalpha \notin \mathcal{D}^{(n)}$, we compute a perturbative contribution
+For all \emph{external} determinants $\kalpha \notin \mathcal{D}^{(n)}$, we compute a perturbative contribution
 \begin{equation}
 e_\alpha = \frac{\Hij{\Psi^{(n)}}{\alpha}^2}{E^{(n)} - H_{\alpha \alpha}}.
 \end{equation}
@@ -44,7 +45,7 @@ with $\Evar^{(n)}$ the variational energy of $\ket {\Psi^{(n)}}$ and
 \end{equation}
 
 \item
-Exit on some criterion (number of determinants in the wavefunction, low $\EPT^{(n)}$...).
+Go to iteration $n+1$, or exit on some criterion (number of determinants in the wavefunction, low $\EPT^{(n)}$, \dots).
 
 \end{enumerate}
 
@@ -57,35 +58,41 @@ There are, perhaps schematically, two ways to do this :
 \item
 ``external to internal'', looping over all possible $\kalpha$ and computing $e_\alpha$.
 \item
-``internal to external'', looping over all internal determiants $\ket G$ and all double excitations $\hat T$, creating $\kalpha = \hat T \ket G$, then incrementing $\tilde e_{\alpha \notin \Psi}$ by $\Hij{G}{\alpha}$. Finally get $e_{\alpha \notin \Psi} = \frac{\tilde e_\alpha^2}{E^{(n)} - H_{\alpha \alpha}}$.
+``internal to external'', looping over all internal determinants $\ket G$ and all double excitations $\hat T$, creating $\kalpha = \hat T \ket G$, then incrementing $\tilde e_{\alpha \notin \Psi}$ by $\Hij{G}{\alpha}$. Finally get $e_{\alpha \notin \Psi} = \frac{\tilde e_\alpha^2}{E^{(n)} - H_{\alpha \alpha}}$.
 \end{itemize}
 
-While the later approach sounds more efficient, it has the obvious issue of requiring all $e_\alpha$ to be stored in memory simultaneously. Unfortunately this is usually not feasible, since their number scales as $\order{\Ndet \times \mathcal{O}_{virt}^2 \times \mathcal{O}_{occ}^2}$.
-While the later approach is simpler, it begs the question of how to generate all possible $\kalpha$ not simultaneously and with no duplicates. 
+While the second approach sounds more efficient, it has the obvious issue of requiring all $e_\alpha$ to be stored in memory simultaneously. Unfortunately this is usually not feasible, since their number scales as $\order{\Ndet \times \mathcal{O}_{virt}^2 \times \mathcal{O}_{occ}^2}$.
+While the first approach is simpler, it begs the question of how to generate all possible $\kalpha$ not simultaneously and with no duplicates. 
 
-% J'en suis la
 
 \section{Approximations}
 
-Given the qualitative nature of this procedure - each $\kalpha$ is either selected or not - it is possible to save a vast amount of computation with minimal approximations. These were present in the original version and retained in the new one.
+Given the qualitative nature of this procedure --- each $\kalpha$ is either selected or not --- it is possible to save a vast amount of computation with minimal approximations. These were present in the original implementation and retained in the new one.
 
-Both the former and newer version of CIPSI generates the external space in a ``internal to external'' way, that is, by applying double excitations to determinants of $\Psi$ ; a determinant used for creation of $\kalpha$ is refered to as a \emph{generator}.
+Both the former and newer version of CIPSI generates the external space in a ``internal to external'' way, that is, by applying double excitations to determinants of $\Psi$ ; a determinant used for creation of $\kalpha$ is referred to as a \emph{generator}.
 
-Ensuring each $\epsilon(\alpha)$ is considered only once, is done by checking all newly generated $\kalpha$ for connection (at most double excitation) to a determinant $\ket {D_i}$ previously used as a generator ; if a connection $\hat T$ is found, it means $\kalpha$ was already generated from $\ket {D_i}$ as $\hat T \ket {D_i}$.
+Ensuring each $\epsilon(\alpha)$ is considered only once, is done by checking all newly generated $\kalpha$ for connection (at most double excitation) to a determinant $\ket {D_I}$ previously used as a generator ; if a connection $\hat T$ is found, it means $\kalpha$ was already generated from $\ket {D_I}$ as $\hat T \ket {D_I}$.
 
 Determinants $D_I \in \Psi$ are sorted by decreasing absolute values of $c_I$. Two approximations are made :
 
 \begin{itemize}
 \item
-It is very unlikely $\ket \alpha$ will be selected if it's not connected to any $\ket D$ with a large coefficient. Therefore, it is possible to only consider the determinants of larger coefficent as generators. We choose a number of generators $N_{gen}$ and only consider $D_{I \leq N_{gen}}$ as generators. In practice we set $N_{gen}$ according to a norm threshold $n_g$, picking $N_{gen}$ as the highest value fullfilling
+The first approximation restricts the set $\{\kalpha\}$. It is very unlikely $\ket \alpha$ will be selected if it's not connected to any $\ket D$ with a large coefficient. Therefore, it is possible to only consider the determinants of larger coefficient as generators. We choose a number of generators $\Ngen$ and only consider $D_{I \leq \Ngen}$ as generators. In practice we set $\Ngen$ according to a norm threshold $n_g$, picking $\Ngen$ as the highest value fulfilling
 \begin{equation}
-\sum_{I \leq N_{gen}} c_I^2 \leq n_g
+\sum_{I \leq \Ngen} c_I^2 \leq n_g.
 \end{equation}
-\item
-Connections to $\ket {D_i}$ of small coefficient can be neglected. We do not need accurate values for $\epsilon(\alpha)$, small differences are unlikely to substantially change the subset of the largest ones. This approximation is achieved in a similar way by defining $N_{sel} \leq \Ngen$ a number of so-called \emph{selectors}, and approximating
+Typically, $n_g=0.99$ is used in the calculations.
+\item The second approximation reduces the cost of $\epsilon_\alpha$.
+We do not need extremely accurate values for $\epsilon(\alpha)$ as small differences are unlikely to substantially change the subset of the largest ones.
+So  connections to $\ket {D_I}$ with small coefficients $c_I$ can be neglected
+in the expression of $\epsilon_\alpha$.
+This approximation is achieved in a similar way by defining a threshold $n_s$
+on the norm of the wavefunction, and $N_{sel} \geq \Ngen$ a number of so-called
+\emph{selectors}. We approximate approximating
 \begin{equation}
-  \Hij{\Psi}{\alpha} \approx \sum_{i \leq N_{sel}} c_i \Hij{D_i}{\alpha}
+  \Hij{\Psi}{\alpha} \approx \sum_{i \leq N_{sel}} c_i \Hij{D_i}{\alpha}.
 \end{equation}
+Typically, we use $n_s = 0.999$.
 
 \end{itemize}
 
@@ -103,7 +110,8 @@ Note that generator determinants are a subset of selector determinants. See figu
 
 
 
-\section{Original version}
+% J'en suis la
+\section{Initial implementation}
 
 Originally, the Quantum Package generated the external space in a ``internal to external'' way, by applying all excitations on all determinants ; but the computation of $e_\alpha$ itself was a straighforward ``external to internal'', computing a single $e_\alpha$ at a time, avoiding the problem of keeping track of all $\epsilon(\alpha)$ simultaneously.
 
@@ -111,7 +119,7 @@ While this version is obsolete, since it is relatively simple, it is briefly pre
 
 \begin{enumerate}
 \item
-$\ket {D_i}$ are sorted with decreasing ${c_I}^2$.
+$\ket {D_I}$ are sorted with decreasing ${c_I}^2$.
 \item
 loop over generators $\ket G$
 \item
@@ -130,8 +138,8 @@ compute $\epsilon(\alpha) = \frac{\langle \alpha|H|\Psi\rangle^2}{\Delta E_\alph
 	\caption{Simple CIPSI}
 		\KwData{ $\ket \Psi$ }
 		\KwResult{ Guarantees all $\epsilon(\alpha)$ are computed a single time. }
-		sort $\ket {D_i}$ by decreasing ${c_i}^2$ \;
-		\For {$g \gets 1, N_{gen}$}{
+		sort $\ket {D_I}$ by decreasing ${c_i}^2$ \;
+		\For {$g \gets 1, \Ngen$}{
 		\tcc{apply all double excitations on $|D_g \rangle$}
 		\ForAll {$\ket \alpha$ ; $\langle D_g | H | \alpha \rangle \neq 0$}{
 		\For{$p \gets 1, g-1$}{
@@ -140,12 +148,12 @@ compute $\epsilon(\alpha) = \frac{\langle \alpha|H|\Psi\rangle^2}{\Delta E_\alph
 				discard this $\ket \alpha$ \;
 			}
 		}
-		search $\kalpha$ in $D_{N_{sel}+1},\ldots,D_{\Ndet}$ \;
+		search $\kalpha$ in $D_{\Nsel+1},\ldots,D_{\Ndet}$ \;
 		\If{$\kalpha$ was found}{
 			discard this $\kalpha$
 		}
 		 $R \gets 0$ \;
-		\For{$s \gets g, N_{sel}$}{
+		\For{$s \gets g, \Nsel$}{
 			$R \gets R + \Hij{D_s}{\alpha}$ \;	
 			\tcc{$\ket {D_s}==\kalpha$ is noticed when computing $\Hij{D_s}{\alpha}$}	
 			\If{$\ket {D_s}==\kalpha$}{
@@ -179,13 +187,13 @@ Determinants contained in the $\ket {G_{pq}}$ batch , some of which may be uniqu
 a^\dagger_r a^\dagger_s a_p a_q  \ket G = \Gpqrs
 \end{equation}
 
-Essentially, determinants in a batch are defined by their difference to $G_{pq}$. Therefore, comparing $G_{pq}$ to a selector determinant, allows to systematically determine which $\kalpha$ of the batch it will connect to, and by what excitation. Additional filtering mechanisms are set up to avoid considering selectors that do not interact with the current batch. Those will be explicited later on. Comparing figures \ref{fig:old_cipsi} and \ref{fig:new_cipsi} hints the differences between the former an newer algorithm. Note that because generators are a subset of selectors, a particular $\kalpha$ generated from $\ket {D_g}$ must be checked for connection to all selectors either as generators or as selectors.
+Essentially, determinants in a batch are defined by their difference to $G_{pq}$. Therefore, comparing $G_{pq}$ to\ selctor determinant, allows to systematically determine which $\kalpha$ of the batch it will connect to, and by what excitation. Additional filtering mechanisms are set up to avoid consideri\nselctors that do not interact with the current batch. Those will be made explicit later on. Comparing figures \ref{fig:old_cipsi} and \ref{fig:new_cipsi} hints the differences between the former an newer algorithm. Note that because generators are a subset \oselctors, a particular $\kalpha$ generated from $\ket {D_g}$ must be checked for connection to a\lselctors either as generators or \aselctors.
 
 \begin{itemize}
 \item
 $\ket {D_{I \in [1,g-1]}}$ as generators to check if $\kalpha$ has been previously generated
 \item
-$\ket {D_{I \in [g,N_{sel}]}}$ as selectors to compute $\Hij{\Psi}{\alpha}$
+$\ket {D_{I \in [g,\Nsel]}}$ as selectors to compute $\Hij{\Psi}{\alpha}$
 \end{itemize}
 
 
@@ -703,7 +711,7 @@ This fragmentation scheme can be shown in a simpler and more general way when us
 		get task $(i, s \in [0,F_i-1])$ from the queue \;
 		$E \gets 0$ \;
 		$c \gets 0$ \;
-		$G \gets D_i$ \;
+		$G \gets D_I$ \;
 		\tcc{duplicated computation if $F_i > 1$}
 		filtering for $G$ (see figure \ref{fig:selection}) \;
 		\ForEach{$G_p$}{
