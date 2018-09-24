@@ -349,7 +349,7 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
 \begin{algorithm}
         \caption{Unfiltered CIPSI selection}
         \label{alg:selection}
-        \tcc{For simplification purpose, a determinants $\ket S$ is here represented by a single bitstring $S_\sigma$ where each bit is associated with a spinorbital}
+        \tcc{For simplification purpose, a determinants $\ket S$ is here represented by a single bitstring $S_\sigma$ of size $2N_{orb}$ where each bit is associated with a spinorbital}
         \KwData{ $\ket \Psi$, i.e. $\{D_I\}$ the set of internal determinants and their coefficients $c_I$}
         \KwData{ $\Ngen$, $\Nsel$, $\Ndet$}
         %\KwResult{ $\Hij{\alpha}{\Psi} \neq 0$ has been computed exactly once for any $\alpha \notin \Psi$ }
@@ -366,9 +366,9 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
                 
                 \For{$s \gets 1,N_{det}$}{
                         $\ket S \gets \ket {D_s}$ \; 
-                        $c \gets S_\sigma \wedge \neg [G_{pq}]_\sigma$ \; %c \gets \IAND{S}{\NOT{G_{pq}}}$ \; 
-                        \If{$||c|| = 2$}{
-                                $e \gets \mathtt{LIST\_FROM\_BITSTRING}(c)$\; 
+                        $C_\sigma \gets S_\sigma \wedge \neg [G_{pq}]_\sigma$ \; %c \gets \IAND{S}{\NOT{G_{pq}}}$ \; 
+                        \If{$||C_\sigma|| = 2$}{
+                                $e \gets \mathtt{LIST\_FROM\_BITSTRING}(C_\sigma)$\; 
                                 $B_{e[1], e[2]} \gets \mathtt{TRUE}$\;                     
                         }                       
                         \tcc{see table \ref{tab:systematic_determination} for $(r,s)$ pairs}
