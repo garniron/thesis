@@ -102,28 +102,8 @@ Applying an impossible excitation by addition, will usually lead to an abnormal 
 This algorithm works when bitstrings are considered binary integers of arbitrary size. However, no assumption is made about the operators involved in the diamond, they can be any combination of creations and anihilations. Therefore, for simplification purpose, it is possible to consider all 64-bit integers independently, each one carrying a subset of the operators involved in the excitation.
 
 Essentially, adding and substracting can be done integer-wise, without the added complexity of carry and overflow.
-Because integers of lower $\Nint$ vary more, they should be given more weight when comparing(???)
+Because integers of lower $\Nint$ vary more, they should be given more weight when comparing, as this will allow to shorcut the loop over $\Nint$ faster.
 
-
-
-\begin{algorithm}
-	\KwData{$I[]$ the children of $\kI$}
-	
-	\ForAll{$\ket {G_p}$ singly ionized generator}{
-		\tcc{indexed by 1 hole and 2 particles}
-		$c_\alpha[h,p1,p2]$ \;
-		\tcc{$\kalpha = a_h a^\dagger_{p1} a^\dagger_{p2} \ket {G_p}$}
-		\ForAll{$I,I[r],I[s]$}{
-			$\alpha \gets I \oplus I[r] \oplus I[s]$ \;
-			\tcc{check $||\alpha||$ ?}
-			$x \gets G_p \oplus \alpha$ \;
-			\If{$||x|| = 3$}{
-				$(h,p1,p2) \gets \texttt{BITSTRING\_TO\_LIST}(x)$ \;
-				increment $c_\alpha[h,p1,p2]$ \;		
-			}
-		}
-	}
-\end{algorithm}
 
 \end{document}
 

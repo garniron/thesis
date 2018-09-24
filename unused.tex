@@ -334,3 +334,23 @@ phase(S,ijkl) = P^S_i \oplus P^S_j \oplus P^S_{k+1} \oplus P^S_{l+1} \oplus (min
 phase(S,i\bar jk\bar l) = P^S_i \oplus P^S_{\bar j} \oplus P^S_{k+1} \oplus P^S_{\bar l+1}
 \end{equation}
 
+
+
+\begin{algorithm}
+	\KwData{$I[]$ the children of $\kI$}
+	
+	\ForAll{$\ket {G_p}$ singly ionized generator}{
+		\tcc{indexed by 1 hole and 2 particles}
+		$c_\alpha[h,p1,p2]$ \;
+		\tcc{$\kalpha = a_h a^\dagger_{p1} a^\dagger_{p2} \ket {G_p}$}
+		\ForAll{$I,I[r],I[s]$}{
+			$\alpha \gets I \oplus I[r] \oplus I[s]$ \;
+			\tcc{check $||\alpha||$ ?}
+			$x \gets G_p \oplus \alpha$ \;
+			\If{$||x|| = 3$}{
+				$(h,p1,p2) \gets \texttt{BITSTRING\_TO\_LIST}(x)$ \;
+				increment $c_\alpha[h,p1,p2]$ \;		
+			}
+		}
+	}
+\end{algorithm}
