@@ -141,7 +141,6 @@ as a probability distribution.
 	\end{center}
 		\caption{Contribution $|e_I|$ (left) and $|e_I|/c_I^2$ (right) as a function of the uniform random number $u$ drawn. The green horizontal line is $\EPT$.}
 		\label{fig:ei}
-		$e_I$
 \end{figure}
 Figure~\ref{fig:ei} shows that using $c_I^2$ as a probability density gives less
 fluctuations in the samples.
@@ -171,8 +170,7 @@ Drawing the random number $u$ using the cumulative probability density $W$ yield
 
 
 \section{Partition of the sample space}
-
-\subsection{$C_I^2$ is used as a probability distribution function}
+\label{sec:partition}
 
 
 \begin{figure}[h!]
@@ -195,72 +193,70 @@ As can be seen in figure \ref{fig:ei}, the values of $e_I$ span many orders of m
 \end{itemize}
 
 
-\subsection{Sample and Comb}
 Because of its original nature, this algorithm casts some ambiguity on what should be referred to as a \emph{sample}. We are going to estimate a sum of elementary contributions $e_I$, compute and store them individually, and draw them based on a probability distribution function ; therefore they will be referred to as the \emph{samples} and shown as such in the previously introduced representation. But the actual sample values are sums over several $e_I$, referred to as \emph{combs}.
 
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.7\columnwidth]{figures/pt2/comb_variance}
+	\end{center}
+		\caption{Comb contributions as a function of the uniform random number $u$ drawn. The green horizontal line is $\EPT$.}
+		\label{fig:ei_comb}
+\end{figure}
 In a comb, the space of generators is split into domains of equal probability (see
-domaine $P_1, \dots P_4$ in figure~\ref{fig:pi}), and
-one sample is drawn in each domain independently. Then, all those $e_I$ are added together to make the contribution of the comb. Because the function $e_I$ decreases smoothly, the contributions of the combs fluctuate less than the individual contributions, and the variance can be further reduced.
+domains $P_1, \dots P_4$ in figure~\ref{fig:p_i}), and
+one sample is drawn in each domain independently. Then, all those $e_I$ are added together to make the contribution of the comb. Because the function $e_I$ decreases smoothly, the contributions of the combs fluctuate less than the individual contributions, and the variance can be further reduced, as shown in figure~\ref{fig:ei_comb}.
 
 
 
 
-\subsection{Deterministic and stochastic ranges}
-Because $e_I$ decreases rapidly, most of the contribution is contained in the first samples. We can compute the exact energy contribution for the first samples, and only make a stochastic estimation for the sum over the smaller ones. This effectively splits the sample space in two ranges, a deterministic one $\mathcal{D}$, then a stochastic one $\mathcal{S}$ (hence the hybrid characteristic of this method). Being ranges, they are always constituted(?) of contiguous samples. The estimated energy can be written as
-
+\section{Deterministic and stochastic ranges}
+Because $e_I$ decreases rapidly, most of the contribution is contained in the first samples. We can compute the exact energy contribution for the first samples, and only make a stochastic estimation for the sum over the smaller ones. This effectively splits the sample space in two ranges, a deterministic one $\mathcal{D}$, then a stochastic one $\mathcal{S}$ (hence the hybrid characteristic of this method). Being ranges, they are always made of contiguous samples. The estimated energy can be written as
 \begin{equation}
 \EPT = E_D + E_S
 \end{equation}
-
-with $E_D$ the exact energy for $\mathcal{D}$, and $E_S$ the estimated energy for $\mathcal{S}$. The error bar only applies to $E_S$, which typically much smaller than $E_D$.
-The number of samples in $\mathcal{D}$ increases during the computation. Initially, $\mathcal{D}=\mathcal{T}_0$ the initial deterministic range, whose total weight is $u_0$.
-
+with $E_D$ the exact energy for $\mathcal{D}$, and $E_S$ the estimated energy for $\mathcal{S}$. The error bar only applies to $E_S$, which is typically much smaller than $E_D$.
+The number of samples in $\mathcal{D}$ increases during the computation. Initially, $\mathcal{D}=\mathcal{T}_0$ the initial deterministic range, for which the total weight is $u_0$.
 \begin{equation}
 \sum_{I \in \mathcal{T}_0} w_I=u_0
 \end{equation}
-
 $\mathcal{T}_0$ is always computed before any stochastic estimation can take place.
 
-\paragraph{The stochastic range divided in $N_{teeth}$ \emph{teeth}}
+\subsection{Division of the stochastic domain in $N_{teeth}$ \emph{teeth}}
 
-Because $\frac{e_I}{w_I}$ overall decreases, a range has a lower variance than the whole set. The stochastic range is split in $N_{teeth}$ ranges referred to as \emph{teeth}, noted $\mathcal{T}_1,\ldots,\mathcal{T}_{N_{teeth}}$ and sharing the same total weight $W_T$
-
+As seen in section~\ref{sec:partition}, because $\frac{e_I}{w_I}$ mainly decreases, a range has a lower variance than the whole domain. The stochastic domain is split in $N_{teeth}$ ranges referred to as \emph{teeth}, noted $\mathcal{T}_1,\ldots,\mathcal{T}_{N_{teeth}}$ and sharing the same total weight $W_T$
 \begin{equation}
-\sum_{I \in \mathcal{T}_{t \geq 1}} w_I=W_T
+\sum_{I \in \mathcal{T}_{t \geq 1}} w_I=W_T.
 \end{equation}
 
-The partition of the sample space is as follow
-
  \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.9\columnwidth]{figures/pt2/teeth}
-		\caption{Partitioning of the sample space}
-		\label{fig:teeth}
-		The sample space is partitioned in so-called \emph{teeth} from $\mathcal{T}_0$ to $\mathcal{T}_{N_{teeth}}$, $\mathcal{T}_0$ of total weight $u_0$, the others of total weight $W_T$
+	\includegraphics[width=0.9\columnwidth]{figures/pt2/teeth}
 	\end{center}
+	\caption{Partitioning of the sample space.
+		The sample space is partitioned in so-called \emph{teeth} from $\mathcal{T}_0$ to $\mathcal{T}_{N_{teeth}}$, $\mathcal{T}_0$ of total weight $u_0$, the others of total weight $W_T$}
+	\label{fig:teeth}
 \end{figure}
 
-Intuitively, the sum of ``one large, one medium and one small'' has a lower variance than the sum of ``three at random''. Instead of drawing individual indices, we are going to draw ``combs'' of indices, which are correlated sets of 1 index from each tooth. The associated sample value is the sum of $\frac{e_I}{w_I}$ over those indices that are in $\mathcal{S}$.  The expression for this sample value is given as equation \ref{eq:combvalue}
+The partition of the sample space is as shown in figure~\ref{fig:teeth}.
+Intuitively, the sum of ``one large, one medium and one small'' has a lower variance than the sum of ``three at random''. Instead of drawing individual indices, we are going to draw ``combs'' of indices, which are correlated sets of 1 index from each tooth. The associated sample value is the sum of $\frac{e_I}{w_I}$ over those indices that are in $\mathcal{S}$.  The expression for this sample value is given below in equation \ref{eq:combvalue}.
 
-\paragraph{fully-computed teeth are moved to the deterministic range}
+\subsection{Fully-computed teeth are moved to the deterministic range}
 
 Remembering we store $e_I$, given the first tooth $\mathcal{T}_t$ that contains an unknown $e_I$, the deterministic range extends to all $\mathcal{T}_{p<t}$. This makes $\mathcal{T}_t$ the first non-deterministic tooth.
-The number or samples in the deterministic range, therefore, is function of a tooth index $t$, and noted $n_0(t)$, as seen in figure XXXXXXXXXX.
+The number or samples in the deterministic range, therefore, is function of a tooth index $t$, and noted $n_0(t)$, as seen in figure \alert{XXXXXXXXXX}.
 
-
- \begin{figure}[h!]
+\begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/tooththreshold}
-		\caption{Boundaries of a teeth index-wise and probability-wise}
-		\label{fig:teeth}
-		
 	\end{center}
+	\caption{Boundaries of a teeth index-wise and probability-wise}
+	\label{fig:boundaries_teeth}
 \end{figure}
 
 
 \paragraph{comb values}
 
-We can write the expression of $B_t(u)$ the sample value associated with a comb. It is function of a randow number $u \in [0,1)_\mathbb{R}$ and $t$ the index of the first non-deterministic tooth.
+We can write the expression of $B_t(u)$ the sample value associated with a comb. It is function of a random number $u \in [0,1)_\mathbb{R}$ and $t$ the index of the first non-deterministic tooth.
 
 \begin{align}
 \label{eq:combvalue}
@@ -274,13 +270,13 @@ An illustrative exemple is given as figure \ref{fig:toothindet}.
  \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/toothindet}
-		\caption{illustrative example of drawing two combs $a$ and $b$}
-		\label{fig:toothindet}
+	\end{center}
+		\caption{illustrative example of drawing two combs $a$ and $b$
 		Samples that have been computed are greyed. $\mathcal{T}_1$ has been fully computed and is thus moved to $\mathcal{D}$. The first non-deterministic/not fully-computed tooth is $\mathcal{T}_2$.
 		$$E_D = e_1 + e_2 + e_3$$
 		$$B_2(a) = \frac{e_6}{w_6} + \frac{e_{10}}{w_{10}}\;;B_2(b) = \frac{e_6}{w_6} + \frac{e_{11}}{w_{11}}$$
-		$$E_S = (B_2(a)+B_2(b)) \times W_T \alert {A CHECK}$$
-	\end{center}
+		$$E_S = (B_2(a)+B_2(b)) \times W_T \alert {A CHECK}$$}
+		\label{fig:toothindet}
 \end{figure}
 
 \paragraph{estimation of $\EPT$}
@@ -299,21 +295,22 @@ S_{t} = \sum_{u \in \{\mathcal{U}\}_n} B_{t}(u) \\
 S^{(2)}_{t} = \sum_{u \in \{\mathcal{U}\}_n} B_{t}(u)^2
 \end{align}
 
+\clearpage
 \includepdf[page=2-]{article_pt2}
 
 
-
+% J'en suis la
 \section{Technical considerations}
 
 
-\subsection*{why an initial deterministic part?}
+\subsection*{Why an initial deterministic part?}
 
 The initial deterministic range $\mathcal{T}_0$ is a technical constraint.
 
 Because samples are sorted with decreasing $\tilde w_i$, it is guaranteed that $|\mathcal{T}_{t>t'}| \geq |\mathcal{T}_{t'>0}|-1$.
 For each comb, we draw a sample in each teeth, and when a tooth is entirely computed, it is moved to $\mathcal{D}$. Thus, it is immediately obvious that a tooth containing a single sample makes no sense, as it will be instantly moved to $\mathcal{D}$ ; it can as well be considered part of it. Because it's usually accepted (???) that it takes at least 30 samples to estimate a variance, we can go further and consider that a tooth with fewer than 5-10 samples will be moved to $\mathcal{D}$ too fast to be of real interest. Because the first $C_I^2$ are usually disproportionately large, it's not possible to fit that many in a tooth. Therefore they are immediately considered part of $\mathcal{D}$.
 
-\subsection*{desired \textit{vs} effective partition function}
+\subsection*{Desired \textit{vs} effective partition function}
 
 We have defined all teeth (except the special $\mathcal{T}_0$) as sharing the same total weight $W_T$. This is a constraint on our desired partition function $\tilde w_I = C_I^2$ that will lead to the effective partition function $w_I$.
 
