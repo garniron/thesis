@@ -10,8 +10,8 @@
 #    	gnuplot home:     http://www.gnuplot.info
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
-set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
-set output 'figures/perf/cn3_energy.pdf'
+# set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
+# set output 'figures/perf/cn3_energy.pdf'
 unset clip points
 set clip one
 unset clip two
@@ -41,7 +41,7 @@ set tics back
 set grid nopolar
 set grid xtics nomxtics ytics nomytics noztics nomztics \
  nox2tics nomx2tics noy2tics nomy2tics nocbtics nomcbtics
-set grid layerdefault   lt 0 linewidth 0.500,  lt 0 linewidth 0.500
+set grid layerdefault   lt 0 linewidth 0.500 dashtype solid,  lt 0 linewidth 0.500 dashtype solid
 set raxis
 set style parallel front  lt black linewidth 2.000 dashtype solid
 set key title "" center
@@ -129,7 +129,7 @@ set xlabel "Number of determinants"
 set xlabel  font "" textcolor lt -1 norotate
 set x2label "" 
 set x2label  font "" textcolor lt -1 norotate
-set xrange [ 1000.00 : 1.00000e+07 ] noreverse nowriteback
+set xrange [ * : * ] noreverse nowriteback
 set x2range [ * : * ] noreverse nowriteback
 set ylabel "Energy (au)" 
 set ylabel  font "" textcolor lt -1 rotate by -270
@@ -171,5 +171,5 @@ set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap 
 GNUTERM = "qt"
 x = 0.0
 ## Last datafile plotted: "data_pt2"
-plot 'data_pt2' index 2 u 1:6 w lp title 'Excited state, E_{var}', 'data_pt2' index 2 u 1:2 w lp title 'Ground state, E_{var}', 'data_pt2' index 2 u 1:7:8 w errorlines title 'Excited state, E_{var}+PT2', 'data_pt2' index 2 u 1:3:4 w errorlines title 'Ground state, E_{var}+PT2'
+plot 'data_pt2' index 3 u 1:5 w lp title 'Excited state, E_{var}', 'data_pt2' index 3 u 1:2 w lp title 'Ground state, E_{var}', 'data_pt2' index 3 u 1:6:7 w errorlines title 'Excited state, E_{var}+PT2', 'data_pt2' index 3 u 1:3:4 w errorlines title 'Ground state, E_{var}+PT2'
 #    EOF
