@@ -17,10 +17,10 @@ ont également l'avantage, dans de nombreux cas, d'être capables de produire un
 résultat approché pour une fraction du coût calculatoire de l'équivalent
 déterministe exacte.
 Lors de cette thèse, des implémentations massivement parallèles de certains
-algorithmes déterministes de chimie quantique ont été réalisées. Ils s'agit des
+algorithmes déterministes de chimie quantique ont été réalisées. Il s'agit des
 algorithmes suivants : CIPSI, diagonalisation de Davidson, calcul de la
 perturbation au second ordre, shifted-Bk, et Coupled Cluster Multi-Références.
-Pour certains, une composante stochastique a été introduite en vue dr'améliorer
+Pour certains, une composante stochastique a été introduite en vue d'améliorer
 leur efficacité.
 Toutes ces méthodes ont été implémentées sur un modèle de tâches distribuées en
 TCP, où un processus central distribue des tâches par le réseau et collecte les

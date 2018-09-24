@@ -16,7 +16,7 @@ Iteration $n$ of CIPSI can be described like so:
 
 The variational function $\ket {\Psi^{(n)}}$ is defined over a set of determinants $  \mathcal{D}^{(n)}$ in which we diagonalize $\widehat{H}$
 \begin{equation}
-\ket{\Psi^{(n)}} = \sum_{S \in \mathcal{D}^{(n)}} c_S^{(n)} \ket{S}.
+\ket{\Psi^{(n)}} = \sum_{S \in \mathcal{D}^{(n)}} c_S^{(n)} \ket{S}
 \end{equation}
 The determinants in $\mathcal{D}^{(n)}$ will be characterized as \emph{internal}.
 
@@ -58,10 +58,10 @@ There are, perhaps schematically, two ways to do this :
 \item
 ``external to internal'', looping over all possible $\kalpha$ and computing $e_\alpha$.
 \item
-``internal to external'', looping over all internal determinants $\ket G$ and all double excitations $\hat T$, creating $\kalpha = \hat T \ket G$, then incrementing $\tilde e_{\alpha \notin \Psi}$ by $\Hij{G}{\alpha}$. Finally get $e_{\alpha \notin \Psi} = \frac{\tilde e_\alpha^2}{E^{(n)} - H_{\alpha \alpha}}$.
+``internal to external'', looping over all internal determinants $\ket G$ and all single or double excitations $\hat T$, creating $\kalpha = \hat T \ket G$, then incrementing $\tilde e_{\alpha \notin \Psi}$ by $\Hij{G}{\alpha}$. Finally get $e_{\alpha \notin \Psi} = \frac{\tilde e_\alpha^2}{E^{(n)} - H_{\alpha \alpha}}$.
 \end{itemize}
 
-While the second approach sounds more efficient, it has the obvious issue of requiring all $e_\alpha$ to be stored in memory simultaneously. Unfortunately this is usually not feasible, since their number scales as $\order{\Ndet \times \mathcal{O}_{virt}^2 \times \mathcal{O}_{occ}^2}$.
+While the second approach sounds more efficient, it has the obvious issue of requiring all $e_\alpha$ to be stored in memory simultaneously. Unfortunately this is usually not feasible, since their number scales as $\order{\Ndet \times \mathcal{O}_{virt}^2 \times \mathcal{O}_{occ}^2}$, with $\mathcal{O}_{occ}$ the number of occupied orbitals and $\mathcal{O}_{virt}$ the number of virtual orbitals.
 While the first approach is simpler, it begs the question of how to generate all possible $\kalpha$ not simultaneously and with no duplicates. 
 
 
@@ -69,7 +69,7 @@ While the first approach is simpler, it begs the question of how to generate all
 
 Given the qualitative nature of this procedure --- each $\kalpha$ is either selected or not --- it is possible to save a vast amount of computation with minimal approximations. These were present in the original implementation and retained in the new one.
 
-Both the former and newer version of CIPSI generates the external space in a ``internal to external'' way, that is, by applying double excitations to determinants of $\Psi$ ; a determinant used for creation of $\kalpha$ is referred to as a \emph{generator}.
+Both the former and newer version of CIPSI generate the external space in an ``internal to external'' way, that is, by applying single and double excitations to internal determinants ; a determinant used for creation of $\kalpha$ is referred to as a \emph{generator}.
 
 Ensuring each $\epsilon(\alpha)$ is considered only once, is done by checking all newly generated $\kalpha$ for connection (at most double excitation) to a determinant $\ket {D_I}$ previously used as a generator ; if a connection $\hat T$ is found, it means $\kalpha$ was already generated from $\ket {D_I}$ as $\hat T \ket {D_I}$.
 
@@ -88,7 +88,7 @@ So  connections to $\ket {D_I}$ with small coefficients $c_I$ can be neglected
 in the expression of $\epsilon_\alpha$.
 This approximation is achieved in a similar way by defining a threshold $n_s$
 on the norm of the wavefunction, and $N_{sel} \geq \Ngen$ a number of so-called
-\emph{selectors}. We approximate approximating
+\emph{selectors}. We \alert{approximate approximating - correct mais bizarre?}
 \begin{equation}
   \Hij{\Psi}{\alpha} \approx \sum_{i \leq N_{sel}} c_i \Hij{D_i}{\alpha}.
 \end{equation}
@@ -100,12 +100,12 @@ Note that generator determinants are a subset of selector determinants. See figu
 
 
 \begin{figure}[h!]
-	
-	\begin{center}
-		\includegraphics[width=0.4\columnwidth]{figures/cipsi/selexemple2}
-		\caption{$\ket \Psi$ is sorted by decreasing ${c_I}^2$; generator and selector subsets are defined.}
-		\label{fig:generators_selectors}
-	\end{center}
+        
+        \begin{center}
+                \includegraphics[width=0.4\columnwidth]{figures/cipsi/selexemple2}
+                \caption{$\ket \Psi$ is sorted by decreasing ${c_I}^2$; generator and selector subsets are defined.}
+                \label{fig:generators_selectors}
+        \end{center}
 \end{figure}
 
 
@@ -133,37 +133,37 @@ compute $\epsilon(\alpha) = \frac{\langle \alpha|H|\Psi\rangle^2}{\Delta E_\alph
 
 
 \begin{algorithm}
-	\label{alg:cipsi_manu}
-	\caption{Simple CIPSI}
-		\KwData{ $\ket \Psi$ }
-		\KwResult{ Guarantees all $\epsilon(\alpha)$ are computed a single time. }
-		sort $\ket {D_I}$ by decreasing ${c_i}^2$ \;
-		\For {$g \gets 1, \Ngen$}{
-		\tcc{apply all double excitations on $|D_g \rangle$}
-		\ForAll {$\ket \alpha$ ; $\langle D_g | H | \alpha \rangle \neq 0$}{
-		\For{$p \gets 1, g-1$}{
-			\If{$\ket \alpha$ connected to $\ket {D_p}$}{
-				\tcc{$\ket \alpha$ has already been generated by $\ket {D_p}$}
-				discard this $\ket \alpha$ \;
-			}
-		}
-		search $\kalpha$ in $D_{\Nsel+1},\ldots,D_{\Ndet}$ \;
-		\If{$\kalpha$ was found}{
-			discard this $\kalpha$
-		}
-		 $R \gets 0$ \;
-		\For{$s \gets g, \Nsel$}{
-			$R \gets R + \Hij{D_s}{\alpha}$ \;	
-			\tcc{$\ket {D_s}==\kalpha$ is noticed when computing $\Hij{D_s}{\alpha}$}	
-			\If{$\ket {D_s}==\kalpha$}{
-				\tcc{$\kalpha \in \Psi$}
-				discard this $\ket \alpha$
-			}
-		}
-		 assert $R == \Hij{\Psi}{\alpha}$  \;
-		 $\epsilon(\alpha) = \frac{R^2}{\Delta E_\alpha}$
-		}
-		}
+        \label{alg:cipsi_manu}
+        \caption{Simple CIPSI}
+                \KwData{ $\ket \Psi$ }
+                \KwResult{ Guarantees all $\epsilon(\alpha)$ are computed a single time. }
+                sort $\ket {D_I}$ by decreasing ${c_i}^2$ \;
+                \For {$g \gets 1, \Ngen$}{
+                \tcc{apply all double excitations on $|D_g \rangle$}
+                \ForAll {$\ket \alpha$ ; $\langle D_g | H | \alpha \rangle \neq 0$}{
+                \For{$p \gets 1, g-1$}{
+                        \If{$\ket \alpha$ connected to $\ket {D_p}$}{
+                                \tcc{$\ket \alpha$ has already been generated by $\ket {D_p}$}
+                                discard this $\ket \alpha$ \;
+                        }
+                }
+                search $\kalpha$ in $D_{\Nsel+1},\ldots,D_{\Ndet}$ \;
+                \If{$\kalpha$ was found}{
+                        discard this $\kalpha$
+                }
+                 $R \gets 0$ \;
+                \For{$s \gets g, \Nsel$}{
+                        $R \gets R + \Hij{D_s}{\alpha}$ \;      
+                        \tcc{$\ket {D_s}==\kalpha$ is noticed when computing $\Hij{D_s}{\alpha}$}       
+                        \If{$\ket {D_s}==\kalpha$}{
+                                \tcc{$\kalpha \in \Psi$}
+                                discard this $\ket \alpha$
+                        }
+                }
+                 assert $R == \Hij{\Psi}{\alpha}$  \;
+                 $\epsilon(\alpha) = \frac{R^2}{\Delta E_\alpha}$
+                }
+                }
 \end{algorithm}
 
 
@@ -177,7 +177,7 @@ A batch is defined by a doubly ionized generator
 \end{equation}
 Determinants contained in the $\ket {G_{pq}}$ batch , some of which may be unique $\kalpha$, can be systematically defined by two indices $r$ and $s$ with
 \begin{equation}
-a^\dagger_r a^\dagger_s a_p a_q  \ket G = \Gpqrs.
+\ordering a^\dagger_r a^\dagger_s a_p a_q  \ket G = \Gpqrs.
 \end{equation}
 
 Essentially, determinants in a batch are defined by their difference to $G_{pq}$. Therefore, comparing $G_{pq}$ to a selector determinant allows to systematically determine which $\kalpha$ of the batch it will connect to, and by what excitation. Additional filtering mechanisms are set up to avoid considering selectors that do not interact with the current batch. Those will be made explicit later on. Comparing figures \ref{fig:old_cipsi} and \ref{fig:new_cipsi} hints the differences between the former an newer algorithm. Note that because generators are a subset of selectors, a particular $\kalpha$ generated from $\ket {D_g}$ must be checked for connection to all selectors either as generators or as selectors.
@@ -191,21 +191,21 @@ $\ket {D_{g \le I \le \Nsel}}$ as selectors to compute $\Hij{\Psi}{\alpha}$.
 
 
 \begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=0.7\columnwidth]{figures/cipsi/old_cipsi}
-		\caption{Original CIPSI schematic representation, some details omitted}
-		\label{fig:old_cipsi}
-	\end{center}
+        \begin{center}
+                \includegraphics[width=0.7\columnwidth]{figures/cipsi/old_cipsi}
+                \caption{Original CIPSI schematic representation, some details omitted}
+                \label{fig:old_cipsi}
+        \end{center}
 \end{figure}
 
 
 \begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=0.8\columnwidth]{figures/cipsi/new_cipsi}
-		\caption{New CIPSI schematic representation, some details omitted. 
+        \begin{center}
+                \includegraphics[width=0.8\columnwidth]{figures/cipsi/new_cipsi}
+                \caption{New CIPSI schematic representation, some details omitted. 
 \alert{ Fautes d'orthographe : pas de 'e' a implicitly et 'external determiNants'} }
-		\label{fig:new_cipsi}
-	\end{center}
+                \label{fig:new_cipsi}
+        \end{center}
 \end{figure}
 
 \subsection{Unfiltered algorithm}
@@ -221,7 +221,7 @@ Iterate over $\ket {D_{I \leq \Ngen}} = \ket G$
 \item
 Iterate over all possible $a_p a_q \ket G = \ket {G_{pq}}$
 \item
-allocate a zero-initialized matrix $P(G_{pq})$ indexed by $r$ and $s$. Each cell is associated with $a^\dagger_r a^\dagger_s a_p a_q  \ket G = \Gpqrs$. Some cells will be tagged as not being associated with a unique $\ket \alpha$, but either one of :
+allocate a zero-initialized matrix $P(G_{pq})$ indexed by $r$ and $s$. Each cell is associated with $\ordering a^\dagger_r a^\dagger_s a_p a_q  \ket G = \Gpqrs$. Some cells will be tagged as not being associated with a unique $\ket \alpha$, but either one of :
 \begin{itemize}
 \item
 a determinant already present in the wavefunction
@@ -238,11 +238,11 @@ Apply single excitation tagging. This ensures single excitations of $\ket G$ are
 \item
 \textbf{selector loop}: Iterate over $\ket {D_J} = \ket S$ 
 \item
-Determine whether there is a pair $(r,s)$ so that $\ket S = \ket {G_{pq}^{rs}}$. In other words, look for $\ket S$ in the current batch. If there is, tag the corresponding cell.
+Determine whether there is a pair $(r,s)$ so that $\ket S = \ket {G_{pq}^{rs}}$. In other words, look for $\ket S$ in the current batch. If there is, tag the corresponding cell, $\Gpqrs \in \Psi$.
 \item
 Determine $(r,s)$ pairs so that $\ket {G_{pq}^{rs}}$ is connected to $\ket S$
 \item
-If $J<I$, tag the corresponding cells ; $\ket {G_{pq}^{rs}}$ has already been generated by $\ket {D_J}$.
+If $J<I$, tag the corresponding cells ; $\Gpqrs$ has already been generated by $\ket {D_J}$.
 \item
 If $J \geq I$, increment all untagged $P_{rs}(G_{pq})$ matrix elements by $\Delta P_{rs}(G_{pq}) = c_J \Hij{S}{G^{rs}_{pq}}$. Note that the excitation operator $\hat{T}$ so that $\ket S=\hat{T} \Gpqrs$ can be determined at the same time as the $(r,s)$ pair.
 \item
@@ -260,7 +260,7 @@ End of other loops. All $\epsilon(\alpha)$ have been computed a single time.
 \subsection{Tagging}
 
 Tagged cells are simply tracked using a boolean matrix $B(G_{pq})$ with $B_{rs}(G_{pq})$ keeping the tag status of $\Gpqrs$, defaulting to $\mathtt{FALSE}$. 
-In some cases, full columns/rows are to be tagged. Keeping track of fully tagged rows or column is useful for performance purpose, as it allows to shortcut some loops. A simple way to do it, is to add an extra column and an extra row of index $0$ to $B$ ; $B_{0s}(G_{pq}) = \mathtt{TRUE}\,$ means the whole $s$ column is tagged, $B_{r0}(G_{pq}) = \mathtt{TRUE}\,$ means the whole $s$ line is tagged. The actual tag status of $\Gpqrs$ becomes
+In some cases, full columns/rows are to be tagged. Keeping track of fully tagged rows or columns is useful for performance purpose, as it allows to shortcut some loops. A simple way to do it, is to add an extra column and an extra row of index $0$ to $B$ ; $B_{0s}(G_{pq}) = \mathtt{TRUE}\,$ means the whole $s$ column is tagged, $B_{r0}(G_{pq}) = \mathtt{TRUE}\,$ means the whole $s$ line is tagged. The actual tag status of $\Gpqrs$ becomes
 \begin{equation}
 B_{r0}(G_{pq}) \vee B_{0s}(G_{pq}) \vee B_{rs}(G_{pq}).
 \end{equation}
@@ -270,13 +270,13 @@ While significant, this optimization is fairly simple to set up and use, so for 
 \subsection{Single excitation tagging}
 \label{single_tagging}
 The algorithm is designed to generate all $\ket {G_{pq}^{rs}}$, which are doubly excited from $\ket G$. The singly excited determinants are not explicitly generated, but are formally present as $\ket{G_{pq}^{ps}}$.
-The issue is that $\ket{G_{pq}^{ps}}$ refers to the same determinant $a^\dagger_s a_q \ket{G}$ regardless of $p$, and the base algorithm only tags a $\kalpha$ as duplicate if it has a previous generator $\ket K$, i.e. if
+The issue is that $\ket{G_{pq}^{ps}}$ refers to the same determinant $\ordering a^\dagger_s a_q \ket{G}$ regardless of $p$, and the base algorithm only tags a $\kalpha$ as duplicate if it has a previous generator $\ket K$, i.e. if
 \begin{equation}
-\ket {G_{pq}^{rs}} = \ket {K_{p'q'}^{r's'}} \; ; \; K = D_{I'<I}
+\ket {G_{pq}^{rs}} = \ket {K_{p'q'}^{r's'}} \; ; \; \ket G = \ket {D_I} \; ; \; \ket K = \ket {D_{I'<I}}
 \end{equation}
 As can be seen this doesn't cover the case where $G_{pq}^{ps} = G_{p'q}^{p's}$.
 
-To solve this issue, we default to tag $G_{pq}^{ps}$, which prevents generating single excitations, and selectively untag in certain cases:
+To solve this issue, we default to tag $\ket {G_{pq}^{ps}}$, which prevents generating single excitations, and selectively untag in certain cases:
 
 
 \begin{itemize}
@@ -285,11 +285,11 @@ To solve this issue, we default to tag $G_{pq}^{ps}$, which prevents generating 
 
 Pick $P$ any ``non-frozen'' $\beta$ spinorbital occupied in $\ket G$. We arbitrarily choose the lowest one. Untag $\ket {G_{Pq}^{Ps}}$ whenever $q,s$ are of $\alpha$ spin. Any $\alpha$-spin single excitation $q \rightarrow  s$ is untagged a single time.
 
-$P$ cannot be chosen of $\alpha$ spin, because single excitations $P \rightarrow  s$ and $q \rightarrow  P$ would be formally present as $G_{PP}^{Ps}$ and $G_{Pq}^{PP}$, which aren't ever generated, since for obvious reasons the base algorithm never considers $G_{qq}$ or $G_{pq}^{rr}$.
+$P$ cannot be chosen of $\alpha$ spin, because single excitations $P \rightarrow  s$ and $q \rightarrow  P$ would be formally present as $G_{PP}^{Ps}$ and $G_{Pq}^{PP}$, which aren't ever generated, since for obvious reasons the base algorithm never considers batch $\ket {G_{qq}}$ or determinant $\ket {G_{pq}^{rr}}$.
 \item
 \textbf{Untagging all $\beta$-spin single excitations of $\ket G$ exactly once}:
 
-Pick $Q$ any $\alpha$ spinorbital occupied in $\ket G$. Again we arbitrarily choose the lowest one. If $p,q$ are of $\beta$ spin, untag $G_{pQ}^{rQ}$. Any $\beta$-spin single excitation $p \rightarrow  r$ is untagged a single time.
+Pick $Q$ any ``non-frozen'' $\alpha$ spinorbital occupied in $\ket G$. Again we arbitrarily choose the lowest one. If $p,q$ are of $\beta$ spin, untag $G_{pQ}^{rQ}$. Any $\beta$-spin single excitation $p \rightarrow  r$ is untagged a single time.
 \end{itemize}
 
 
@@ -325,109 +325,111 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
 \end{itemize}
 
 \begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=0.70\columnwidth]{figures/cipsi/systematic_determination}
-		\caption{Illustrative example of systematic determination of connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ have the same spin.
+        \begin{center}
+                \includegraphics[width=0.70\columnwidth]{figures/cipsi/systematic_determination}
+                \caption{Illustrative example of systematic determination of connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ have the same spin.
 \alert{ Tu as mis une fleche au lieu d'un chapeau sur T}
 }
-		\label{fig:systematic_determination}
-	\end{center}
-	
+                \label{fig:systematic_determination}
+        \end{center}
+        
 \end{figure}
 
 
 \begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=0.90\columnwidth]{figures/cipsi/systematic_determination2}	
-		\caption{Illustrative example of systematic determination of connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ are of different spin.
+        \begin{center}
+                \includegraphics[width=0.90\columnwidth]{figures/cipsi/systematic_determination2}       
+                \caption{Illustrative example of systematic determination of connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ are of different spin.
 \alert{ Tu as mis une fleche au lieu d'un chapeau sur T}
 }
-		\label{fig:systematic_determination2}
-	\end{center}
+                \label{fig:systematic_determination2}
+        \end{center}
 \end{figure}
 
 
 
 \begin{algorithm}
-	\caption{Simplified CIPSI selection}
-	\label{alg:selection}
-	\KwData{ $\Psi$, $\{D_g\}$}
-	\KwResult{ $\Hij{\alpha}{\Psi} \neq 0$ has been computed exactly once for any $\alpha \notin \Psi$ }
-		
-	\For{$g \gets 1, t_g$}{
-	$M_\alpha \gets$ any $\alpha$ spinorbital occupied in $D_g$ \;
-	$M_\beta \gets$ any $\beta$ spinorbital occupied in $D_g$ \;
-	\ForAll{$(p,q) \; ; \; a_p a_q D_g \neq 0$}{
-		$G_{pq} \gets a_p a_q D_g$\;
-		$B$ a boolean matrix size $N_{sorb} \times N_{sorb}$ \;
-		$P$ a real matrix size $N_{sorb} \times N_{sorb}$ \;
-		\tcc{$B$ and $P$ are indexed by spinrobitals}
-		$B_{*,*} \gets \mathtt{TRUE}$ \;
-		$P_{*,*} \gets 0$ \;
-		\ForAll{$r \; ; \; (a_r G_{pq} = 0) \vee (r=p) \vee (r=q)$}{
-          		$B_{*r} \gets \mathtt{FALSE}$ \;
-          		$B_{r*} \gets \mathtt{FALSE}$ \;
-		}
-		
-		\tcc{unblocks some elements of $B$ so that single excitations are properly generated}
-		$\mathtt{UNBLOCK\_SINGLE}(B, p, q, M_\alpha, M_\beta)$
-			
-				
-			
-		\For{$p \gets 1,N_{det}$}{
-			$S \gets D_p$ \; 
-			$c \gets \IAND{S}{\NOT{G_{pq}}}$ \; 
-			\If{$\POPCNT{c} = 2$}{
-				$e \gets \mathtt{LIST\_FROM\_BITSTRING}(c)$\; 
-				$B_{e_1, e_2} \gets \mathtt{FALSE}$\; 			  
-			}			
-			\tcc{see table \ref{tab:systematic_determination}
+        \caption{Simplified CIPSI selection}
+        \label{alg:selection}
+        \KwData{ $\Psi$, $\{D_g\}$}
+        \KwResult{ $\Hij{\alpha}{\Psi} \neq 0$ has been computed exactly once for any $\alpha \notin \Psi$ }
+                
+        \For{$g \gets 1, t_g$}{
+        $M_\alpha \gets$ any $\alpha$ spinorbital occupied in $D_g$ \;
+        $M_\beta \gets$ any $\beta$ spinorbital occupied in $D_g$ \;
+        \ForAll{$(p,q) \; ; \; a_p a_q D_g \neq 0$}{
+                $G_{pq} \gets a_p a_q D_g$\;
+                $B$ a boolean matrix size $N_{sorb} \times N_{sorb}$ \;
+                $P$ a real matrix size $N_{sorb} \times N_{sorb}$ \;
+                \tcc{$B$ and $P$ are indexed by spinrobitals}
+                $B_{*,*} \gets \mathtt{TRUE}$ \;
+                $P_{*,*} \gets 0$ \;
+                \ForAll{$r \; ; \; (a_r G_{pq} = 0) \vee (r=p) \vee (r=q)$}{
+                        $B_{*r} \gets \mathtt{FALSE}$ \;
+                        $B_{r*} \gets \mathtt{FALSE}$ \;
+                }
+                
+                \tcc{unblocks some elements of $B$ so that single excitations are properly generated}
+                $\mathtt{UNBLOCK\_SINGLE}(B, p, q, M_\alpha, M_\beta)$
+                        
+                                
+                        
+                \For{$p \gets 1,N_{det}$}{
+                        $S \gets D_p$ \; 
+                        $c \gets \IAND{S}{\NOT{G_{pq}}}$ \; 
+                        \If{$\POPCNT{c} = 2$}{
+                                $e \gets \mathtt{LIST\_FROM\_BITSTRING}(c)$\; 
+                                $B_{e_1, e_2} \gets \mathtt{FALSE}$\;                     
+                        }                       
+                        \tcc{see table \ref{tab:systematic_determination}
 for the loops}
-			\uIf{$p < g$}{
-				    
-				\ForAll{$(\tilde r, \tilde s) \; ; \; \Hij{S}{G_{pq}^{\tilde r \tilde s} \neq 0}$}{
-				  $B_{rs} \gets \mathtt{FALSE}$ \;
-				} 
-			}
-			\uElseIf{$p \leq t_s$}{
-				\ForAll{$(\tilde r, \tilde s) \; ; \; \Hij{S}{G_{pq}^{\tilde r \tilde s} \neq 0} ; B_{rs}$ }{
-				  $P_{rs} \gets P_{rs} + \Hij{a^\dagger_r a^\dagger_s G_{pq}}{S}$ \;
-				}
-			}
-		}
-		\ForAll{$(r,s) \; ; \; B_{rs}$}{
-		  assert $P_{rs} = \Hij{a_r^\dagger a_s^\dagger G_{pq}}{\Psi}$ \;
-		}
-	}
-	} 
+                        \uIf{$p < g$}{
+                                    
+                                \ForAll{$(\tilde r, \tilde s) \; ; \; \Hij{S}{G_{pq}^{\tilde r \tilde s} \neq 0}$}{
+                                  $B_{rs} \gets \mathtt{FALSE}$ \;
+                                } 
+                        }
+                        \uElseIf{$p \leq t_s$}{
+                                \ForAll{$(\tilde r, \tilde s) \; ; \; \Hij{S}{G_{pq}^{\tilde r \tilde s} \neq 0} ; B_{rs}$ }{
+                                  $P_{rs} \gets P_{rs} + \Hij{a^\dagger_r a^\dagger_s G_{pq}}{S}$ \;
+                                }
+                        }
+                }
+                \ForAll{$(r,s) \; ; \; B_{rs}$}{
+                  assert $P_{rs} = \Hij{a_r^\dagger a_s^\dagger G_{pq}}{\Psi}$ \;
+                }
+        }
+        } 
 \end{algorithm}
 
 
 \begin{algorithm}
-	\caption{UNBLOCK\_SINGLE}
-	\label{alg:unblock_single}
-%		\KwData{ -------}
-%		\KwResult{ -------------}
-		
+        \caption{UNBLOCK\_SINGLE}
+        \label{alg:unblock_single}
+%               \KwData{ -------}
+%               \KwResult{ -------------}
+                
 
-		\If{($q$ is of spin $\alpha$) and ($p=M_\beta$)}{
-				$B_{*,M_\beta} \gets \mathtt{TRUE}$ \;	
-				$B_{M_\beta,*} \gets \mathtt{TRUE}$ \;		
-			}
-			
-			\If{($p$ is of spin $\beta$) and ($q=M_\alpha$)}{
-				$B_{*,M_\alpha} \gets \mathtt{TRUE}$ \;	
-				$B_{M_\alpha,*} \gets \mathtt{TRUE}$ \;		
-			}
+                \If{($q$ is of spin $\alpha$) and ($p=M_\beta$)}{
+                                $B_{*,M_\beta} \gets \mathtt{TRUE}$ \;  
+                                $B_{M_\beta,*} \gets \mathtt{TRUE}$ \;          
+                        }
+                        
+                        \If{($p$ is of spin $\beta$) and ($q=M_\alpha$)}{
+                                $B_{*,M_\alpha} \gets \mathtt{TRUE}$ \; 
+                                $B_{M_\alpha,*} \gets \mathtt{TRUE}$ \;         
+                        }
 \end{algorithm}
 
 
 
 \section{Filtering and loop breaking}
-A large amount of processing power is lost, because every doubly ionized generator $\ket {G_{pq}}$ is compared to all selector determinants. In the vast majority of cases, it will show no connection can be made and the selector will be ignored. Thus, it's interesting to filter selector determinants in the outermost loops (generator loop, and loop over first ionization).
 
-This can be done using the distance $f_A^B = f_B^A$, defined as the minimal number of operations --- moving, annihilating or creating an electron --- that must be done to go from a determinant $\ket A$ to a determinant $\ket B$ with respectively $n_a$ and $n_b$ electrons.
-Alternatively, it can be defined as the maximum between the number of annihilations and the number of creations required to go from $\ket A$ to $\ket B$.
+A large amount of processing power is lost, because every doubly ionized generator $\ket {G_{pq}}$ is compared to all internal determinants. In the vast majority of cases, it will show no connection can be made and the internal determinant will be ignored. Thus, it's interesting to filter internal determinants in more outer loops (loop over generators, and loop over first ionization).
+
+This can be done using the distance $f_A^B = f_B^A$, defined as the minimal number of operations --- moving, annihilating or creating an electron --- that must be done to go from a determinant $\ket A$ to a determinant $\pm \ket B$ (i.e. ignoring the phase factor) with respectively $n_a$ and $n_b$ electrons.
+Alternatively, it can be defined as the maximum between the number of annihilations and the number of creations required to go from $\ket A$ to $\pm \ket B$.
+
 
 
 
@@ -456,7 +458,7 @@ Based on this, a filtering system can be set up, as shown on figure \ref{fig:sel
 
 \paragraph{Internal determinants' path}
  
-A triple loop is shown, for each some filtering taking place.
+A triple loop is shown
 
 \begin{enumerate}
 \item
@@ -467,7 +469,7 @@ over $p$ a first ionization ($G_p$)
 over $q$ a second ionization ($G_{pq}$), i.e. over batches.
 \end{enumerate}
 
-The determinants of the internal space ``flow'' from the top $\Psi$ into intermediate lists, that are fully constructed before proceeding to the inner loop, as they will be the sources of determinants for that inner loop.
+In each one some filtering takes place. The determinants of the internal space ``flow'' from the top $\Psi$ into intermediate lists, that are fully constructed before proceeding to the inner loop, as they will be the sources of determinants for that inner loop.
 A selector can only be duplicated at the node denoted by a black circle. Otherwise, it follows a single path, always going for the horizontal path if it satisfies the associated condition.
 If it doesn't satisfy the condition of an horizontal path, and there is no further vertical path, it is discarded.
 
@@ -492,7 +494,7 @@ There are roughly a left and a right path. The reason for this, is that we want 
 \begin{enumerate}
 
 \item
-The first loop separates internal determinants in two disjoint categories.
+The first loop discards some internal determinants and separates the others in two disjoint categories.
 
 
 \begin{itemize}
@@ -502,7 +504,9 @@ Right branch : determinants that may contribute to some $P(G_{pq})$ matrix or ta
 \item
 Left branch : Determinants that aren't selectors, but are equal to some $\ket {G_{pq}^{rs}}$. Being non-selectors, those will not be checked for connection to any $\ket {G_{pq}^{rs}}$, but they still must be checked for equality in order to ensure $\ket {G_{pq}^{rs}} \notin \Psi$
 \end{itemize}
+
 This step sets the algorithm's complexity with respect to $\Ndet$. Naively, $f_G^S$ must be computed for all pairs of internal determinants, setting the complexity to $\mathcal{O}(\Ndet^2)$. Our current implementation quickly discards $f_G^S > 4$ by using a method similar to what we used in the Davidson diagonalization, adapted to seek excitation degrees $\leq 4$ rather than $\leq 2$. The key difference is that, for parallelism reasons, the research has to be done individually for each generator ; that is, we are not computing all $f_G^S$ at the same time, but all $f_G^S$ for a given $G$ separately. The procedure is shown as algorithm \ref{alg:generators_filtering}. The complexity is reduced from $\mathcal{O}(\Ndet^2)$ to $\mathcal{O}(\Ndet^{3/2})$ ; each generator has its $\sigma \in \{\alpha, \beta\}$ part compared to all elements of $\{U_\sigma\}$.
+
 
 \begin{algorithm}
 \caption{Filtering internal determinants for generator $\ket G$}
@@ -511,13 +515,13 @@ This step sets the algorithm's complexity with respect to $\Ndet$. Naively, $f_G
 \For{$S_\alpha \in \{U_\alpha \}$}{
 $a \gets \text{EXC\_DEGREE}(S_\alpha, G_\alpha)$ \;
 \If{$a \leq 2$}{
-	find $S_\beta \in \{U_\beta\}_{G_\alpha}$ so that $\text{EXC\_DEG}(S_\beta, G_\beta) + a \leq 4$  \; 
+        find $S_\beta \in \{U_\beta\}_{G_\alpha}$ so that $\text{EXC\_DEGREE}(S_\beta, G_\beta) + a \leq 4$  \; 
 }
 }
 \For{$S_\beta \in \{U_\beta \}$}{
 $b \gets \text{EXC\_DEGREE}(S_\beta, G_\beta)$ \;
 \If{$b \leq 1$}{
-	find $S_\alpha \in \{U_\alpha\}_{G_\beta}$ so that $\text{EXC\_DEG}(S_\alpha, G_\alpha) + b \leq 4$  \; 
+        find $S_\alpha \in \{U_\alpha\}_{G_\beta}$ so that $\text{EXC\_DEGREE}(S_\alpha, G_\alpha) + b \leq 4$  \; 
 }
 }
 \end{algorithm}
@@ -531,11 +535,11 @@ This most likely is of little interest, depending on the implementation.
 But because it's the actual implementation and because it reduces the number of operations, it is still shown.
 
 \item
-The second loop separates again in two categories.
+The second loop discards some internal determinants and separates the other in two categories, this time not disjoint.
 
 \begin{itemize}
 \item
-Right branch : Determinants that may contribute to some $\Hij{\Psi}{\alpha}$. Selectors that may connect to some $\ket {G_{pq}^{rs}}$
+Right branch : Determinants that may contribute to some $\Hij{\Psi}{\alpha}$, i.e. selectors that may connect to some $\ket {G_{pq}^{rs}}$
 \item
 Left branch : Determinants that may cause tagging or reach \emph{drop}, i.e. any determinant that may be equal to some $\ket {G_{pq}^{rs}}$, and previous generators that may connect to some $\ket {G_{pq}^{rs}}$. Those can be found in both lists built in the first loop.
 \end{itemize}
@@ -547,7 +551,7 @@ Indeed, $a_{p'} \ket K = a_p \ket G$ with $\ket K$ a previous generator translat
 \begin{equation}
 (f^K_{G_{p}} = 1) \wedge past
 \end{equation}
-The right list of the first loop contains all determinants so that
+The right list of the first loop contains all internal determinants so that
 \begin{equation}
 (f^K_G \leq 4) \wedge selector
 \end{equation}
@@ -559,10 +563,11 @@ f^K_{G_{p}} = 1 \implies f^K_G \leq 1 \implies f^K_G \leq 4
 past \implies selector
 \end{equation}
 \begin{equation}
-(f^S_{G_{p}} = 1) \wedge past \implies (f^K_G \leq 4) \wedge selector
+(f^K_{G_{p}} = 1) \wedge past \implies (f^K_G \leq 4) \wedge selector
 \end{equation}
 
-Any determinant able to reach \emph{drop} $G_P$ will be present in the right list of the first loop. Trivially, from there it will always take the left path because $f^K_{G_{p}} = 1 \implies f^K_{G_{p}} \leq 2$.
+Therefore any internal determinant able to reach \emph{drop} $G_P$ will be present in that list. Trivially, from there it will always take the left path because $f^K_{G_{p}} = 1 \implies f^K_{G_{p}} \leq 2$.
+
 
 \item
 Third loop :
@@ -577,7 +582,7 @@ Left branch : $f_{G_{pq}}^S = 2$ implies there exist $(r,s)$ so that $\ket S=\Gp
 \item
 If $past$
 \begin{equation}
-\ket S=\ket {G_{pq}^{rs}} \implies S_{rs} = G_{pq}.
+\ket S=\ket {G_{pq}^{rs}} \implies \ket {S_{rs}} = \ket {G_{pq}}
 \end{equation}
 As explained above, it leads to $P(G_{pq})$ being fully tagged, and thus \emph{drop} $G_{pq}$ can be reached.
 \item
@@ -600,48 +605,48 @@ If $\neg past$, $\ket {G_{pq}^{rs}}$ must be tagged for referring to a determina
 \caption{Systematic ``case by case'' determination of connections between a selector $\ket S$ and determinants of a batch $\Gpq$} 
 \label{tab:systematic_determination}
 \begin{center}
-	\begin{tabular}{ c|c|c }
-		\hline \hline \rule{0pt}{3ex}
-		$\ket S$									&$ r, s$ 	& $\hat T ; \hat T \ket S = \Gpqrs$	\\
-		\hline \hline \rule{0pt}{3ex}
-		$\ac {ij} \Gpq$						& $X,Y$ 	&$ij \rightarrow XY$		\\
-											& $X,i$ 	&$j \rightarrow X$		\\
-											& $i,j$ 	&$1$			\\
-		\hline \rule{0pt}{3ex}
-		$\an a \ac {ijk} \Gpq$				&$X,i$		&$aX \rightarrow jk$		\\
-											&$i,j$		&$a \rightarrow k$		\\
-		\hline \rule{0pt}{3ex}
-		$\an {\bar a} \ac {\bar i jk} \Gpq$	&$X,j$		&$\bar a k \rightarrow \bar i X$		\\
-											&$j,k$		&$\bar a \rightarrow \bar i$		\\
-		\hline \rule{0pt}{3ex}
-		$\an {ab} \ac {ijkl} \Gpq$			&$i,j$		&$ab \rightarrow kl$		\\
-		\hline \rule{0pt}{3ex}
-		$\an {a  \bar b} \ac {ijk \bar l} \Gpq$			&$i,j$		&$a \bar b \rightarrow k \bar l$		\\
-		\hline \rule{0pt}{3ex}
-		$\an {\bar a \bar b} \ac {i j \bar k \bar l} \Gpq$	&$i,j$		&$\bar a \bar b \rightarrow \bar k \bar l$		\\
-		
-		\hline \hline \rule{0pt}{3ex}
-		$\ket S$									&$ r, \bar s$ 	& $\hat T ; \hat T \ket S = \ket {G_{p \bar q}^{r \bar s}}$	\\
-		\hline \hline \rule{0pt}{3ex}
-		$\ac {i \bar j} \Gpbq$				& $X, \bar Y$ 	&$i \bar j \rightarrow X \bar Y$		\\
-											& $i,\bar X$ 		&$\bar j \rightarrow \bar X$		\\
-											& $X,\bar j$ 	&$i \rightarrow X$		\\
-											& $i,\bar j$ 	&$1$			\\
-											
-											
-		\hline \rule{0pt}{3ex}
-		$\an a \ac {ij \bar k} \Gpbq$		&$X,\bar k$		&$aX \rightarrow ij$		\\
-											&$i,\bar k$		&$a \rightarrow j$		\\
-											&$i,\bar X$		&$a \bar k \rightarrow j \bar X$		\\
-											
-		\hline \rule{0pt}{3ex}
-		$\an {ab} \ac {ijk \bar l} \Gpbq$			&$i,\bar l$		&$ab \rightarrow jk$		\\
-		\hline \rule{0pt}{3ex}
-		$\an {a  \bar b} \ac {ijk \bar l} \Gpbq$			&$i,j$		&$a \bar b \rightarrow k \bar l$		\\
-		\hline \rule{0pt}{3ex}
-		$\an {a  \bar b} \ac {ij \bar k \bar l} \Gpbq$			&$i,\bar k$		&$a \bar b \rightarrow j \bar l$		\\
-	\end{tabular}
-	
+        \begin{tabular}{ c|c|c }
+                \hline \hline \rule{0pt}{3ex}
+                $\ket S$                                                                        &$ r, s$        & $\hat T ; \hat T \ket S = \Gpqrs$     \\
+                \hline \hline \rule{0pt}{3ex}
+                $\ac {ij} \Gpq$                                         & $X,Y$         &$ij \rightarrow XY$            \\
+                                                                                        & $X,i$         &$j \rightarrow X$              \\
+                                                                                        & $i,j$         &$1$                    \\
+                \hline \rule{0pt}{3ex}
+                $\an a \ac {ijk} \Gpq$                          &$X,i$          &$aX \rightarrow jk$            \\
+                                                                                        &$i,j$          &$a \rightarrow k$              \\
+                \hline \rule{0pt}{3ex}
+                $\an {\bar a} \ac {\bar i jk} \Gpq$     &$X,j$          &$\bar a k \rightarrow \bar i X$                \\
+                                                                                        &$j,k$          &$\bar a \rightarrow \bar i$            \\
+                \hline \rule{0pt}{3ex}
+                $\an {ab} \ac {ijkl} \Gpq$                      &$i,j$          &$ab \rightarrow kl$            \\
+                \hline \rule{0pt}{3ex}
+                $\an {a  \bar b} \ac {ijk \bar l} \Gpq$                 &$i,j$          &$a \bar b \rightarrow k \bar l$                \\
+                \hline \rule{0pt}{3ex}
+                $\an {\bar a \bar b} \ac {i j \bar k \bar l} \Gpq$      &$i,j$          &$\bar a \bar b \rightarrow \bar k \bar l$              \\
+                
+                \hline \hline \rule{0pt}{3ex}
+                $\ket S$                                                                        &$ r, \bar s$   & $\hat T ; \hat T \ket S = \ket {G_{p \bar q}^{r \bar s}}$     \\
+                \hline \hline \rule{0pt}{3ex}
+                $\ac {i \bar j} \Gpbq$                          & $X, \bar Y$   &$i \bar j \rightarrow X \bar Y$                \\
+                                                                                        & $i,\bar X$            &$\bar j \rightarrow \bar X$            \\
+                                                                                        & $X,\bar j$    &$i \rightarrow X$              \\
+                                                                                        & $i,\bar j$    &$1$                    \\
+                                                                                        
+                                                                                        
+                \hline \rule{0pt}{3ex}
+                $\an a \ac {ij \bar k} \Gpbq$           &$X,\bar k$             &$aX \rightarrow ij$            \\
+                                                                                        &$i,\bar k$             &$a \rightarrow j$              \\
+                                                                                        &$i,\bar X$             &$a \bar k \rightarrow j \bar X$                \\
+                                                                                        
+                \hline \rule{0pt}{3ex}
+                $\an {ab} \ac {ijk \bar l} \Gpbq$                       &$i,\bar l$             &$ab \rightarrow jk$            \\
+                \hline \rule{0pt}{3ex}
+                $\an {a  \bar b} \ac {ijk \bar l} \Gpbq$                        &$i,j$          &$a \bar b \rightarrow k \bar l$                \\
+                \hline \rule{0pt}{3ex}
+                $\an {a  \bar b} \ac {ij \bar k \bar l} \Gpbq$                  &$i,\bar k$             &$a \bar b \rightarrow j \bar l$                \\
+        \end{tabular}
+        
 \end{center}
 \begin{itemize}
 \item
@@ -657,12 +662,12 @@ $X$ and $Y$ are "wildcard" indices referring to any spinorbital unoccupied in bo
 
 
 \begin{figure}[h!]
-	\begin{center}
-		\includegraphics[height=0.90\textheight]{figures/cipsi/selection}
-	\end{center}
+        \begin{center}
+                \includegraphics[height=0.90\textheight]{figures/cipsi/selection}
+        \end{center}
         \caption{$S$ is the internal determinant currently flowing down the chart.
         Tagging is fully computed, and \emph{drop} instructions eventually reached before any update is done to $P(G_{pq})$.}
-        \label{fig:selection}	
+        \label{fig:selection}   
 \end{figure}
 
 \section{Parallel computation}
@@ -673,55 +678,60 @@ As figure \ref{fig:selection} suggests, iterations for the outermost loop --- ov
 
 For a better load balancing, we split the first, expensive tasks into smaller \emph{fragments}, using a fairly simple approach. Essentially, some tasks will require computing just a subset of the $\ket {G_{pq}}$ batches associated with a generator $\ket G$, as opposed to all of them. This implies some overhead, since some filtering steps will be duplicated. However, this overhead was found to be small, and only a relatively small number of expensive tasks need to be split.
 
-Each generator $\ket {G_i}$ defines as a ``logical'' task $i$, and for each one we define $F_i$ a fragmentation level (in practice $F_i = 1$ for the majority), defining the number of independent ``actual'' tasks it should be decomposed in. Ideally, $F_i$ should be based on an estimated cost of task $i$. 
+
+
+Each generator $\ket {G_i}$ defines as a ``logical'' task $i$, and for each one we define $F_i$ a fragmentation level, defining the number of independent ``actual'' tasks it should be decomposed in (in practice $F_i = 1$ for the majority). Ideally, $F_i$ should be based on an estimated cost of task $i$. 
+
 Task $i$ is put in the job queue $F_i$ times, each time associated with an index $s$ ranging from $0$ to $F_i-1$, which together with $F_i$ defines the subset of batches this task corresponds to. Disjoint subsets are created using modulus, so that subsets are interleaved and thus more balanced.
  
 This fragmentation scheme can be shown in a simpler and more general way when used to compute $\EPT$ in chapter \ref{chap:PT2}. In a nutshell, we can see it as a toy problem where we want to print for each generator the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ it has generated. The algorithm for this on the master and slave side is shown as algorithm \ref{alg:tasksplit_master} and \ref{alg:tasksplit_slave} respectively.
 
 
 \begin{algorithm}
-	\label{alg:tasksplit_master}
-	\caption{task splitting, pseudocode for master}
-	\tcc{A logical task is the computation of $e[i]$, the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ generated from generator $\ket {G_i}$}
-	choose $F_i$ \;
-	\For{$i=1,\Ngen$}{
-	\For{$s=0,F_i-1$}{
-		add task $(i,s)$ to the queue	
-	}
-	}
-	$f$,$e$ are arrays size $\Ngen$ initialized with $0$ \;
-	\While{not all $e[i]$ printed}{
-		get $(i,\text{sum})$ from a slave \;
-		$e[i] \gets e[i] + \text{sum}$ \;
-		$f[i] \gets f[i] + 1$ \;
-		\If{$f[i] = F_i$}{
-			print $e[i]$ \;
-		}
-	}
+        \label{alg:tasksplit_master}
+        \caption{task splitting, pseudocode for master}
+        \tcc{A logical task is the computation of $e[i]$, the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ generated from generator $\ket {G_i}$}
+        choose $F_i$ \;
+        \tcc{A logical task is the computation of $e[i]$, the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ generated from generator $\ket {G_i}$}
+        choose $F_i$ for all $i$\;
+        \For{$i=1,\Ngen$}{
+        \For{$s=0,F_i-1$}{
+                add task $(i,s)$ to the queue   
+        }
+        }
+        $f$,$e$ are arrays size $\Ngen$ initialized with $0$ \;
+        \While{not all $e[i]$ printed}{
+                get $(i,\text{sum})$ from a slave \;
+                $e[i] \gets e[i] + \text{sum}$ \;
+                $f[i] \gets f[i] + 1$ \;
+                \If{$f[i] = F_i$}{
+                        print $e[i]$ \;
+                }
+        }
 \end{algorithm}
 
 \begin{algorithm}
-	\label{alg:tasksplit_slave}
-	\caption{task splitting, pseudocode for slave}
-	\While{}{
-		get task $(i, s \in [0,F_i-1])$ from the queue \;
-		$E \gets 0$ \;
-		$c \gets 0$ \;
-		$G \gets D_I$ \;
-		\tcc{duplicated computation if $F_i > 1$}
-		filtering for $G$ (see figure \ref{fig:selection}) \;
-		\ForEach{$G_p$}{
-		\tcc{duplicated computation if $F_i > 1$}
-		filtering for $G_p$ (see figure \ref{fig:selection}) \;
-		\ForEach{$G_{pq}$}{
-			$c \gets c + 1$ \;
-			\If{$s = c \mod F_i$}{
-				increment $E$ with all unique $\epsilon(\alpha)$ in this batch \;
-			}
-		}
-		}
-		send $(i, E)$ to master \;
-	}
+        \label{alg:tasksplit_slave}
+        \caption{task splitting, pseudocode for slave}
+        \While{}{
+                get task $(i, s \in [0,F_i-1])$ from the queue \;
+                $E \gets 0$ \;
+                $c \gets 0$ \;
+                $G \gets D_I$ \;
+                \tcc{duplicated computation if $F_i > 1$}
+                filtering for $G$ (see figure \ref{fig:selection}) \;
+                \ForEach{$G_p$}{
+                \tcc{duplicated computation if $F_i > 1$}
+                filtering for $G_p$ (see figure \ref{fig:selection}) \;
+                \ForEach{$G_{pq}$}{
+                        $c \gets c + 1$ \;
+                        \If{$s = c \mod F_i$}{
+                                increment $E$ with all unique $\epsilon(\alpha)$ in this batch \;
+                        }
+                }
+                }
+                send $(i, E)$ to master \;
+        }
 \end{algorithm}
 
 
