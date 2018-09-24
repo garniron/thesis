@@ -381,7 +381,8 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
 				$e \gets \mathtt{LIST\_FROM\_BITSTRING}(c)$\; 
 				$B_{e_1, e_2} \gets \mathtt{FALSE}$\; 			  
 			}			
-			\tcc{\alert{see table XXX for the loops}}
+			\tcc{see table \ref{tab:systematic_determination}
+for the loops}
 			\uIf{$p < g$}{
 				    
 				\ForAll{$(\tilde r, \tilde s) \; ; \; \Hij{S}{G_{pq}^{\tilde r \tilde s} \neq 0}$}{
@@ -405,8 +406,8 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
 \begin{algorithm}
 	\caption{UNBLOCK\_SINGLE}
 	\label{alg:unblock_single}
-		\KwData{ -------}
-		\KwResult{ -------------}
+%		\KwData{ -------}
+%		\KwResult{ -------------}
 		
 
 		\If{($q$ is of spin $\alpha$) and ($p=M_\beta$)}{
@@ -421,13 +422,12 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
 \end{algorithm}
 
 
-%% J'en suis la
 
 \section{Filtering and loop breaking}
-A great deal of processing power is lost, because every doubly ionized generator $\ket {G_{pq}}$ is compared to all selector determinants. In the vast majority of cases, it will show no connection can be made and the selector will be ignored. Thus, it's interesting to filter selector determinants in more outer loops ( generator loop, and loop over first ionization ).
+A large amount of processing power is lost, because every doubly ionized generator $\ket {G_{pq}}$ is compared to all selector determinants. In the vast majority of cases, it will show no connection can be made and the selector will be ignored. Thus, it's interesting to filter selector determinants in the outermost loops (generator loop, and loop over first ionization).
 
-This can be done using the distance $f_A^B = f_B^A$, defined as the minimal number of operations - moving, annihilating or creating an electron - that must be done to go from a determinant $\ket A$ to a determinant $\ket B$ with respectively $n_a$ and $n_b$ electrons.
-Alternatively, it can be defined as the maximum between the number of anihilations and the number of creations required to go from $\ket A$ to $\ket B$.
+This can be done using the distance $f_A^B = f_B^A$, defined as the minimal number of operations --- moving, annihilating or creating an electron --- that must be done to go from a determinant $\ket A$ to a determinant $\ket B$ with respectively $n_a$ and $n_b$ electrons.
+Alternatively, it can be defined as the maximum between the number of annihilations and the number of creations required to go from $\ket A$ to $\ket B$.
 
 
 
@@ -451,9 +451,8 @@ $0 \leq (f_Y^S - f_X^S) \leq 1$ with $\ket Y = a_p \ket X$
 
 \alert{à detailler?}
 
-From the rules above, we can deduce that given any $\ket X$ and $\ket S$, there exists a $\kalpha$ generated from $\ket X$ so that $\Hij{\alpha}{S} \neq 0$ only if $f_X^S \leq 4$.
-
-Based on this, a filtering system can be set up, as shown on figure \ref{fig:selection}. The diagram somewhat convoluted and deserves comments.
+From the rules above, we can deduce that given any $\ket X$ and $\ket S$, there exists an $\kalpha$ generated from $\ket X$ so that $\Hij{\alpha}{S} \neq 0$ only if $f_X^S \leq 4$.
+Based on this, a filtering system can be set up, as shown on figure \ref{fig:selection}. The diagram is somewhat convoluted and deserves comments.
 
 \paragraph{Internal determinants' path}
  
@@ -472,24 +471,23 @@ The determinants of the internal space ``flow'' from the top $\Psi$ into interme
 A selector can only be duplicated at the node denoted by a black circle. Otherwise, it follows a single path, always going for the horizontal path if it satisfies the associated condition.
 If it doesn't satisfy the condition of an horizontal path, and there is no further vertical path, it is discarded.
 
-\paragraph{DROP instructions}
-$DROP$ instructions are reached when, predictably, the current loop iteration will not yield any unique $\kalpha$. If a determinant reaches a $\text{DROP}$, the current loop iteration ends immediately.
+\paragraph{``Drop'' instructions}
+\emph{Drop} instructions are reached when, predictably, the current loop iteration will not yield any unique $\kalpha$. If a determinant reaches a \emph{drop}, the current loop iteration ends immediately.
 
 \begin{itemize}
 \item
-$\text{DROP } G_{pq}$ is reached in the case where the whole $P(G_{pq})$ matrix is to be tagged, i.e. the possible values for $(r,s)$ given by table \ref{tab:systematic_determination} are two wildcards ($X,Y$ and $X,\bar Y$)
-
+\emph{drop} $G_{pq}$ is reached in the case where the whole $P(G_{pq})$ matrix is to be tagged, i.e. the possible values for $(r,s)$ given by table \ref{tab:systematic_determination} are two wildcards ($X,Y$ and $X,\bar Y$).
 This corresponds to the case where $\ket {G_{pq}}$ has already been created from a previous generator $\ket K$, i.e. $\ket {G_{pq}} = \ket {K_{p'q'}}$, therefore for any pair $(r,s)$ we have $\ket {K_{p'q'}^{rs}} = \ket {G_{pq}^{rs}}$.\\
 \item
-$\text{DROP } G_{p}$, in the same fashion, is reached when $\ket {G_{p}}$ has already been created from a previous generator $\ket K$, i.e. $\ket {G_{p}} = \ket{K_{p'}}$. For any triplet $(q,r,s)$ there will be $\ket {K_{p'q}^{rs}} = \ket {G_{pq}^{rs}}$, so no new $\kalpha$ will be created.
+\emph{drop} $G_{p}$, in the same fashion, is reached when $\ket {G_{p}}$ has already been created from a previous generator $\ket K$, i.e. $\ket {G_{p}} = \ket{K_{p'}}$. For any triplet $(q,r,s)$ there will be $\ket {K_{p'q}^{rs}} = \ket {G_{pq}^{rs}}$, so no new $\kalpha$ will be created.
 \end{itemize}
 
 
 \paragraph{Paths and loops}
-There are roughly a left and a right path. The reason for this, is that we want to reach $\text{DROP}$ instructions as fast as possible. Incidently, in each loop, the implementation should prioritize operations that may cause a reach to $\text{DROP}$.
+There are roughly a left and a right path. The reason for this, is that we want to reach \emph{drop} instructions as fast as possible. Incidentally, in each loop, the implementation should prioritize operations that may cause a reach to \emph{drop}.
 
-%Not trying to reach $DROP\ G_{PQ}$ means we might completely compute the $P$ matrix, only to find that the last selector determinant tags it entierly, for the reson mentioned above.
-%Not trying to reach $\text{DROP } G_{P}$ means we might iterate over batches $\Gpqrs$ that are all to be "tagged out" by a single particular selector.
+%Not trying to reach \emph{drop} $G_{PQ}$ means we might completely compute the $P$ matrix, only to find that the last selector determinant tags it entierly, for the reson mentioned above.
+%Not trying to reach \emph{drop} $G_{P}$ means we might iterate over batches $\Gpqrs$ that are all to be "tagged out" by a single particular selector.
 
 \begin{enumerate}
 
@@ -504,7 +502,7 @@ Right branch : determinants that may contribute to some $P(G_{pq})$ matrix or ta
 \item
 Left branch : Determinants that aren't selectors, but are equal to some $\ket {G_{pq}^{rs}}$. Being non-selectors, those will not be checked for connection to any $\ket {G_{pq}^{rs}}$, but they still must be checked for equality in order to ensure $\ket {G_{pq}^{rs}} \notin \Psi$
 \end{itemize}
-This step sets the algorithm's complexity with respect to $\Ndet$. Naively, $f_G^S$ must be computed for all pairs of internal determinants, setting the complexity to $\mathcal{O}(\Ndet^2)$. Our current implementation fastly discards $f_G^S > 4$ by using a method similar to what we used in the Davidson diagonalization, adapted to seek excitation degrees $\leq 4$ rather than $\leq 2$. The key difference is that, for parallelism reasons, the research has to be done individually for each generator ; that is, we are not computing all $f_G^S$ at the same time, but all $f_G^S$ for a given $G$ separately. The procedure is shown as algorithm \ref{alg:generators_filtering}. The complexity is reduced from $\mathcal{O}(\Ndet^2)$ to $\mathcal{O}(\Ndet^{3/2})$ ; each generator has it's $\sigma \in \{\alpha, \beta\}$ part compared to all elements of $\{U_\sigma\}$.
+This step sets the algorithm's complexity with respect to $\Ndet$. Naively, $f_G^S$ must be computed for all pairs of internal determinants, setting the complexity to $\mathcal{O}(\Ndet^2)$. Our current implementation quickly discards $f_G^S > 4$ by using a method similar to what we used in the Davidson diagonalization, adapted to seek excitation degrees $\leq 4$ rather than $\leq 2$. The key difference is that, for parallelism reasons, the research has to be done individually for each generator ; that is, we are not computing all $f_G^S$ at the same time, but all $f_G^S$ for a given $G$ separately. The procedure is shown as algorithm \ref{alg:generators_filtering}. The complexity is reduced from $\mathcal{O}(\Ndet^2)$ to $\mathcal{O}(\Ndet^{3/2})$ ; each generator has its $\sigma \in \{\alpha, \beta\}$ part compared to all elements of $\{U_\sigma\}$.
 
 \begin{algorithm}
 \caption{Filtering internal determinants for generator $\ket G$}
@@ -539,11 +537,11 @@ The second loop separates again in two categories.
 \item
 Right branch : Determinants that may contribute to some $\Hij{\Psi}{\alpha}$. Selectors that may connect to some $\ket {G_{pq}^{rs}}$
 \item
-Left branch : Determinants that may cause tagging or reach $\text{DROP}$, i.e. any determinant that may be equal to some $\ket {G_{pq}^{rs}}$, and previous generators that may connect to some $\ket {G_{pq}^{rs}}$. Those can be found in both lists built in the first loop.
+Left branch : Determinants that may cause tagging or reach \emph{drop}, i.e. any determinant that may be equal to some $\ket {G_{pq}^{rs}}$, and previous generators that may connect to some $\ket {G_{pq}^{rs}}$. Those can be found in both lists built in the first loop.
 \end{itemize}
 
-As explained above, if there is a previous generator $\ket K$ so that $a_{p'} \ket K = a_p \ket G$, it will result in $P(G_{pq})$ being fully tagged for any $q$, hence a need to reach $\text {DROP } G_p$ to avoid unnesserary computation.
-The reach for $\text {DROP } G_p$ can be put on the path between the right list of the first loop and the left list of the second loop.
+As explained above, if there is a previous generator $\ket K$ so that $a_{p'} \ket K = a_p \ket G$, it will result in $P(G_{pq})$ being fully tagged for any $q$, hence a need to reach \emph{drop} $G_p$ to avoid unnecessary computations.
+The reach for \emph{drop} $G_p$ can be put on the path between the right list of the first loop and the left list of the second loop.
 
 Indeed, $a_{p'} \ket K = a_p \ket G$ with $\ket K$ a previous generator translates to
 \begin{equation}
@@ -564,7 +562,7 @@ past \implies selector
 (f^S_{G_{p}} = 1) \wedge past \implies (f^K_G \leq 4) \wedge selector
 \end{equation}
 
-Any determinant able to reach $DROP\ G_P$ will be present in the right list of the first loop. Trivially, from there it will always take the left path because $f^K_{G_{p}} = 1 \implies f^K_{G_{p}} \leq 2$.
+Any determinant able to reach \emph{drop} $G_P$ will be present in the right list of the first loop. Trivially, from there it will always take the left path because $f^K_{G_{p}} = 1 \implies f^K_{G_{p}} \leq 2$.
 
 \item
 Third loop :
@@ -579,11 +577,11 @@ Left branch : $f_{G_{pq}}^S = 2$ implies there exist $(r,s)$ so that $\ket S=\Gp
 \item
 If $past$
 \begin{equation}
-\ket S=\ket {G_{pq}^{rs}} \implies S_{rs} = G_{pq}
+\ket S=\ket {G_{pq}^{rs}} \implies S_{rs} = G_{pq}.
 \end{equation}
-As explained above, it leads to $P(G_{pq})$ being fully tagged, and thus $\text{DROP } G_{pq}$ can be reached.
+As explained above, it leads to $P(G_{pq})$ being fully tagged, and thus \emph{drop} $G_{pq}$ can be reached.
 \item
-If $\neg past$, $\ket {G_{pq}^{rs}}$ must be tagged for refering to a determinant of the internal space.
+If $\neg past$, $\ket {G_{pq}^{rs}}$ must be tagged for referring to a determinant of the internal space.
 \end{itemize}
 
 
@@ -652,7 +650,7 @@ If $\neg past$, $\ket {G_{pq}^{rs}}$ must be tagged for refering to a determinan
 \item
 $\an{ij\ldots}$ is a compact notation for $\an i \an j \ldots$
 \item
-$X$ and $Y$ are "wildcard" indices refering to any spinorbital inoccupied in both $\ket S$ and $\ket {G_{pq}}$ 
+$X$ and $Y$ are "wildcard" indices referring to any spinorbital unoccupied in both $\ket S$ and $\ket {G_{pq}}$ 
 \end{itemize}
 %- "is in wavefunction" : $\ket {G_{pq}^{rs}} = S$. There is no need to compute $\langle \ket {G_{pq}^{rs}}|H|S \rangle$ since $\ket {G_{pq}^{rs}}$ is necessarily tagged for being present in the wavefunction.
 \end{table}
@@ -663,19 +661,19 @@ $X$ and $Y$ are "wildcard" indices refering to any spinorbital inoccupied in bot
 		\includegraphics[height=0.90\textheight]{figures/cipsi/selection}
 	\end{center}
         \caption{$S$ is the internal determinant currently flowing down the chart.
-        Tagging is fully computed, and $\text{DROP}$ insctructions eventually reached before any update is done to $P(G_{pq})$.}
+        Tagging is fully computed, and \emph{drop} instructions eventually reached before any update is done to $P(G_{pq})$.}
         \label{fig:selection}	
 \end{figure}
 
-\section{Parralel computation}
+\section{Parallel computation}
 
 Arguably the simplest way to make an algorithm parallel is, whenever possible, to create independent tasks corresponding to one iteration of the outermost loop. 
 
-As figure \ref{fig:selection} suggests, iterations for the outermost loop - over generators - are independent. This is due to our choice to perform the initial filtering on a ``generator by generator'' basis, giving a total complexity of $\mathcal{O}(\Ndet^{3/2})$ (algorithm \ref{alg:generators_filtering}) rather that $\mathcal{O}(\Ndet)$ as our Davidson algorithm does ; to achieve $\mathcal{O}(\Ndet)$ the outermost loop would need to be over $\{U_\alpha\}$ and $\{U_\beta\}$. This would give a smaller number of iterations/tasks with extremely unbalanced costs, which doesn't suit well a parallel scheme. Since in practice the filtering steps only account for a few percent of the total CPU time, we stuck to 1 task = 1 generator. Even so, the cost for different tasks was still very much unbalanced, the first few (generators of great coefficients) being very expensive, and the cost quickly decreasing.
+As figure \ref{fig:selection} suggests, iterations for the outermost loop --- over generators --- are independent. This is due to our choice to perform the initial filtering on a ``generator by generator'' basis, giving a total complexity of $\mathcal{O}(\Ndet^{3/2})$ (algorithm \ref{alg:generators_filtering}) rather that $\mathcal{O}(\Ndet)$ as our Davidson algorithm does ; to achieve $\mathcal{O}(\Ndet)$ the outermost loop would need to be over $\{U_\alpha\}$ and $\{U_\beta\}$. This would give a smaller number of iterations/tasks with extremely unbalanced costs, which doesn't suit well a parallel scheme. Since in practice the filtering steps only account for a few percent of the total CPU time, we stuck to 1 task = 1 generator. Even so, the cost for different tasks was still very much unbalanced, the first few (generators of large coefficients) being very expensive, and the cost quickly decreasing.
 
-For a better load balancing, we split the first, expensive tasks into smaller ``fragments'', using a fairly simple approach. Essentially, some tasks will require computing just a subset of the $\ket {G_{pq}}$ batches associated with a generator $\ket G$, as opposed to all of them. This implies some overhead, since some filtering steps will be duplicated. However, this overhead was found to be small, and only a relatively small number of expensive tasks need to be split.
+For a better load balancing, we split the first, expensive tasks into smaller \emph{fragments}, using a fairly simple approach. Essentially, some tasks will require computing just a subset of the $\ket {G_{pq}}$ batches associated with a generator $\ket G$, as opposed to all of them. This implies some overhead, since some filtering steps will be duplicated. However, this overhead was found to be small, and only a relatively small number of expensive tasks need to be split.
 
-Each generator $\ket {G_i}$ defines as a ``logical'' task $i$, and for each one we define $F_i$ a fragmentation level (in practice $F_i = 1$ for most $i$), defining the number of independent ``actual'' tasks it should be decomposed in. Ideally, $F_i$ should be based on an estimated cost of task $i$. 
+Each generator $\ket {G_i}$ defines as a ``logical'' task $i$, and for each one we define $F_i$ a fragmentation level (in practice $F_i = 1$ for the majority), defining the number of independent ``actual'' tasks it should be decomposed in. Ideally, $F_i$ should be based on an estimated cost of task $i$. 
 Task $i$ is put in the job queue $F_i$ times, each time associated with an index $s$ ranging from $0$ to $F_i-1$, which together with $F_i$ defines the subset of batches this task corresponds to. Disjoint subsets are created using modulus, so that subsets are interleaved and thus more balanced.
  
 This fragmentation scheme can be shown in a simpler and more general way when used to compute $\EPT$ in chapter \ref{chap:PT2}. In a nutshell, we can see it as a toy problem where we want to print for each generator the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ it has generated. The algorithm for this on the master and slave side is shown as algorithm \ref{alg:tasksplit_master} and \ref{alg:tasksplit_slave} respectively.
@@ -684,8 +682,8 @@ This fragmentation scheme can be shown in a simpler and more general way when us
 \begin{algorithm}
 	\label{alg:tasksplit_master}
 	\caption{task splitting, pseudocode for master}
-	\tcc{A logical task is computation of $e[i]$ the the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ generated from generator $\ket {G_i}$}
-	chose $F_i$ \;
+	\tcc{A logical task is the computation of $e[i]$, the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ generated from generator $\ket {G_i}$}
+	choose $F_i$ \;
 	\For{$i=1,\Ngen$}{
 	\For{$s=0,F_i-1$}{
 		add task $(i,s)$ to the queue	
@@ -726,5 +724,7 @@ This fragmentation scheme can be shown in a simpler and more general way when us
 	}
 \end{algorithm}
 
+
+\alert{Il faut mettre une petite conclusion / resume ici.}
 
 \end{document}
