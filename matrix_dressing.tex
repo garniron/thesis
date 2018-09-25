@@ -123,7 +123,6 @@ In practice, since the exact computation of ${\pmb \kappa}_k$ is even more expen
 
 
 \section{implementation}
-Plein de variable, subsection pour resumer la notation?
 For clarity, indices will be named depending on what they refer to
 \begin{itemize}
 \item
@@ -324,7 +323,6 @@ with $j$ the task index associated with $I$, i.e. $J[j]=I$. These sets are track
 	\caption{PRECOMPUTE\_MONTECARLO}
 	\label{PRECOMPUTE_MONTECARLO}
 	\tcc{Computes task queue}
-		\alert{pour $M_m$ deplacer dans le texte?} \;
 		\KwData{$M_m$ the desired number of combs for checkpoints $m$. $M_0 = 0$ for convenience. $M_{n+1} > M_n$, $\exists M_n > \Ngen$}
 		
 		$\tilde M$ array size $\Ndet$ initialized with $0$\;
@@ -614,146 +612,13 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 	
 \end{algorithm}
 
-\section{Computing $c_\alpha$}
-
-For merely enumerating the connections between internal and external space, there are two possible ways.
-Internal to external, or External to internal
-%\begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=0.5\columnwidth]{figures/matrix_dressing/interactions}
-		%\caption{\label{interactions}}
-	\end{center}
-%\end{figure}
-
-Computation-wise, those two possbilities are very different.
-
-
-The internal to external approach is pretty straightforward, as it means applying every possible double excitation to all determinants of an arbitrary set $\Psi$ of size $\Ngen$. 
-
-
-The external to internal approach is more difficult as it means finding connections between all determinant $\kalpha$ in an arbitrary set size $N_{external}$ - typically a few orders of magnitude larger than $\Ndet$ - and another abritrary set of determinants $\Psi$. 
-
-Unfortunately, we typically need to know all connections for a particular $\kalpha$ before we can compute its associated dressing vector, which puts us in the external to internal case.
-
-We can use our CIPSI algorithm to set up an intermediate method. We were only considering $N_{virt}^2$ $\alpha$ at the same time, built by internal to external connections. Then, connection from those $\kalpha$ to 
-
-%We can build, for each of those $\alpha$, a list of connected $I$ that we incrementally build from connections we find by internal-to-external approach.
-
-\begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=0.7\columnwidth]{figures/matrix_dressing/findconnections}
-		\caption{A REFAIRE NOTATION.............}
-		\label{fig:findconnections}
-	\end{center}
-\end{figure}
-
-
-
-We are going to use a more general approach than that we used in CIPSI. With $G_{pq}$ fixed, whenever a connection between $\ket I$ and $\kalpha = \ket {G_{pq}^{rs}}$ is found, instead of incrementing the contribution $\delta(\alpha)$, we are going to add $\kI$ to a set $\mathcal{C}_{r,s} = \mathcal{C}_{s,r}$.
-
-\begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=0.7\columnwidth]{figures/matrix_dressing/buildlists}
-		\caption{A REFAIRE NOTATION.............}
-		\label{fig:buildlists}
-	\end{center}
-\end{figure}
-
-When computation for batch $G_{pq}$ is completed, $\mathcal{C}_{r,s}$ is the set of all $\kI$ connecting to $\kalpha$. The algorithm is the same as the CIPSI, except we are building sets instead of incrementing scalars. This, of course, adds implementation complexity.
-
-The size the $\mathcal{C}_{r,s}$ sets isn't known in advance. Resizable arrays can be used. Will they are not very practical to use in Fortran, they are not too hard to set up. 
-
-
-The storage space for the worst-case scenario isn't sustainable.
-$G_{pq}$ being the first batch, and the variational wavefuction being all determinants up to quadruply excited from $G$ except those in the $G_{pq}$ batch. There are $~ N_{virt}^2$ unique $\kalpha$ in the batch. For each of them, any of the $~N_{occ}^2 N_{virt}^2$ double excitation will lead to a variational determinant, except if it leads to one of the $N_{virt}^2$ determinant of the batch.
-We have $~ N_{virt}^2$ alpha each connected to $~(N_{occ}^2-1) N_{virt}^2$ variational determinants, resulting in a storage space $~N_{occ}^2 N_{virt}^4$.
-
-Even in the more realistic case where half of double excitations involving the holes in the HOMO of the HF determinants are present in the internal space, storage needed for the ionzied generator $a_{\bar{HOMO}} a_{HOMO} HF$ will be $N_{virt}^4 / 4$, which, depending on the system size, may be concerningly or prohibitively high. 
-
-We can create sets of $\kalpha$ that are subsets of several $\mathcal{C}_{r,s}$. Table XXXXXXXX indicates which $\kalpha = \ket {G_{pq}^{rs}}$ of the current batch $\kI$ connects to. In some cases, there are ``wildcard'' indices $X$ and $Y$. Instead of looping over the possible values for those wildcards and adding $\kI$ to all the corresponding $\mathcal{C}_{r,s}$ sets, we are going to give wildcard indices the special value $0$. For example, in the case where both $r$ and $s$ are wildcards, instead of adding $\kI$ to all sets, we will add it to a single set $\mathcal{C}_{0,0}$. When computation for the batch is completed, $\mathcal{C}_{r,s}$ can be evaluated on the fly as
-
-\begin{equation}
-\mathcal{C}_{r,s} \gets \mathcal{C}_{r,s} \cup \mathcal{C}_{r,0} \cup \mathcal{C}_{s,0} \cup \mathcal{C}_{0,0}
-\end{equation}
-
-Care must be given that $\mathcal{C}_{r,0}$ and $\mathcal{C}_{s,0}$ may share common elements. Given its frequency, it is important that this on the fly computation be efficient.
-
-
-
-\begin{algorithm}
-	\label{BUILD_CONNECTED}
-	\caption{BUILD\_CONNECTED}
-		\KwData{ ---------}
-		\KwResult{ ------------}
-        $i_1 = N$ \;   
-        $L_{1..i_1} \gets D_{1..{i_1}}$ \;
-		\tcc {$B_{r0} = FALSE$ if column entirely tagged}		
-		\ForAll{$r ; B_{r0}$}{
-		  $i_2 = i_1 + N^r$ \;
-		  $L_{i_1+1..i_2} \gets D^r_{1..N^r}$ \;
-		  \For{$i=1,N_r$}{
-		    $T_{D^r_i} \gets FALSE$
-		  }
-		  \alert{est-ce que $B_{rr}$ est tage?} \;
-		  \ForAll{$s \neq r ; B_{rs}$}{
-		    $i_3 = i_2$ \;
-		    \For{$i=1,N_s$}{
-		      \If{$T_{D^s_i}$}{
-		        $i_3 \gets i_3+1$ \;
-		        $L_{i_3} \gets D^s_i$ \;
-		      }
-		    }
-		    
-		    $i_4 = i_3 + N^{rs}$ \;
-		    $L_{i_3+1 .. i_4} \gets D^{rs}_{1..N^{rs}}$ \;
-		    \tcc{$L$ is the list of all $I \in \Psi ; EXC(I, a^\dagger_r a^\dagger_s G_{pq} ) \leq 2$}
-		  }
-		 \For{$i=1,N_s$}{
-		    $T_{D^r_i} \gets TRUE$
-		  }
-		}
-\end{algorithm}
-
-
-
-\begin{algorithm}
-	\label{BUILD_MICROLIST}
-	\caption{BUILD\_MICROLIST}
-		\KwData{ ------}
-		\KwResult{ ------}
-        $N \gets 0$ \;
-        $N^* \gets 0$ \;   
-        $N^{*,*} \gets 0$ \;    
-        \ForAll{$I \in \{S - past\} ; f_{G_{pq}}^I \leq 4$}{
-          $(P,H) \gets particles\_and\_holes(G_{pq}, I)$ \;
-          $p = list\_from\_bitstring(P)$ \;
-          
-          %$h = LIST_FROM_BITSTRING(H)$
-          \uIf{$f_{G_{pq}}^I = 4$ \& $B_{p_1,p_2}$}{
-            $i \gets N^{p_1, p_2}+1$ \;
-            $N^{p_1, p_2} \gets i$ \;
-            $D^{p_1, p_2}_{i} \gets I$ \;
-          }
-          \uElseIf{$f_{G_{pq}}^I = 3$ \& $B_{p_1}$}{
-            $i \gets N^{p_1}+1$ \;
-            $N^{p_1} \gets i$ \;
-            $D^{p_1}_{i} \gets I$ \;
-          }
-          \Else{
-            $i \gets N+1$ \;
-            $N \gets i$ \;
-            $D_{i} \gets I$ \;
-          }
-        }
-\end{algorithm}
-
 
 \section{concluage}
 
 In this chapter we have implemented a stochastic version of the shifted-Bk algorithm, using the same algorithm we used for computation of $\EPT$, and were able to get acceptable accuracies performing a few percent of the full computation.
 The additional difficulties of estimating a vector rather than a scalar were solved by setting a limited number of pre-determined checkpoints between which no result is available.
 
-The fact that we implemented the shifted-Bk method boils down to our choice to build the external space using Epstein-Nesbet perturbative estimation for $c_\alpha$. However, the proposed algorithm do not put any particular restriction on $c_\alpha$. From this stemed the idea of a more general framework to allow easy experimentation of the effect of different external spaces.
+The fact that we implemented the shifted-Bk method boils down to our choice to build the external space using Epstein-Nesbet perturbative estimation for $c_\alpha$. However, the proposed algorithm do not put any particular restriction on $c_\alpha$. From this stemed the idea of a more general framework to allow easy experimentation of the effect of different external spaces, which was used to design a \alert{variant} of the MR-CCSD method as shown in chapter \ref{chap:exp_dressing}.
 
 
 \end{document}

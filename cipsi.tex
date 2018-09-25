@@ -1,6 +1,6 @@
 \documentclass[./thesis.tex]{subfiles}
 
-\newcommand{\Gpqrs}{\ket{G^{rs}_{pq}}}
+
 \begin{document}
 \label{chap:CIPSI}
 
@@ -61,8 +61,17 @@ There are, perhaps schematically, two ways to do this :
 ``internal to external'', looping over all internal determinants $\ket G$ and all single or double excitations $\hat T$, creating $\kalpha = \hat T \ket G$, then incrementing $\tilde e_{\alpha \notin \Psi}$ by $\Hij{G}{\alpha}$. Finally get $e_{\alpha \notin \Psi} = \frac{\tilde e_\alpha^2}{E^{(n)} - H_{\alpha \alpha}}$.
 \end{itemize}
 
-While the second approach sounds more efficient, it has the obvious issue of requiring all $e_\alpha$ to be stored in memory simultaneously. Unfortunately this is usually not feasible, since their number scales as $\order{\Ndet \times \mathcal{O}_{virt}^2 \times \mathcal{O}_{occ}^2}$, with $\mathcal{O}_{occ}$ the number of occupied orbitals and $\mathcal{O}_{virt}$ the number of virtual orbitals.
-While the first approach is simpler, it begs the question of how to generate all possible $\kalpha$ not simultaneously and with no duplicates. 
+%\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.5\columnwidth]{figures/matrix_dressing/interactions}
+		%\caption{\label{interactions}}
+	\end{center}
+%\end{figure}
+
+The first approach is less tempting, as it means finding connections between the arbitrary set of internal determinants, and another arbitrary set of $\kalpha$ typically orders of magnitude larger.
+
+While the second approach sounds more straightforward, it has the obvious issue of requiring all $e_\alpha$ to be stored in memory simultaneously. Unfortunately this is usually not feasible, since their number scales as $\order{\Ndet \times \mathcal{O}_{virt}^2 \times \mathcal{O}_{occ}^2}$, with $\mathcal{O}_{occ}$ the number of occupied orbitals and $\mathcal{O}_{virt}$ the number of virtual orbitals.
+The first approach therefore seems simpler when it comes to computing $e_\alpha$, but it begs the question of how to generate all possible $\kalpha$ not simultaneously and with no duplicates. 
 
 
 \section{Approximations}
@@ -232,7 +241,7 @@ a non-unique $\ket \alpha$ (either a double excitation of a previous generator, 
 \end{itemize}
 
 \item
-Since two electrons cannot occupy the same spinorbital, tag cells where $r$ or $s$ is occupied in $\ket {G_{pq}}$.
+Since two electrons cannot occupy the same spinorbital, tag cells where $r$ or $s$ is occupied in $\ket {G_{pq}}$ as well as those with $r=s$.
 \item
 Apply single excitation tagging. This ensures single excitations of $\ket G$ are generated exactly once. It is described in section \ref{single_tagging}.
 \item
