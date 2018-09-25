@@ -62,7 +62,7 @@ The $e_I$'s are already explicitly computed by our CIPSI implementation, which r
 \paragraph{The $e_I$'s can be stored to avoid re-computation}
 Each elementary contribution is associated with a generator determinant, so there are only $\Ngen$ elementary contributions. This number is small enough to make all the $e_I$'s fit in memory, so when a $e_I$ contribution is computed, its value is stored and simply re-used if the same sample is drawn again. This, in turn, means the exact result will eventually be known in finite time, once every sample has been computed. The cost for this will essentially be the same as that of the purely deterministic, full computation, with a negligible additional cost due to the Monte-Carlo related computations (drawing random numbers, finding the associated samples\dots).
 
-\section{Monte-Carlo sampling}
+\subsection{Monte-Carlo sampling}
 
 We generally want to compute a quantity $F$ which may be expressed as the expected value of a function $f(x)$ with respect to a probability distribution function $p(x)$:
 \begin{equation}
@@ -169,7 +169,7 @@ Drawing the random number $u$ using the cumulative probability density $W$ yield
 
 
 
-\section{Partition of the sample space}
+\subsection{Partition of the sample space}
 \label{sec:partition}
 
 
@@ -273,9 +273,9 @@ An illustrative exemple is given as figure \ref{fig:toothindet}.
 	\end{center}
 		\caption{illustrative example of drawing two combs $a$ and $b$
 		Samples that have been computed are greyed. $\mathcal{T}_1$ has been fully computed and is thus moved to $\mathcal{D}$. The first non-deterministic/not fully-computed tooth is $\mathcal{T}_2$.
-		$$E_D = e_1 + e_2 + e_3$$
-		$$B_2(a) = \frac{e_6}{w_6} + \frac{e_{10}}{w_{10}}\;;B_2(b) = \frac{e_6}{w_6} + \frac{e_{11}}{w_{11}}$$
-		$$E_S = (B_2(a)+B_2(b)) \times W_T \alert {A CHECK}$$}
+		$E_D = e_1 + e_2 + e_3$
+		$B_2(a) = \frac{e_6}{w_6} + \frac{e_{10}}{w_{10}}\;;B_2(b) = \frac{e_6}{w_6} + \frac{e_{11}}{w_{11}}$
+		$E_S = (B_2(a)+B_2(b)) \times W_T \alert {A CHECK}$}
 		\label{fig:toothindet}
 \end{figure}
 
@@ -296,6 +296,9 @@ S^{(2)}_{t} = \sum_{u \in \{\mathcal{U}\}_n} B_{t}(u)^2
 \end{align}
 
 \clearpage
+
+\section{Hybrid stochastic-deterministic calculation of the second-order
+perturbative contribution of multireference perturbation theory}
 \includepdf[page=2-]{article_pt2}
 
 
@@ -303,14 +306,14 @@ S^{(2)}_{t} = \sum_{u \in \{\mathcal{U}\}_n} B_{t}(u)^2
 \section{Technical considerations}
 
 
-\subsection*{Why an initial deterministic part?}
+\subsection{Why an initial deterministic part?}
 
 The initial deterministic range $\mathcal{T}_0$ is a technical constraint.
 
 Because samples are sorted with decreasing $\tilde w_i$, it is guaranteed that $|\mathcal{T}_{t>t'}| \geq |\mathcal{T}_{t'>0}|-1$.
 For each comb, we draw a sample in each teeth, and when a tooth is entirely computed, it is moved to $\mathcal{D}$. Thus, it is immediately obvious that a tooth containing a single sample makes no sense, as it will be instantly moved to $\mathcal{D}$ ; it can as well be considered part of it. Because it's usually accepted (???) that it takes at least 30 samples to estimate a variance, we can go further and consider that a tooth with fewer than 5-10 samples will be moved to $\mathcal{D}$ too fast to be of real interest. Because the first $C_I^2$ are usually disproportionately large, it's not possible to fit that many in a tooth. Therefore they are immediately considered part of $\mathcal{D}$.
 
-\subsection*{Desired \textit{vs} effective partition function}
+\subsection{Desired \textit{vs} effective partition function}
 
 We have defined all teeth (except the special $\mathcal{T}_0$) as sharing the same total weight $W_T$. This is a constraint on our desired partition function $\tilde w_I = C_I^2$ that will lead to the effective partition function $w_I$.
 
@@ -351,7 +354,7 @@ This is illustrated in figure \ref{fig:toothbuilding}.
 
 
 
-\subsection*{tooth filling}
+\subsection{Tooth filling}
 
 This is an empirical mechanism to balance the stochastic and deterministic aspect of this method. For a tooth containing $n$ samples of equal weight, full computation is acheived after on average (A VERIFXXXXXXXXXXXXXXXXXXXXXXX)
 
@@ -363,16 +366,16 @@ combs are drawn. Thus, teeth containing thousands of determinants are very hard 
 A convenient way to avoid this frustrating situation is, everytime a comb is drawn, to additionally compute the first uncomputed sample of the whole space. This ensures smooth filling of teeth, and that that the full deterministic computation will be achieved before $\Ngen$ combs are drawn.
 
 
-\subsection*{comb drawing order}
+\subsection{Comb drawing order}
 
 It must be noted that combs can only be taken into account in an initially defined random order (that is, the order of $u[i]$).
 It can happen that a comb becomes computable (as in, all needed $e_I$ are known) even though it is later down the list. Taking it into account would introduce a bias, as the subset of ``computable combs'' is biased toward the presence certain samples - the computed ones - and thus isn't a random set of combs.
 
 
-\section{implementation}
+\section{Implementation}
 
 
-\subsection{drawing}
+\subsection{Drawing}
 
 The algorithm to find a sample index associated with drawing $u$ in with a partition function $w$ is show as algorithm \ref{alg:FIND_SAMPLE}.
 
@@ -410,7 +413,7 @@ The algorithm to find a sample index associated with drawing $u$ in with a parti
 
 
 
-\subsection{building teeth}
+\subsection{Building teeth}
 
 \begin{itemize}
 

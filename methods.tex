@@ -246,83 +246,64 @@ In addition, the cost for fully diagonalizing $\widehat{H}$ is $\order{\Ndet^3}$
 %\end{equation}
 %and one uses the intermediate normalization convention: $\braket{\Psi_0}{\Psi} = 1$.
 
-A reference is defined as a so-called \emph{zeroth-order} Hamiltonian $H_0$ for which we are able to compute eigenvalues. 
-
+The \emph{zeroth-order} Hamiltonian $\hat{H}_0$ is an approximate Hamiltonian which
+carries the dominant information of the exact Hamiltonian $\hat{H}$, and for which
+the eigenvalues and eigenvectors are known.
 \begin{equation}
 \label{eq:zerothordez}
-H^{(0)} \ket {\Psi^{(0)}} = E^{(0)} \ket{\Psi^{(0)}}
+\hat{H}^{(0)} \ket {\Psi^{(0)}} = E^{(0)} \ket{\Psi^{(0)}}
 \end{equation}
-
-It is assumed that $H^{(0)}$ carries the dominant information of the exact hamiltonian $H$.
-The exact hamiltonian is expressed as
+The difference between $\hat{H}$ and
+$\hat{H}^{(0)}$ is small enough to be considered as a \emph{perturbation}~$\hat{V}$:
 \begin{equation}
-H = H^{(0)} + \lambda V
+\hat{H} = \hat{H}^{(0)} + \lambda \hat{V}
 \end{equation}
-
-With $\lambda$ a scalar. It is assumed $H^{(0)}$ is the dominant term, i.e. that it carries most of the information of the exact Hamiltonian, $\lambda V$ being a relatively small correction.
-We will try to solve
-
+with $\lambda$ a scalar connecting smoothly the approximate Hamiltonian ($\lambda=0$) and the exact Hamiltonian ($\lambda=1$). We will try to solve
 \begin{equation}
 \label{eq:perturbation}
-(H^{(0)} + \lambda V) \ket {\Psi (\lambda)} = E(\lambda)\ket {\Psi (\lambda)}
+\qty(\hat{H}^{(0)} + \lambda \hat{V}) \ket {\Psi (\lambda)} = E(\lambda)\ket {\Psi (\lambda)}
 \end{equation}
-
-postulatint that solutions for $H(\lambda)$ can be written as power developpment
-
-\begin{equation}
-E(\lambda) = \sum_{l=0}^{\infty} \lambda^l e^{(l)} 
-\end{equation}
-\begin{equation}
-\ket {\Psi (\lambda)} = \sum_{l=0}^{\infty} \lambda^l \ket {\psi^{(l)}} 
-\end{equation}
-
+assuming that solutions for $H(\lambda)$ can be written as a power series:
+\begin{align}
+E(\lambda) & = \sum_{l=0}^{\infty} \lambda^l e^{(l)}  \\
+\ket {\Psi (\lambda)} & = \sum_{l=0}^{\infty} \lambda^l \ket {\psi^{(l)}} 
+\end{align}
 Equation \ref{eq:perturbation} becomes
-
 \begin{equation}
-(H_0 + \lambda V) \Big ( \sum_{l=0}^{\infty} \lambda^l \ket {\psi^{(l)}} \Big )  = \Big ( \sum_{l=0}^{\infty} \lambda^l e^{(l)} \Big ) \Big ( \sum_{l=0}^{\infty} \lambda^l \ket {\psi^{(l)}} \Big )
+\qty(\hat{H}^{(0)} + \lambda V) \Big ( \sum_{l=0}^{\infty} \lambda^l \ket {\psi^{(l)}} \Big )  = \Big ( \sum_{l=0}^{\infty} \lambda^l e^{(l)} \Big ) \Big ( \sum_{l=0}^{\infty} \lambda^l \ket {\psi^{(l)}} \Big )
 \end{equation}
-
-Equation at order $n$ is obtained by isolating all terms that are multiplied by $\lambda^n$. For $n=0$, we find equation \ref{eq:zerothordez}. For $n=1$ we have
-
+and equation at order $n$ is obtained by isolating all terms that are multiplied by $\lambda^n$. For $n=0$, we find equation \ref{eq:zerothordez}. For $n=1$ we have
 \begin{equation}
-\lambda \Big [ H_0 \ket {\psi^{(1)}} + V \ket {\psi^{(0)}} \Big ] = \lambda \Big [ e^{(0)} \ket {\psi^{(1)}} + e^{(1)} \ket {\psi^{(0)}} \Big ]
+\lambda \Big [ \hat{H}^{(0)} \ket {\psi^{(1)}} + V \ket {\psi^{(0)}} \Big ] = \lambda \Big [ e^{(0)} \ket {\psi^{(1)}} + e^{(1)} \ket {\psi^{(0)}} \Big ]
 \end{equation}
-
-etc...
+etc\dots
 
 The equation of order $n$ requires knowledge of all $e^{(m \leq n)}$ and $\ket {\psi^{(m \leq n)}}$. It is possible to iteratively solve the equations up a given value of $n$, each iteration $i$ yielding $e^{(i)}$ and $\ket {\psi^{(i)}}$. Then the wavefunction and energy at order $n$ can be written
+\begin{align}
+E^{(n)} &=\sum_{i=0}^n e^{(i)} \\
+\ket {\Psi^{(n)}} &= \sum_{i=0}^n \ket {\psi^{(i)}}
+\end{align}
 
+The perturbation theory that is used is characterized by the choice of $\hat{H}^{(0)}$.
+If the zeroth-order (symmetric) Hamiltonian is chosen as the exact Hamiltonian on a subset of determinants ($1 \le i \le j \le \Ndet$), and diagonal on the rest ($\alpha > \Ndet$), 
+\begin{align}
+\mel{i}{\hat{H}^{(0)}}{j} & = \mel{i}{\hat{H}}{j} \\
+\mel{i}{\hat{H}^{(0)}}{\alpha} & = 0 \\
+\mel{\alpha}{\hat{H}^{(0)}}{\alpha} & = \mel{\alpha}{\hat{H}}{\alpha}, \\
+\end{align}
+the zeroth-order Hamiltonian is the so-called \emph{Epstein-Nesbet} Hamiltonian. In that case,
+\begin{align}
+\mel{i}{\hat{V}}{\alpha} & = \mel{i}{\hat{H}}{\alpha} \\
+\mel{i}{\hat{V}}{j} & = 0 \\
+\end{align}
+In Epstein-Nesbet perturbation theory, $e^{(0)}$ is the variational energy of
+the zeroth-order wavefunction, $e^{(1)} = 0$, and one needs to go to the second
+order to get an improvement on the energy:
 \begin{equation}
-E^{(n)}=\sum_{i=0}^n e^{(i)}
+\EPT = e^{(2)} = \sum_{\alpha \notin \Psi^{(0)}} \frac{\Hij{\alpha}{\Psi^{0}}^2}{E^{(0)} - \Hij{\alpha}{\alpha}}
 \end{equation}
 
-\begin{equation}
-\ket {\Psi^{(n)}}=\sum_{i=0}^n \ket {\psi^{(i)}}
-\end{equation}
 
-In this work, we will be intersted in the second-order energy
-
-\begin{equation}
-E^{2} = e^{(0)} + e^{(1)} +e^{(2)}
-\end{equation}
-
-$e^{(0)}$ is the variational energy for the zeroth-order wavefunction, which by definition we can compute. $e^{(1)}$ is demonstrably null \alert{toujours vrai? plus de details?}. We are left with the second-order perturbative energy which can be expressed as
-
-\begin{equation}
-e^{(2)} = \sum_{\alpha \notin \Psi^{(0)}} \frac{\Hij{\alpha}{\Psi_0}}{E^{(0)} - H^{(0)}_{\alpha\alpha}}
-\end{equation}
-
-
-The perturbation theory that is used is defined by a choice of $H^{(0)}$.
-
-
-\alert{Pioche un peu chez Manus pour introduire MP2 et Epstein Nesbet.}
-
-
-
-\alert{On voit que pour MP2, on n'a pas besoin de toutes les integrales
-bielectroniques: les $\braket{vv}{vv}$ ne sont pas necessaires. Donc ca coute
-forcement moins cher que le CI.}
 
 \section{Selected CI methods}
 
