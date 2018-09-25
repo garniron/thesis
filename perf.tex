@@ -22,7 +22,7 @@ The measurements were made on the Olympe supercomputer (CALMIP). Each node is
 a dual-socket Intel(R) Xeon(R) Gold 6140 CPU @ 2.30GHz with 192GiB of RAM, and
 contains 36 physical CPU cores.
 
-\begin{figure}[h]
+\begin{figure}[hbt]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/perf/cn3_energy}
 		\caption{Convergence of the energy of the ground and excited states with respect to the number of determinants in the variational space.}
@@ -30,7 +30,7 @@ contains 36 physical CPU cores.
 	\end{center}
 \end{figure}
 
-\begin{table}
+\begin{table}[hbt]
 \caption{Energies and second-order perturbative corrections for increasingly large wave functions. $\Delta$ is the energy difference
 between the ground state and the excited state.}
 \label{tab:energy_pt2}
@@ -77,9 +77,11 @@ energy obtained in a larger basis set.
 
 
 
+\clearpage
+
 \section{Davidson diagonalization}
 
-\begin{table}[t]
+\begin{table}[hbt]
 \caption{Wall-clock time (in seconds) to run one Davidson's iteration in parallel with increasingly large wave functions.}
 \label{tab:time_davidson_ndet}
 \begin{center}
@@ -98,7 +100,7 @@ $42~959~496$ &  $12~361.68$ \\
 \end{center}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[hbt]
 \caption{Wall-clock time (in seconds) to run one Davidson's iteration in parallel on two different wave functions 
 with an increasing number of 36-core compute nodes.}
 \label{tab:time_davidson}
@@ -142,9 +144,11 @@ perform one iteration of the Davidson diagonalization, with an increasing number
 The timings are reported in table~\ref{tab:time_davidson} and the parallel speedup curve is represented in figure~\ref{fig:speedup_davidson}.
 
 
+\clearpage
+
 \section{Selection}
 
-\begin{table}
+\begin{table}[hbt]
 \caption{Single-node (36-core) CIPSI selection for increasingly large wave functions. Time is given in seconds.}
 \label{tab:time_selection}
 \begin{center}
@@ -166,7 +170,7 @@ $1~928~131$ & $ 5~258.16$ \\
 \end{center}
 \end{table}
 
-\begin{table}
+\begin{table}[hbt]
 \caption{Time (in seconds) to run parallel CIPSI selections on the
 9~356~952-determinant wave function with an increasing number of 36-core
 compute nodes.}
@@ -188,7 +192,7 @@ $50$ & $   748.99$ \\
 \end{center}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[hbt]
     \begin{center}
       \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sel_det}
       \caption{Wall-clock time of the selection as a function of the number of
@@ -216,6 +220,8 @@ and communications scaling as $\order{\Ndet}$, as the computation.
 
 
 
+\clearpage
+
 \section{PT2 calculations}
 
 The stopping criterion of the calculation of the PT2 contribution was a
@@ -223,7 +229,7 @@ relative statistical error below 1/1000-th.
 The fraction of the full deterministic calculation required to reach this criterion
 is typically around $5\%$.
 
-\begin{figure}[h]
+\begin{figure}[hbt]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_pt2_det}
 		\caption{Wall clock time required to compute the PT2 contribution for the ground and the excited states, as a function of the number of determinants in the wave function.}
@@ -231,7 +237,7 @@ is typically around $5\%$.
 	\end{center}
 \end{figure}
 
-\begin{table}
+\begin{table}[hbt]
 \caption{Single-node (36-core) $\EPT$ calculations for increasingly large wave functions. Time is given in seconds.}
 \label{tab:time_pt2}
 \begin{center}
@@ -287,7 +293,7 @@ $50$ & $ 1~154.97$ & $ 1~273.66$ \\
 \end{tabular}
 \end{center}
 \end{table}
-\begin{figure}[h]
+\begin{figure}[hbt]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_pt2_node}
 		\caption{Parallel speedup for the calculation of the $\EPT$ contribution of the ground state using the largest wave function. Each node contains 36 physical CPU cores.}
@@ -297,7 +303,11 @@ $50$ & $ 1~154.97$ & $ 1~273.66$ \\
 
 To analyze the parallel efficiency of the $\EPT$ calculation, we have made the parallel speedup curve using up to 50 nodes (1800 CPU cores), plotted in figure~\ref{fig:scaling_node_pt2}. With 50 nodes, one obtains a speedup with respect to the single-node reference of $38.8\times$ for the ground state and $39.5\times$ for the excited state. This corresponds to a parallel efficiency of 77.7\% and 79.1\%.
 
+\clearpage
+
 \section{Shifted-Bk}
+
+\clearpage
 
 \section{Multi-reference Coupled-Cluster}
 
