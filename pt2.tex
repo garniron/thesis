@@ -271,28 +271,26 @@ An illustrative exemple is given as figure \ref{fig:toothindet}.
 	\begin{center}
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/toothindet}
 	\end{center}
-		\caption{illustrative example of drawing two combs $a$ and $b$
-		Samples that have been computed are greyed. $\mathcal{T}_1$ has been fully computed and is thus moved to $\mathcal{D}$. The first non-deterministic/not fully-computed tooth is $\mathcal{T}_2$.
-		$$E_D = e_1 + e_2 + e_3$$
-		$$B_2(a) = \frac{e_6}{w_6} + \frac{e_{10}}{w_{10}}\;;B_2(b) = \frac{e_6}{w_6} + \frac{e_{11}}{w_{11}}$$
-		$$E_S = (B_2(a)+B_2(b)) \times W_T \alert {A CHECK}$$}
+		\caption{illustrative example of drawing $n=2$ combs $a$ and $b$.	Samples that have been computed are greyed. $\mathcal{T}_1$ has been fully computed and is thus moved to $\mathcal{D}$. The first non-deterministic/not fully-computed tooth is $\mathcal{T}_{t=2}$}
 		\label{fig:toothindet}
+		$$ E_D = e_1 + e_2 + e_3 $$
+		$$B_t(a) = W_T \Big ( \frac{e_6}{w_6} + \frac{e_{10}}{w_{10}} \Big ) \;;B_t(b) = W_T \Big ( \frac{e_6}{w_6} + \frac{e_{11}}{w_{11}} \Big )$$
+		$$E_S = \frac{B_t(a)+B_t(b)}{n}$$
 \end{figure}
 
 \paragraph{estimation of $\EPT$}
 
-After drawing $n$ random numbers forming the set $\mathcal{U}$, and given $\mathcal{T}_t$ the first non-deterministic tooth, $\EPT$ can be estimated as 
+After drawing $n$ random numbers forming the set $\{\mathcal{U}\}$, and given $\mathcal{T}_t$ the first non-deterministic tooth, $\EPT$ can be estimated as 
 
-\alert{A VERIFIERXXXXXXXXXXXXXXXXXXXXXXXX}
 \begin{equation}
-\EPT = (S_{t} / n) \pm \text{err}
+\EPT = \Big ( \sum_{I=1}^{n_0(t)} e_I + \frac{S_{t}}{n} \Big ) \pm \text{err}
 \end{equation}
 
 with
 \begin{align}
 err = \sqrt{(S_{t}^{(2)} - {S_{t}}^2) (n-1)^{-1} } \\
-S_{t} = \sum_{u \in \{\mathcal{U}\}_n} B_{t}(u) \\
-S^{(2)}_{t} = \sum_{u \in \{\mathcal{U}\}_n} B_{t}(u)^2
+S_{t} = \sum_{u \in \{\mathcal{U}\}} B_{t}(u) \\
+S^{(2)}_{t} = \sum_{u \in \{\mathcal{U}\}} B_{t}(u)^2
 \end{align}
 
 \clearpage
