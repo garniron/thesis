@@ -3,6 +3,16 @@
  
 \begin{document}
 
+The diagonalization of the Hamiltonian is a necessary step in configuration
+interaction. The diagonalization of a matrix scales as $\order{\Ndet^3}$ in
+terms of computation, and $\order{\Ndet^2}$ in terms of storage, so its cost is
+prohibitive as $\Ndet$ ranges usually between a few million and a few billion.
+Fortunately, not all the spectrum of $\hat H$ is required: only the few lowest
+eigenstates are of interest.
+
+The Davidson algorithm\cite{Davidson_1975} is an iterative algorithm which aims
+at extracting the first few eigenstates of a large matrix.
+
 \alert{Il faut dire que notre algo est direct : on ne stocke pas H et on doit le realculer a chaque iteration. Il faut citer DISCIUS.}
 
 Need for variational coefficients. \\
@@ -11,8 +21,6 @@ Computing excitation is extremely fast already. \\
 need to avoid doing comparisons at all \\
 Davidson : connections inside a given set \\
 
-
-\section{def}
 
 \alert{
 \begin{itemize}
