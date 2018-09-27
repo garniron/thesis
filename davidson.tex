@@ -4,27 +4,23 @@
 \begin{document}
 
 The diagonalization of the Hamiltonian is a necessary step in configuration
-interaction. The diagonalization of a matrix scales as $\order{\Ndet^3}$ in
-terms of computation, and $\order{\Ndet^2}$ in terms of storage, so its cost is
+interaction. Standard diagonalization algorithms scale as $\order{\Ndet^3}$ in
+terms of computation, and $\order{\Ndet^2}$ in terms of storage, so the cost is
 prohibitive as $\Ndet$ ranges usually between a few million and a few billion.
-Fortunately, not all the spectrum of $\hat H$ is required: only the few lowest
-eigenstates are of interest.
 
-The Davidson algorithm\cite{Davidson_1975} is an iterative algorithm which aims
-at extracting the first few eigenstates of a large matrix.
+Fortunately,  not all the spectrum of $\hat H$ is required: only the few lowest
+eigenstates are of interest. The Davidson algorithm\cite{Davidson_1975} is an
+iterative algorithm which aims at extracting the first few $\Nstate$ lowest
+eigenstates of a large matrix. This algorithm reduces the cost of the 
+computation and the storage to $\order{\Nstate \Ndet^2}$, and is presented as
+algorithm~\ref{alg:davidson}.
 
-\alert{Il faut dire que notre algo est direct : on ne stocke pas H et on doit le realculer a chaque iteration. Il faut citer DISCIUS.}
 
-Need for variational coefficients. \\
-boils down to find connected determinants. \\
-Computing excitation is extremely fast already. \\
-need to avoid doing comparisons at all \\
-Davidson : connections inside a given set \\
+%TODO mettre ici le pseudocode 
 
 
 \alert{
 \begin{itemize}
-\item Expliquer que la diagonalisation est en $\order{N^3}$, et donc pas viable pour des millions de determinants. On n'est interesse que par les plus basses valeurs propres de $H$, donc on peut utiliser une methode iterative pour les obtenir.
 \item Raconter ce qu'il y a dans le papier original : [ E.R.  Davidson, J.  Comput.  Phys.  17 (1975) 87 ].
 \item Mettre le pseudocode de l'algorithme.
 \item Parler de quelques ameliorations depuis : [ J.  Olsen, P.  Joregensen and J.  Simons, Chem.  Phys.  Letters 169 (1990) 463 ], [F.X.  Gadea /Chemical Physics Letters 227 (1994) 201-210] 
@@ -34,15 +30,39 @@ Davidson : connections inside a given set \\
 }
 
     
-\section{general approach}
 Algorithmically, the expensive part of the Davidson diagonalization is the computation of the matrix-vector products $\mH \mc$.
 
-Determinants are connected by $\mH$ only if they differ by no more than two spinorbitals. Therefore, the number of non-zero elements per line of $\mH$ is equal to the number of single and double excitation operators, namely $\order{\Nelec^2 \times (\Norb - \Nelec)^2}$. As $\mH$ is symmetric, the number of non-zero elements per column is identical. This makes the $\mH$ matrix very sparse, but for large basis sets the whole $\mH$ matrix may not fit in the memory of a single node, as the number of non-zero entries to store is $\order{\Ndet \times \Nelec^2 \times (\Norb - \Nelec)^2}$. 
-One possibility would be to distribute the storage of Hamiltonian among multiple compute nodes, and use a distributed library such as PBLAS\cite{pblas} to perform the matrix-vector operations. Another approach is to use a so-called \emph{direct} algorithm, where the matrix elements are computed \emph{on the fly}, and this is the approach chosen in the \QP.
+Determinants are connected by $\mH$ only if they differ by no more than two
+spinorbitals. Therefore, the number of non-zero elements per line of $\mH$ is
+equal to the number of single and double excitation operators, namely
+$\order{\Nelec^2 \times (\Norb - \Nelec)^2}$. As $\mH$ is symmetric, the number
+of non-zero elements per column is identical. This makes the $\mH$ matrix very
+sparse, but for large basis sets the whole $\mH$ matrix may not fit in the
+memory of a single node, as the number of non-zero entries to store is
+$\order{\Ndet \times \Nelec^2 \times (\Norb - \Nelec)^2}$.  One possibility
+would be to distribute the storage of Hamiltonian among multiple compute nodes,
+and use a distributed library such as PBLAS\cite{pblas} to perform the
+matrix-vector operations. Another approach is to use a so-called \emph{direct}
+algorithm, where the matrix elements are computed \emph{on the fly}, and this
+is the approach chosen in the \QP.
 
 
-This effectively means iterating over all pairs of determinants $\ki$ and $\kj$, checking whether $\ki$ and $\kj$ are connected by $\mH$ and if they are, accessing the corresponding integral(s) and computing the phase factor.
-Even though we presented a very effective method to compute the excitation degree between two determinants, the number of such computations to be made scales as $\Ndet^2$, which can be prohibitively high. To get an efficient implementation it is mandatory to filter out all pairs of determinants that are not connected by $\mH$.
+This effectively means iterating over all pairs of determinants $\ki$ and
+$\kj$, checking whether $\ki$ and $\kj$ are connected by $\mH$ and if they are,
+accessing the corresponding integral(s) and computing the phase factor.  Even
+though we presented a very effective method to compute the excitation degree
+between two determinants, the number of such computations to be made scales as
+$\Ndet^2$, which can still be prohibitively high. To get an efficient
+implementation it is mandatory to filter out all pairs of determinants that are
+not connected by $\mH$, and iterate only over connected pairs.  We have
+implemented an algorithm similar to the \emph{Direct Selected Configuration
+Interaction Using Strings} (DISCIUS) algorithm,\cite{Povill_1995} as presented
+in algorithm~\ref{alg:hu}.
+
+
+
+
+%%%%%
 The base approach to this problem is to sort, or rather classify, determinants so as to build sets that are by construction disconnected from others. Generally speaking, the set of all determinants is split in disjoint sets $S_c$, $c$ being a mathematical object of the set $\mathcal{T}$. $\mathcal{D}$ is the set of determinants. For a specific method, we have the functions
 \begin{itemize}
 	\item
