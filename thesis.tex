@@ -141,7 +141,38 @@ phase factors
 
 \chapter{Introduction}
 
-During my 3 years at the LCPQ, my work focused on improving the Quantum Package, a suit of quantum chemistry code intended for developpers. It focuses on ease of implementation and parallelism.
+During the 3 years is spent at the LCPQ, my work focused on improving the Quantum Package, a suit of quantum chemistry code intended for developpers, which focuses on ease of implementation and parallelism.
+
+Quantum chemistry is a field that relies on increasingly expensive computations. The algorithms and approaches proposed in this thesis have been designed in the context of the change in paradigm that has been going on for the last dozen years,\ref{Sutter_2005} in which the usual sequential algorithms are progressively replaced with parallel equivalents. Indeed, the increase in processors' frequency being challenged by physical barriers, increase in computational power has to be achieved through increase in the number of cores. However, where an increase in frequency mechanically lead to a faster execution of a code, an increase in number of cores may be challenged by algorithmic barriers, which may require adapting of even changing the algorithms.
+
+Initially, one may have expected this work to be focusing of methods that are by design adapted to massively parallel architectures, such as Monte-Carlo methods (stochastic methods), which are by design composed of a large number of independant tasks (``embarassingly parallel'' algorithms). In addition, they often are able to yield an approximate result for just a fraction of the cost of the equivalent deterministic, exact computation. An example of the move toward this type of method is the recently developped FCIQMC, which can be seen as a Monte-Carlo version of older selection algorithms such as CIPSI, that are iterative and thus a priori not well adapted to parallel architectures. This is however not how things turned out for me.
+
+Many methods, unlike Monte-Carlo ones, are not intrinsically parallel. Nevertheless, some are well-known and widely used, or simply need to be experimented ; and thus they still need to be adapted to parallel architectures. The \QP developped at the LCPQ is a suit of wavefunction quantum chemistry methods, that strives to allow easy implementation and expermientation of new methods, and to make parallel computation as simple as possible. I focused on its improvement all through my thesis, which turned out to be about software developpement at least as much as about quantum chemistry.
+
+The previously mentioned goals of the \QP have two main consequences
+\begin{itemize}
+\item
+it should be dominantly determinant-driven.
+\item
+it needs to have some parallel code base for common, deterministic methods.
+\end{itemize}
+
+
+A determinant-driven approach essentially means a wavefunction algorithm loops over determinants rather than electronic integrals, which is usually less effective - due to the larger number of determinants - but also simpler and more intuitive. While the determinant-driven character of the \QP was already established, some improvement was brought to it, in particular for computation of phase factors which, as simple as the problem may seem, is notably time-consuming.
+
+Somewhat logically, the first focus was acceleration and parallelisation of the Davidson diagonalization, which is a pivotal point for CI methods. The general approach and some early tries, because they are not part of the \QP, are mentioned in appendix, as I believe they might be a starting point for other ideas.
+
+The second focus was improvement of the selection algorithm which was the main method used by the \QP to build compact wavefunctions suitable for determinant-driven computations. In a nutshell, the principle is to incrementally build a variational wavefunction by scavenging its external space for determinants that interact with it. While I consider the significant improvement that was brought to this implementation to be in itself the most important part of this work, it also turned out to be the basis for subsequent implementations of other algorithms. Indeed, efficiently implementing this method raised the fundamental question of connecting a \alert{zeroth-order} wavefunction to its external space ; that is, gathering data to go beyond what is readily available in it. The next steps were partly guided by the aversion to waste data gathered during the selection.
+
+Our selection algorithm, CIPSI, implies computing a perturbative contribution for external determinants, and include the ones of largest contribution into the variational wavefunction. $\EPT$ the sum of all contributions approximates how much energy the variational wavefunction is missing compared to Full-CI energy, which is the exact solution in a given basis set. However to perform an acceptably accurate selection, not all external determinants need to be considered, nor do each contribution needs be known with great accuracy. This allows for approximations too severe for the sum of all computed contributions to yield an accurate estimation $\EPT$. Incidently, computation of $\EPT$ is much more costly that selection. We designed a hybrid deterministic-stochastic scheme which enabled us to get an acceptably accurate value for $\EPT$ by computing a few percent of all contributions.
+
+Computation of $\EPT$ allows to correct the energy of our internal wavefunction by taking into accout its external space. Unfortunately, it only refines the energy and not the wavefunction itself. Based on the shifted-Bk algorithm, and using our CIPSI implementation and the hybrid deterministic-stochastic scheme we design for computation of $\EPT$, we were able to refine our wavefunction under the effect of a stochastically estimated external space (stochastic matrix dressing).
+
+In addition, we set up a more general framework to enable refining of the variational wavefunction under the effect of a ``custom'', stochastically estimated external space. This was experimented by implementing a MR-CCSD external space.
+
+The efficiency for the implemented algorithms has been studied, and the code could give way to numerous applications, in particular to obtain reference energies for complicated molecular systems.
+
+
 
 \chapter{Wave function methods}
 \minitoc
