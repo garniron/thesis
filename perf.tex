@@ -232,7 +232,7 @@ is typically around $5\%$.
 \begin{figure}[hbt]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_pt2_det}
-		\caption{Wall clock time required to compute the PT2 contribution for the ground and the excited states, as a function of the number of determinants in the wave function.}
+		\caption{Wall clock time required to compute $\EPT$ for the ground and the excited states, as a function of the number of determinants in the wave function.}
 		\label{fig:scaling_det_pt2}
 	\end{center}
 \end{figure}
@@ -306,6 +306,59 @@ To analyze the parallel efficiency of the $\EPT$ calculation, we have made the p
 \clearpage
 
 \section{Shifted-Bk}
+
+\begin{table}[hbt]
+\caption{Single-node (36-core) Shifted-$B_k$ iteration for increasingly large wave functions.
+Time is given in seconds.}
+\label{tab:time_selection}
+\begin{center}
+\begin{tabular}{rr}
+\hline
+\tabc{$\Ndet$} & \tabc{Ground state} & \tabc{Excited state} \\
+\hline
+$      123$ & $     0.24$  & $     0.81$ \\
+$    3~083$ & $     3.79$  & $     4.75$ \\
+$   29~409$ & $    23.12$  & $    28.72$ \\
+$  168~595$ & $   200.06$  & $   219.91$ \\
+$1~322~537$ & $  2784.19$  & $  3023.61$ \\
+$9~356~952$ & $ 27476.91$  & $ 28253.20$ \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+\begin{figure}[hbt]
+	\begin{center}
+		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sbk_det}
+		\caption{Wall clock time required to compute the Shifted-$B_k$ dressing for the ground and the excited states, as a function of the number of determinants in the wave function.}
+		\label{fig:scaling_det_sbk}
+	\end{center}
+\end{figure}
+
+The time necessary to build the dressing matrix in the Shifted-$B_k$ method was measured on a single
+36-core node with an increasing number of determinants (figure~\ref{fig:scaling_det_sbk}).
+The stopping criterion was an estimated relative error on 
+$\mel{\Psi}{\hat \Delta}{\Psi}$, the dressed energy, equal to $0.01$.
+
+Using the log-log plot, the scaling with the number of determinants was found to be
+$\order{\Ndet^{1.25}}$. In the previous section, we have seen that the scaling for $\EPT$ was
+$\order{\Ndet^{1.5}}$. We can explain this difference by the fact that in the 
+calculation of $\EPT$, the communication was negligible. In the computation of the
+matrix dressing, the result of each task scales as $\order{\Ndet}$. To palliate this 
+bottleneck, the results of multiple tasks are aggregated together and one large message is
+sent at every checkpoint. The computational overhead for this reduction of the communication
+scales as $\order{\Ndet}$, and this explains why the scaling with the number of determinants is
+closer to linear than for $\EPT$.
+
+\begin{figure}[hbt]
+	\begin{center}
+		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sbk_node}
+		\caption{Parallel speedup for the calculation of the matrix dressing of the ground state using the largest wave function. Each node contains 36 physical CPU cores.}
+		\label{fig:scaling_node_sbk}
+	\end{center}
+\end{figure}
+
+Then, the parallel speedup was measured using the wavefunction with 9~356~952 determinants. The results
+are plotted in figure~\ref{fig:scaling_node_sbk}.
 
 \clearpage
 
