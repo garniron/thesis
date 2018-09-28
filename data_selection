@@ -6,13 +6,13 @@
 #
 # 
 # Nnode  Not fragmented   fragmented
-1    
+#1    
 5    25061.940
 10   13162.932 
 20    6835.752  
 30    4627.188
-40     
-50     
+40    3487.374 
+50    2838.702
 
 
 # Not fragmented
