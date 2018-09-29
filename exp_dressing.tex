@@ -54,195 +54,8 @@ Some methods aim at partially or fully correct this size-consistency error by el
 
 
 
-
-\begin{algorithm}
-\KwData{$\kalpha$ the considered exernal determinant}
-\KwData{$\ket {D_i}$ the list of $N$ internal determinants connected to $\kalpha$, sorted by increasing integer value}
-\KwData{$\ket {R_i}$ the list of $N_{ref}$ reference determinants sorted by increasing integer value and $c_{R_i}$ their coefficient}
-\KwData{$t_{R_r \rightarrow D_i}$ the used amplitudes}
-\KwResult{$c_\alpha$} 
-
-$c_\alpha \gets 0$ \;
-discard $R_i$ when $\text{EXC\_DEGREE} (R_i, \alpha) > 4$ \;
-if $R_i$ so that $\text{EXC\_DEGREE} (R_i, \alpha) \leq 2$ was found, discard $\kalpha$ \;
-
-
-\ForAll{$D_j$}{
-\tcc{Note that $\Phi(D_j \rightarrow \alpha)$ may be pre-computed here}
-$\delta \gets \alpha - D_j$ \;
-$i \gets 1$ \;
-$r \gets 1$ \;
-\While{$i \leq N \wedge r \leq N_{ref}$}{
-	\uIf{$D_i - R_r > \delta$}{
-		$r \gets r + 1$ \;
-	}
-	\uElseIf{$D_i - R_r < \delta$}{
-		$i \gets i + 1$ \;
-	}
-	\Else
-	{
-		\If{$R_r \oplus D_i \oplus D_j \oplus \alpha = 0$}{
-			\tcc{diamond found}
-			$\varphi \gets \Phi(D_j \rightarrow \alpha) \times \Phi(R_r \rightarrow D_i)$ \;
-			$c_\alpha \gets c_\alpha + \varphi \times c_{R_r} \times (t_{R_r \rightarrow D_i}) \times (t_{R_r \rightarrow D_j})$ \;
-		}
-		$r \gets r + 1$ \;
-		$i \gets i + 1$ \;
-	}
-}
-}
-\end{algorithm}
-
-
-By the formula of $c_\alpha$ for MRCC, we can see that in a practical sense, we are looking for "diamond" figures.
-The matrix dressing implementation supplies $\{\mathcal{D}\}$ the complete list of internal determinants that connect to $\kalpha$. We also need to consider $\{\mathcal{R}\}$ the list of reference determinants.
-
-A naive way to find those diamond, would be to loop over all unordered triplets 
-
-\begin{equation}
-(D_i \in \{\mathcal{D}\}, D_j \in \{\mathcal{D}\}, R \in \{\mathcal{R}\})
-\end{equation}
-
-so that
-
-\begin{equation}
-\ordering \hat T_{R \rightarrow D_i} \hat T_{R \rightarrow D_j} \ket R = \ordering  \kalpha
-\end{equation}
-
-with $\hat T_{R \rightarrow D}$ an excitation operator so that $\hat T_{R \rightarrow D} \ket R = \pm \ket D$.
-
-To find diamonds using excitation operators, we only need to verify that
-\begin{equation}
-\ordering \hat T_{R \rightarrow D_i} = \ordering \hat T_{D_j \rightarrow \alpha}
-\label{eq:excitation_diamond}
-\end{equation}
-
-We first set up a method to fastly identify a diamond.
-
-For implementational efficiency, we are going to express excitation in two different ways.
-
-\paragraph{Additions}
-This method allows to fastly locate diamonds, but may yield false positives.
-The idea is to express an excitation as an addition. As was said, bitstrings are essentially integers, so they can be added, substracted and compared as such. We can easily associate $T_{A \rightarrow B}$ and $T_p^q$ integer values with  excitations $\hat T_{A \rightarrow B}$ and $\hat T_p^q$ respectively
-
-\begin{align}
-T_p^q = 2^{q-1} - 2^{p-1} \\
-T_{A \rightarrow B} = B - A \\
-T_{A \rightarrow B} + A = B 
-\end{align}
-
-With $A$ the bitstring associated with $\ket A$ as a single integer. It is a necessary but not sufficent condition for a diamond that
-
-\begin{equation}
-T_{R \rightarrow D_i} = T_{D_j \rightarrow \alpha}
-\end{equation}
-
-indeed 
-
-\begin{align}
-\hat T \ket A = \ket B \implies  T + A = B\\
-T + A = B \centernot \implies \hat T \ket A = \ket B
-\end{align}
-
-with $T$ the integer associated with an excitation $\hat T$. If $\hat T \ket A = 0$, in most cases $T + A$ will yield a bitstring with a wrong number of bits/electrons, but this is not guaranteed. Therefore we need a fast test to ensure $(R_r, D_i, D_j, \alpha)$ are forming a diamond.
-
-
-
-Equation \ref{eq:excitation_diamond} implies
-
-\begin{align}
-D_i - R_r = \alpha - D_j 
-\end{align}
-
-Finding all $(D_i, R_r)$ pairs that verify this, assuming $D$ and $R$ are sorted in ascending order, can be achieved with linear complexity.
-
-% with a complexity of either $\mathcal{O}(N + N_{ref})$ or $\mathcal{O}(N \times min(N, N_{ref}) \times log(max(N, N_{ref})))$
-
-\begin{enumerate}
-\item
-initialize $i$ and $r$ to $1$
-\item
-loop while both $i$ and $r$ are not out of bounds
-\item
-if $D_i - R_r < \alpha - D_j$, increment $i$ and loop
-\item
-if $D_i - R_r > \alpha - D_j$, increment $r$ and loop
-\item
-if $D_i - R_r = \alpha - D_j$, a pair has been found. Increment $i$ and $r$, and loop
-\end{enumerate}
-
-The complexity is $\mathcal{O}(N \times (N+N_{ref}))$.
-
-Note that depending on the size of $\{D\}$ and $\{R\}$ sets, a simple binary search based algorithm will be more efficient. If there are few references, the above can be advantageously replaced with
-\begin{enumerate}
-\item
-iterate over $R_r$
-\item
-binary search for $D_i = (\alpha - D_j + R_r)$ in $\{D\}$. 
-\end{enumerate}
-
-The complexity here is $\mathcal{O}(N_{ref} \times N \times log(N))$. While either of these methods could be chosen on a case-by-case basis, currently only the former is used, as it is more efficient for larger sets.
-
-
-For implementational ease and efficiency, it is worth noting that it is not required to handle bitstrings as actual arbitrary size integers when it comes to addition and substraction. While addition to bitstring was introduced as being associated with an excitation, it can actually be associated with any combination of creation and anihilation operators. It is therefore valid to consider each 64-bit integer as an independent ``sub-bitstring'' on which a subset of the operators will be applied. In short, additions and substactions can be done integer-wise, without the overhead of handling carries.
-
-When it comes to comparison, since the 64 bit integers corresponding to the lower orbitals will typically have more mobile electrons, they should be given them more weight to avoid unnecessary comparisons.
-
-\paragraph{Spinorbital occupation flipping}
-Now we express excitations using $\hat f_a$ an operator that flips the occupation status of a spinorbital. 
-\begin{align}
-  \begin{cases}
-  \hat f_p \ket A = a_p \ket A & \text{if }  a_p \ket A \neq 0\\
-  \hat f_p \ket A = a^\dagger_p \ket A & \text{if }  a^\dagger_p  \ket A \neq 0\\
-  \end{cases}
-\end{align}
-This avoids the burden of making a distinction between anihilation and creation operator, and check whether they can be applied to a determinant.
-
-
-The notation $\hat f_{ab\ldots}$ will be used as a shortcut for $\hat f_a \hat f_b \ldots$, and we define $\hat F_{A \rightarrow B} = \hat F_{B \rightarrow A}$ as the set of $\hat f$ operators that flips all spinorbitals whose occupation differ between $\ket A$ and $\ket B$.
-Clearly a set of $\hat f$ operators does not univocaly correspond to an excitation, but it's demonstrable that in this particular case, we can use $\hat F$ instead of the excitation operator $\hat T$, i.e. we can ensure $(R_r, D_i, D_j, \alpha)$ are forming a diamond by only verifying
-\begin{equation}
-\hat F_{R \rightarrow D_i} = \hat F_{D_j \rightarrow \alpha}
-\end{equation}
-
-It is easy to understand how this is a necessary condition, it is slighlty less obvious that it is also a sufficient one, i.e. that this can only happen if there is a diamond. In fact, it is not generally true. It is demonstrable in this particular case thanks to the known excitation degrees. It is known $\ket {D_i}$ and $\ket {D_j}$ are connected by at most a double excitation to $\kalpha$, therefore at most 4 orbitals have their occupation status flipping, two of them occupied and two unoccupied in $\kalpha$. For later clarity we use the dot ($\dot a$) notation to denote indices of spinorbitals that are occupied in $\kalpha$.
-
-\begin{equation}
-\hat F_{D_i \rightarrow \alpha} = \hat F_{R \rightarrow D_j} = \hat f_{\dot a \dot bcd} \; ; \; \hat F_{D_j \rightarrow \alpha} = \hat F_{R \rightarrow D_i} = \hat f_{\dot e \dot fgh}
-\end{equation}
-
-The reference determinant $\ket R$ is reached after chaining the two "flippenings"
-
-\begin{equation}
-\hat F_{R \rightarrow \alpha} = (\hat f_{\dot a \dot bcd})(\hat f_{\dot e \dot fgh})
-\end{equation}
-
-If indices $\dot a,\dot b,c,d,\dot e,\dot f,g,h$ are all unique, $\hat T_{R \rightarrow D_i}$ and $\hat T_{D_j \rightarrow \alpha}$ are independent and thus can be chained, so the diamond is valid. If they are not, the diamond is still known to be valid thanks to our knowledge that $\kalpha$ is at least a triple excitation from $\ket R$, and therefore at least 6 orbitals must flip. 
-
-It is trivial that
-
-\begin{equation}
-\hat f_{aa} = \hat 1
-\end{equation}
-
-so only 2 among the indices can refer to the same spinorbital $x$ (which we arbitrarily choose unoccupied in $\kalpha$). For obvious reasons one is found among $\dot a,\dot b,c,d$ and the other among $\dot e,\dot f,g,h$.
-
-\begin{equation}
-\hat F_{R \rightarrow \alpha} = (\hat f_{\dot a \dot bcx})(\hat f_{\dot e \dot fgx}) = (\hat f_{\dot a \dot bc})(\hat f_{\dot e \dot fg})
-\end{equation}
-
-As can be seen, both $\hat f_{\dot a \dot bc}$ and $\hat f_{\dot e \dot fg}$, when applied to $\kalpha$, will flip two occupied spinorbitals versus only one unoccupied one ; this implies $\ket R$ and $\kalpha$ do not have the same number of electrons. Because we know this not to be the case, we know such a situation cannot happen.
-
-
-
-To avoid having to iterate the full loops, we are going to use a trick.
-
-
-This algorithm works when bitstrings are considered binary integers of arbitrary size. However, no assumption is made about the operators involved in the diamond, they can be any combination of creations and anihilations. Therefore, for simplification purpose, it is possible to consider all 64-bit integers independently, each one carrying a subset of the operators involved in the excitation.
-
-
 \section{Computing $c_\alpha$}
-Whether the matrix dressing algorithm performs a shifted-Bk, an MR-CCSD or some other method, depends on the external space, i.e. the $c_\alpha$ coefficients. Our goal is to set up a framework in which stochastic matrix dressing can be done efficiently in an external space only defined by $Z(\alpha)$ a function that takes a determinant and returns the $c_\alpha$ it should be associated with.
+Whether the matrix dressing algorithm performs a shifted-Bk, an MR-CCSD or some other method, depends on the external space, i.e. the $c_\alpha$ coefficients. Our goal is to set up a framework in which stochastic matrix dressing can be done efficiently using an external space only defined by $Z(\alpha, \ldots)$ a function that takes $\kalpha$ a determinant and returns the $c_\alpha$ it should be associated with. The ``$\ldots$'' notation indicates that the returned value may depend on any number of global parameters, such as $\ket \Psi$, approximation thresholds, etc...
 Looking at the expression of $c_\alpha$ for shifted-Bk, it looks like the computation required is the exact same as the one performed by our CIPSI
 
 \begin{equation}
@@ -257,25 +70,33 @@ Thus, matrix dressing generally requires knowledge of all internal determiants a
 This is a lot like the former implementation of CIPSI : considering one $\kalpha$ at a time, enumerate its connections to selectors. The new, more efficient algorithm, however, considers a batch of up to ${N_{virt}}^2$ rather than a single one. The solution in conceptually simple. Neglecting connections to determinants that are not selectors :
 \begin{enumerate}
 \item
-Iterate over all $G_{pq}$ batches in the same way as in the CIPSI algorithm, building the $B_{rs}$ tag matrix
+loop over all $G_{pq}$ batches in the same way as in the CIPSI algorithm (building the $B_{rs}$ tag matrix)
 \item
-create ${(2N_{orb})}^2$ determinant sets $\mathcal{C}_{rs}$ each associated with $\Gpqrs$
+for each batch, create ${(2N_{orb})}^2$ determinant sets $\mathcal{C}_{rs}$ each associated with $\Gpqrs$
 \item
 when a connection between a selector $\ket S$ and $\kalpha = \ket {G_{pq}^{rs}}$ is found, add $\ket S$ to $\mathcal{C}_{rs}$ (instead of incrementing $P(G_{pq})$).
 \item
-for each untagged $\kalpha = \Gpqrs$ call $Z^\star(\alpha, \mathcal{C}_{rs})$
+When computation for batch $G_{pq}$ is completed, $\mathcal{C}_{rs}$ is the set of all selectors $\ket S$ connecting to $\kalpha = \ket {G_{pq}^{rs}}$. For each untagged $\kalpha$
+\begin{enumerate}
+\item
+$c_\alpha \gets Z^\star(\alpha, \mathcal{C}_{rs}, \ldots)$
+\item
+for each $\ket S \in \mathcal{C}_{rs}$ increment $\kappa_S$ with $c_\alpha \Hij{\alpha}{S}$
+\end{enumerate}
+
+
 \end{enumerate}
 
 
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=0.7\columnwidth]{figures/matrix_dressing/buildlists}
-		\caption{A REFAIRE NOTATION.............}
+		\caption{Build lists of connected selectors for unique $\kalpha$ in batch $G_{pq}$}
 		\label{fig:buildlists}
 	\end{center}
 \end{figure}
 
-When computation for batch $G_{pq}$ is completed, $\mathcal{C}_{rs}$ is the set of all selectors $\ket S$ connecting to $\kalpha$. As can be seen, this is pretty much the CIPSI algorithm, except we are building sets instead of incrementing scalars. This, of course, adds implementation complexity. The sizes of the $\mathcal{C}_{rs}$ sets aren't known in advance. Resizable arrays can be used. While they are not very practical to use in Fortran, they are not too hard to set up. 
+As can be seen, this is pretty much the CIPSI algorithm, except we are building sets instead of incrementing scalars. This, of course, adds implementation complexity. The sizes of the $\mathcal{C}_{rs}$ sets aren't known in advance. Resizable arrays can be used. While they are not very practical to use in Fortran, they are not too hard to set up. 
 
 More importantly, the storage space required may be concerningly high. Noticing that :
 \begin{itemize}
@@ -284,16 +105,16 @@ all $\Gpqrs$ in a batch are connected to each other
 \item
 there is ${N_{virt}}^2$ non-null $\Gpqrs$ in a batch
 \end{itemize}
-and considering
+and considering a particular case where
 \begin{itemize}
 \item
-$G_{pq}$ the first batch (all generated $\kalpha$ are unique)
+$G_{pq}$ is the first batch (all generated $\kalpha$ are unique)
 \item
 half of $\Gpqrs$ are internal determinants
 \end{itemize}
 
 We have ${N_{virt}}^2 / 2$ unique $\kalpha$ in the batch each one connecting to at least ${N_{virt}}^2 / 2$ internal determinants, for a total storage space of at least ${N_{virt}}^4 / 4$.
-This case isn't irrealistic, with $\ket {G_{pq}}$ the Hartree-Fock determinant with $(p,q)$ the HOMO spinorbitals.
+This case isn't irrealistic, with $\ket {G_{pq}}$ the Hartree-Fock determinant and $(p,q)$ the HOMO spinorbitals.
 
 Another issue is a high number of non-contiguous writes in memory, especially with those selectors that connect to all determinants of the batch ; they need to be added to ${N_{virt}}^2$ sets, which is ${N_{virt}}^2$ non-contiguous writes for a single selector.
 
@@ -304,7 +125,7 @@ Table \ref{tab:systematic_determination} indicates which $\kalpha = \ket {G_{pq}
 \mathcal{C}_{rs} \gets \tilde{\mathcal{C}}_{rs} \cup \tilde{\mathcal{C}}_{r0} \cup \tilde{\mathcal{C}}_{s0} \cup \tilde{\mathcal{C}}_{00}
 \end{equation}
 
-Care must be given that $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathcal{C}}_{s0}$ may share common elements. Given its frequency, it is important that this computation be efficient. As is sometimes the case, efficiency implies $\mathcal{C}_{rs}$ are not computed individually, but become available inside a loop. An implementation is proposed as algorithm \ref{alg:compute_connected}, which tries to reuse shared $\tilde{\mathcal{C}}_{rs}$ as much as possible.
+Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathcal{C}}_{s0}$ may share common elements. Given its frequency, it is important that this computation be efficient. As is sometimes the case, efficiency implies $\mathcal{C}_{rs}$ are not computed individually, but become available inside a loop. An implementation is proposed as algorithm \ref{alg:compute_connected}, which tries to reuse shared $\tilde{\mathcal{C}}_{rs}$ as much as possible.
 
 
 \newcommand{\interC}[1]{\tilde{\mathcal{C}}_{#1}}
@@ -349,79 +170,249 @@ Care must be given that $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathcal{C}}_{s0}
 		}
 \end{algorithm}
 
-\begin{comment}
+
+
+
+
+
 \begin{algorithm}
-	\caption{Build $\mathcal{C}_{rs}$ from $\tilde{\mathcal{C}}_{rs}$}
-	\label{alg:compute_connected}
-	\tcc{This takes place after $\tilde{\mathcal{C}}_{rs}$ and $B_{rs}$ for a given batch have been fully computed}
-		\KwData{$\tilde{\mathcal{C}}_{rs}$ the intermediate sets, $B_{rs}$ the tag matrix}
-		%\KwResult{$Z^\star(\Gpqrs, \mathcal{C}_{rs})$ is called for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$}
-		\KwResult{$\mathcal{C}_{rs}$ is computed for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$}
-        $i_1 = N$ \;   
-        $L_{1..i_1} \gets D_{1..{i_1}}$ \;
-		\tcc {$B_{r0} = FALSE$ if column entirely tagged}		
-		\ForAll{$r ; B_{r0}$}{
-		  $i_2 = i_1 + N^r$ \;
-		  $L_{i_1+1..i_2} \gets D^r_{1..N^r}$ \;
-		  \For{$i=1,N_r$}{
-		    $T_{D^r_i} \gets FALSE$
-		  }
-		  \alert{est-ce que $B_{rr}$ est tage?} \;
-		  \ForAll{$s \neq r ; B_{rs}$}{
-		    $i_3 = i_2$ \;
-		    \For{$i=1,N_s$}{
-		      \If{$T_{D^s_i}$}{
-		        $i_3 \gets i_3+1$ \;
-		        $L_{i_3} \gets D^s_i$ \;
-		      }
-		    }
-		    
-		    $i_4 = i_3 + N^{rs}$ \;
-		    $L_{i_3+1 .. i_4} \gets D^{rs}_{1..N^{rs}}$ \;
-		    \tcc{$L$ is the list of all $I \in \Psi ; EXC(I, a^\dagger_r a^\dagger_s G_{pq} ) \leq 2$}
-		  }
-		 \For{$i=1,N_s$}{
-		    $T_{D^r_i} \gets TRUE$
-		  }
+\KwData{$\kalpha$ the considered exernal determinant}
+\KwData{$\ket {D_i}$ the list of $N$ internal determinants connected to $\kalpha$, sorted by increasing integer value}
+\KwData{$\ket {R_i}$ the list of $N_{ref}$ reference determinants sorted by increasing integer value and $c_{R_i}$ their coefficient}
+\KwData{$t_{R_r \rightarrow D_i}$ the used amplitudes}
+\KwResult{$c_\alpha$} 
+
+$c_\alpha \gets 0$ \;
+discard $R_i$ when $\text{EXC\_DEGREE} (R_i, \alpha) > 4$ \;
+if $R_i$ so that $\text{EXC\_DEGREE} (R_i, \alpha) \leq 2$ was found, discard $\kalpha$ \;
+
+
+\ForAll{$D_j$}{
+\tcc{Note that $\Phi(D_j \rightarrow \alpha)$ may be pre-computed here}
+$\delta \gets \alpha - D_j$ \;
+$i \gets 1$ \;
+$r \gets 1$ \;
+\While{$i \leq N \wedge r \leq N_{ref}$}{
+	\uIf{$D_i - R_r > \delta$}{
+		$r \gets r + 1$ \;
+	}
+	\uElseIf{$D_i - R_r < \delta$}{
+		$i \gets i + 1$ \;
+	}
+	\Else
+	{
+		\If{$R_r \oplus D_i \oplus D_j \oplus \alpha = 0$}{
+			\tcc{diamond found}
+			$\varphi \gets \Phi(D_j \rightarrow \alpha) \times \Phi(R_r \rightarrow D_i)$ \;
+			$c_\alpha \gets c_\alpha + \varphi \times c_{R_r} \times (t_{R_r \rightarrow D_i}) \times (t_{R_r \rightarrow D_j})$ \;
 		}
+		$r \gets r + 1$ \;
+		$i \gets i + 1$ \;
+	}
+}
+}
 \end{algorithm}
-\end{comment}
 
 
-\begin{algorithm}
-	\label{BUILD_MICROLIST}
-	\caption{BUILD\_MICROLIST}
-		\KwData{ ------}
-		\KwResult{ ------}
-        $N \gets 0$ \;
-        $N^* \gets 0$ \;   
-        $N^{*,*} \gets 0$ \;    
-        \ForAll{$I \in \{S - past\} ; f_{G_{pq}}^I \leq 4$}{
-          $(P,H) \gets particles\_and\_holes(G_{pq}, I)$ \;
-          $p = list\_from\_bitstring(P)$ \;
-          
-          %$h = LIST_FROM_BITSTRING(H)$
-          \uIf{$f_{G_{pq}}^I = 4$ \& $B_{p_1,p_2}$}{
-            $i \gets N^{p_1, p_2}+1$ \;
-            $N^{p_1, p_2} \gets i$ \;
-            $D^{p_1, p_2}_{i} \gets I$ \;
-          }
-          \uElseIf{$f_{G_{pq}}^I = 3$ \& $B_{p_1}$}{
-            $i \gets N^{p_1}+1$ \;
-            $N^{p_1} \gets i$ \;
-            $D^{p_1}_{i} \gets I$ \;
-          }
-          \Else{
-            $i \gets N+1$ \;
-            $N \gets i$ \;
-            $D_{i} \gets I$ \;
-          }
-        }
-\end{algorithm}
+%\begin{equation}
+%incomplet : c_\alpha = \sum_{(\hat p, \hat q, R);\hat p \hat q \ket R = \kalpha} \varphi \times c_R t_p t_q
+%\end{equation}
+
+The formula for $c_\alpha$ as well as the procedure for computing amplitudes is detailed in the presented article. By the formula of $c_\alpha$  we can see that in a practical sense, we are looking for "diamond" figures.
+
+%\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.3\columnwidth]{figures/matrix_dressing/diamond}
+		%\caption{Build lists of connected selectors for unique $\kalpha$ in batch $G_{pq}$}
+		%\label{fig:buildlists}
+	\end{center}
+%\end{figure}
+
+With $\kalpha$ the external determinant being considered, $\ket {D_i}$ and $\ket {D_j}$ internal determinants, and $\ket R$ a reference determinant.  Parallel arrows indicate connections (excitation degree at most 2) by the same excitation, the vertical arrow indicates $\ket R$ and $\kalpha$ aren't connected (excitation degree at least 3). All the determinants and excitation operators we are considering are ordered according to $\mathcal{O}$.
+
+The matrix dressing implementation supplies $\{\mathcal{D}\}$ the complete list of internal determinants that connect to $\kalpha$. We call $\{\mathcal{R}\}$ the list of reference determinants.
+
+A naive way to find those diamond, would be to loop over all unordered triplets 
+
+\begin{equation}
+(D_i \in \{\mathcal{D}\}, D_j \in \{\mathcal{D}\}, R \in \{\mathcal{R}\})
+\end{equation}
+
+so that
+
+\begin{equation}
+\hat T_{R \rightarrow D_i} \hat T_{R \rightarrow D_j} \ket R = \pm \kalpha
+\end{equation}
+
+with $\hat T_{R \rightarrow D}$ an excitation operator so that $\hat T_{R \rightarrow D} \ket R = \pm \ket D$.
+
+
+
+Using excitation operators, a diamond can be identified by only verifying
+\begin{equation}
+\hat T_{R \rightarrow D_i} = \hat T_{D_j \rightarrow \alpha}
+\label{eq:excitation_diamond}
+\end{equation}
+
+
+We first set up a method to identify a diamond, then two methods to ``locate'' them.
+
+
+\paragraph{Identifying diamonds}
+For implementational efficiency, we are going to express excitations using $\hat f_a$ an operator that flips the occupation status of a spinorbital. 
+\begin{align}
+  \begin{cases}
+  \hat f_p \ket A = a_p \ket A & \text{if }  a_p \ket A \neq 0\\
+  \hat f_p \ket A = a^\dagger_p \ket A & \text{if }  a^\dagger_p  \ket A \neq 0\\
+  \end{cases}
+\end{align}
+This avoids the burden of making a distinction between anihilation and creation operator, and check whether they can be applied to a determinant.
+
+
+The notation $\hat f_{ab\ldots}$ will be used as a shortcut for $\hat f_a \hat f_b \ldots$, and we define $\hat F_{A \rightarrow B} = \hat F_{B \rightarrow A}$ as the set of $\hat f$ operators that flips all spinorbitals whose occupation differ between $\ket A$ and $\ket B$.
+
+Clearly a set of $\hat f$ operators does not univocaly correspond to an excitation, but it's demonstrable that in this particular case, we can use $\hat F$ instead of the excitation operator $\hat T$, i.e. we can ensure $(R_r, D_i, D_j, \alpha)$ are forming a diamond by only verifying
+\begin{equation}
+\hat F_{R \rightarrow D_i} = \hat F_{D_j \rightarrow \alpha}
+\label{eq:diamond_flip}
+\end{equation}
+
+It is easy to understand how this is a necessary condition, it is slighlty less obvious that it is also a sufficient one, i.e. that this can only happen if there is a diamond. In fact, it is not generally true. It is demonstrable in this particular case thanks to the known excitation degrees. It is known $\ket {D_i}$ and $\ket {D_j}$ are connected by at most a double excitation to $\kalpha$, therefore at most 4 orbitals have their occupation status flipping, two of them occupied and two unoccupied in $\kalpha$. For later clarity we use the dot ($\dot a$) notation to denote indices of spinorbitals that are occupied in $\kalpha$.
+
+\begin{equation}
+\hat F_{D_i \rightarrow \alpha} = \hat F_{R \rightarrow D_j} = \hat f_{\dot a \dot bcd} \; ; \; \hat F_{D_j \rightarrow \alpha} = \hat F_{R \rightarrow D_i} = \hat f_{\dot e \dot fgh}
+\end{equation}
+
+The reference determinant $\ket R$ is reached after chaining the two "flippenings"
+
+\begin{equation}
+\hat F_{R \rightarrow \alpha} = (\hat f_{\dot a \dot bcd})(\hat f_{\dot e \dot fgh})
+\end{equation}
+
+If indices $\dot a,\dot b,c,d,\dot e,\dot f,g,h$ are all unique, $\hat T_{R \rightarrow D_i}$ and $\hat T_{D_j \rightarrow \alpha}$ are independent and thus can be chained, so the diamond is valid. If they are not, the diamond is still known to be valid thanks to our knowledge that $\kalpha$ is at least a triple excitation from $\ket R$, and therefore at least 6 orbitals must flip. 
+
+It is trivial that
+
+\begin{equation}
+\hat f_{aa} = \hat 1
+\end{equation}
+
+so only 2 among the indices can refer to the same spinorbital $x$ (which we arbitrarily choose unoccupied in $\kalpha$). For obvious reasons one is found among $(\dot a,\dot b,c,d)$ and the other among $(\dot e,\dot f,g,h)$.
+
+\begin{equation}
+\hat F_{R \rightarrow \alpha} = (\hat f_{\dot a \dot bcx})(\hat f_{\dot e \dot fgx}) = (\hat f_{\dot a \dot bc})(\hat f_{\dot e \dot fg})
+\end{equation}
+
+As can be seen, applying $(\hat f_{\dot a \dot bc})(\hat f_{\dot e \dot fg})$ to $\kalpha$ will flip four occupied spinorbitals versus only two unoccupied one ; this implies $\kalpha$ has two extra electrons compared to $\ket R$. Because we know this not to be the case, we know such a situation cannot happen.
+
+Now that we know equation \ref{eq:diamond_flip} is sufficient to identify a diamond, we have to write its implementational expression. This is pretty simple. The set of spinorbitals whose occupation status differ between $\ket A$ and $\ket B$ can be computed as a bitstring as
+
+\begin{equation}
+A \oplus B
+\end{equation}
+
+therefore equation \ref{eq:diamond_flip} is verified iff
+
+\begin{equation}
+R \oplus D_i = D_j \oplus \alpha
+\end{equation}
+
+or alternatively, since $A \oplus A = 0$
+
+\begin{equation}
+R \oplus D_i \oplus D_j \oplus \alpha = 0
+\label{eq:diamond_xor}
+\end{equation}
+
+\paragraph{Locating diamonds by binary search}
+Now that we expressed the identification of a diamond in a simple way, we must figure a strategy to identify them fast. Equation \ref{eq:diamond_xor} can be rewritten as
+
+\begin{equation}
+D_j = R_r \oplus D_i \oplus \alpha
+\end{equation}
+
+which implies a simple algorithm that finds the diamonds in $\mathcal{O}(N \times N_{ref} \times log(N))$.
+\begin{enumerate}
+\item
+iterate over $(R_r, D_i)$
+\item
+binary search for $D_j = (R_r \oplus D_i \oplus \alpha)$ in $\{D\}$. 
+\end{enumerate}
+
+Depending on the size of $\{D\}$ and $\{R\}$ sets, this variant can also be used, giving a complexity of $\mathcal{O}(N^2 \times log(N_{ref}))$.
+
+\begin{enumerate}
+\item
+iterate over $(D_i, D_j)$
+\item
+binary search for $R_r = (D_i \oplus D_j \oplus \alpha)$ in $\{R\}$. 
+\end{enumerate}
+
+Those are desirable if one of $\{D\}$ or $\{R\}$ is relatively small, in particular, in case of single-reference computation, i.e. $|R|=1$, the former variant is ideal. For larger sets, however, a more complex variant with a complexity $\mathcal{O}(N \times (N+N_{ref}))$ is introduced next.
+
+
+\paragraph{Locating diamonds by rewritting excitations as additions}
+Althought the method could be chosen on a ``by-$\alpha$'' basis depending on $|R|$ and $|D|$, only this one is currently used in the \QP as it works for larger sets.
+Unlike the previous one, this method may yield false positives, thus it uses equation \ref{eq:diamond_xor} for confirmation.
+The idea is to express an excitation as an addition. As was said, bitstrings are essentially integers, so they can be added, substracted and compared as such. We can easily associate $T_{A \rightarrow B}$ and $T_p^q$ integer values with  excitations $\hat T_{A \rightarrow B}$ and $\hat T_p^q$ respectively
+
+\begin{align}
+T_p^q = 2^{q-1} - 2^{p-1} \\
+T_{A \rightarrow B} = B - A \\
+T_{A \rightarrow B} + A = B 
+\end{align}
+
+With $A$ the bitstring associated with $\ket A$ as a single integer. It is a necessary but not sufficent condition for a diamond that
+
+\begin{equation}
+T_{R \rightarrow D_i} = T_{D_j \rightarrow \alpha}
+\end{equation}
+
+indeed 
+
+\begin{align}
+\hat T \ket A = \ket B \implies  T + A = B\\
+T + A = B \centernot \implies \hat T \ket A = \ket B
+\end{align}
+
+with $T$ the integer associated with an excitation $\hat T$. If $\hat T \ket A = 0$, in most cases $T + A$ will yield a bitstring with a wrong number of bits/electrons, but this is not guaranteed, hence the presence of rare false positives.
+
+Equation \ref{eq:excitation_diamond} implies
+
+\begin{align}
+D_i - R_r = \alpha - D_j 
+\end{align}
+
+Finding all $(D_i, R_r)$ pairs that verify this, assuming $D$ and $R$ are sorted in ascending order, can be achieved with linear complexity.
+
+% with a complexity of either $\mathcal{O}(N + N_{ref})$ or $\mathcal{O}(N \times min(N, N_{ref}) \times log(max(N, N_{ref})))$
+
+\begin{enumerate}
+\item
+initialize $i$ and $r$ to $1$
+\item
+loop while both $i$ and $r$ are not out of bounds
+\item
+if $D_i - R_r < \alpha - D_j$, increment $i$ and loop
+\item
+if $D_i - R_r > \alpha - D_j$, increment $r$ and loop
+\item
+if $D_i - R_r = \alpha - D_j$, a pair has been found. Check diamond using equation \ref{eq:diamond_xor}. Increment $i$ and $r$, and loop
+\end{enumerate}
+
+The complexity is $\mathcal{O}(N \times (N+N_{ref}))$.
+
+
+For implementational ease and efficiency, it is worth noting that it is not required to handle bitstrings as actual arbitrary size integers when it comes to addition and substraction. While addition to a bitstring was introduced as being associated with an excitation, it can actually be associated with any combination of creation and anihilation operators. It is therefore valid to consider each 64-bit integer as an independent ``sub-bitstring'' on which a subset of the operators will be applied. In short, additions and substactions can be done integer-wise, without the overhead of handling carries.
+
+When it comes to comparison, since the 64 bit integers corresponding to the lower orbitals will typically have more mobile electrons, they should be given them more weight to resolve comparison as fast as possible.
+
+\paragraph{Computing the phase factor for }
+
+
 
 
 
 \end{document}
-
 
 

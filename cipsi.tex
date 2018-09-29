@@ -6,7 +6,6 @@
 
 
 \section{The base algorithm}
-\alert{"pas d'excitation" $\implies \hat T = 1$ ?}\\
 My initial and most important work has been the improvement of the CIPSI algorithm present in the \QP, that had been implemented by my predecessor\cite{giner:tel-01077016}. As was briefly described in the previous chapter, it is an \emph{on the fly} iterative selection algorithm, where determinants are added to the variational wavefunction according to a perturbative criterion. Because it gathers a large amount of information, this CIPSI algorithm has been the basis for other subsequent works presented in the next chapters.
 
 Iteration $n$ of CIPSI can be described like so:
@@ -211,8 +210,7 @@ $\ket {D_{g \le I \le \Nsel}}$ as selectors to compute $\Hij{\Psi}{\alpha}$.
 \begin{figure}[h!]
         \begin{center}
                 \includegraphics[width=0.8\columnwidth]{figures/cipsi/new_cipsi}
-                \caption{New CIPSI schematic representation, some details omitted. 
-\alert{ Fautes d'orthographe : pas de 'e' a implicitly et 'external determiNants'} }
+                \caption{New CIPSI schematic representation, some details omitted.}
                 \label{fig:new_cipsi}
         \end{center}
 \end{figure}
@@ -616,7 +614,7 @@ If $\neg past$, $\ket {G_{pq}^{rs}}$ must be tagged for referring to a determina
                 \hline \hline \rule{0pt}{3ex}
                 $\ac {ij} \Gpq$                                         & $X,Y$         &$ij \rightarrow XY$            \\
                                                                                         & $X,i$         &$j \rightarrow X$              \\
-                                                                                        & $i,j$         &$1$                    \\
+                                                                                        & $i,j$         &$\hat 1$                    \\
                 \hline \rule{0pt}{3ex}
                 $\an a \ac {ijk} \Gpq$                          &$X,i$          &$aX \rightarrow jk$            \\
                                                                                         &$i,j$          &$a \rightarrow k$              \\
@@ -636,7 +634,7 @@ If $\neg past$, $\ket {G_{pq}^{rs}}$ must be tagged for referring to a determina
                 $\ac {i \bar j} \Gpbq$                          & $X, \bar Y$   &$i \bar j \rightarrow X \bar Y$                \\
                                                                                         & $i,\bar X$            &$\bar j \rightarrow \bar X$            \\
                                                                                         & $X,\bar j$    &$i \rightarrow X$              \\
-                                                                                        & $i,\bar j$    &$1$                    \\
+                                                                                        & $i,\bar j$    &$\hat 1$                    \\
                                                                                         
                                                                                         
                 \hline \rule{0pt}{3ex}
@@ -695,8 +693,6 @@ This fragmentation scheme can be shown in a simpler and more general way when us
 \begin{algorithm}
         \label{alg:tasksplit_master}
         \caption{task splitting, pseudocode for master}
-        \tcc{A logical task is the computation of $e[i]$, the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ generated from generator $\ket {G_i}$}
-        choose $F_i$ \;
         \tcc{A logical task is the computation of $e[i]$, the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ generated from generator $\ket {G_i}$}
         choose $F_i$ for all $i$\;
         \For{$i=1,\Ngen$}{
