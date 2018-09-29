@@ -55,54 +55,191 @@ Some methods aim at partially or fully correct this size-consistency error by el
 
 
 
-
 \begin{algorithm}
 \KwData{$\kalpha$ the considered exernal determinant}
-\KwData{$D_i$ the list of $N$ internal determinants connected to $\kalpha$}
-\KwResult{finds all diamonds in $\mathcal{O}(N_{ref} \times N)$} 
+\KwData{$\ket {D_i}$ the list of $N$ internal determinants connected to $\kalpha$, sorted by increasing integer value}
+\KwData{$\ket {R_i}$ the list of $N_{ref}$ reference determinants sorted by increasing integer value and $c_{R_i}$ their coefficient}
+\KwData{$t_{R_r \rightarrow D_i}$ the used amplitudes}
+\KwResult{$c_\alpha$} 
 
-\ForAll{$\kI$ with $EXC(\kI, \kalpha) \leq 4$}{
+$c_\alpha \gets 0$ \;
+discard $R_i$ when $\text{EXC\_DEGREE} (R_i, \alpha) > 4$ \;
+if $R_i$ so that $\text{EXC\_DEGREE} (R_i, \alpha) \leq 2$ was found, discard $\kalpha$ \;
 
-$\delta \gets -(I + \alpha)$ \;
+
+\ForAll{$D_j$}{
+\tcc{Note that $\Phi(D_j \rightarrow \alpha)$ may be pre-computed here}
+$\delta \gets \alpha - D_j$ \;
 $i \gets 1$ \;
-$j \gets 1$ \;
-\While{$j \leq N \wedge i \leq N$}{
-	\uIf{$D_j - D_i > \delta$}{
-		increment $i$ \;
+$r \gets 1$ \;
+\While{$i \leq N \wedge r \leq N_{ref}$}{
+	\uIf{$D_i - R_r > \delta$}{
+		$r \gets r + 1$ \;
 	}
-	\uElseIf{$D_j - D_i < \delta$}{
-		increment $j$ \;
+	\uElseIf{$D_i - R_r < \delta$}{
+		$i \gets i + 1$ \;
 	}
 	\Else
 	{
-		\tcc{$\hat T_{I \rightarrow D_j}$ is $D_j-I$}
-		\tcc{$D_i + (D_j-I) = \alpha$}
-		
-		
-		
-		%\tcc{\alert{check diamond}}
-		%\If{$(I \oplus D_i \wedge I = D_j \oplus \alpha \wedge D_j) \wedge (I \oplus D_i \wedge D_i = D_j \oplus \alpha \wedge \alpha)$}{
-		%\If{$\hat T_{I \rightarrow D_i} = \hat T_{D_j \rightarrow \alpha}$}{
-		
-		\tcc{\alert{check if addition applies correct excitaion}}
-		\tcc{impossible exciation results in an abnormal number of modified spinorbitals}	
-		\If{$||D_j \oplus I|| = ||D_i \oplus \alpha||$}{
-			diamond found \;
+		\If{$R_r \oplus D_i \oplus D_j \oplus \alpha = 0$}{
+			\tcc{diamond found}
+			$\varphi \gets \Phi(D_j \rightarrow \alpha) \times \Phi(R_r \rightarrow D_i)$ \;
+			$c_\alpha \gets c_\alpha + \varphi \times c_{R_r} \times (t_{R_r \rightarrow D_i}) \times (t_{R_r \rightarrow D_j})$ \;
 		}
-		increment $i$ and $j$ \;
+		$r \gets r + 1$ \;
+		$i \gets i + 1$ \;
 	}
 }
 }
 \end{algorithm}
 
-Applying an impossible excitation by addition, will usually lead to an abnormal result with a wrong number of ``electrons''. But in some cases, it may lead to an existing determinant. 
 
+By the formula of $c_\alpha$ for MRCC, we can see that in a practical sense, we are looking for "diamond" figures.
+The matrix dressing implementation supplies $\{\mathcal{D}\}$ the complete list of internal determinants that connect to $\kalpha$. We also need to consider $\{\mathcal{R}\}$ the list of reference determinants.
+
+A naive way to find those diamond, would be to loop over all unordered triplets 
+
+\begin{equation}
+(D_i \in \{\mathcal{D}\}, D_j \in \{\mathcal{D}\}, R \in \{\mathcal{R}\})
+\end{equation}
+
+so that
+
+\begin{equation}
+\ordering \hat T_{R \rightarrow D_i} \hat T_{R \rightarrow D_j} \ket R = \ordering  \kalpha
+\end{equation}
+
+with $\hat T_{R \rightarrow D}$ an excitation operator so that $\hat T_{R \rightarrow D} \ket R = \pm \ket D$.
+
+To find diamonds using excitation operators, we only need to verify that
+\begin{equation}
+\ordering \hat T_{R \rightarrow D_i} = \ordering \hat T_{D_j \rightarrow \alpha}
+\label{eq:excitation_diamond}
+\end{equation}
+
+We first set up a method to fastly identify a diamond.
+
+For implementational efficiency, we are going to express excitation in two different ways.
+
+\paragraph{Additions}
+This method allows to fastly locate diamonds, but may yield false positives.
+The idea is to express an excitation as an addition. As was said, bitstrings are essentially integers, so they can be added, substracted and compared as such. We can easily associate $T_{A \rightarrow B}$ and $T_p^q$ integer values with  excitations $\hat T_{A \rightarrow B}$ and $\hat T_p^q$ respectively
+
+\begin{align}
+T_p^q = 2^{q-1} - 2^{p-1} \\
+T_{A \rightarrow B} = B - A \\
+T_{A \rightarrow B} + A = B 
+\end{align}
+
+With $A$ the bitstring associated with $\ket A$ as a single integer. It is a necessary but not sufficent condition for a diamond that
+
+\begin{equation}
+T_{R \rightarrow D_i} = T_{D_j \rightarrow \alpha}
+\end{equation}
+
+indeed 
+
+\begin{align}
+\hat T \ket A = \ket B \implies  T + A = B\\
+T + A = B \centernot \implies \hat T \ket A = \ket B
+\end{align}
+
+with $T$ the integer associated with an excitation $\hat T$. If $\hat T \ket A = 0$, in most cases $T + A$ will yield a bitstring with a wrong number of bits/electrons, but this is not guaranteed. Therefore we need a fast test to ensure $(R_r, D_i, D_j, \alpha)$ are forming a diamond.
+
+
+
+Equation \ref{eq:excitation_diamond} implies
+
+\begin{align}
+D_i - R_r = \alpha - D_j 
+\end{align}
+
+Finding all $(D_i, R_r)$ pairs that verify this, assuming $D$ and $R$ are sorted in ascending order, can be achieved with linear complexity.
+
+% with a complexity of either $\mathcal{O}(N + N_{ref})$ or $\mathcal{O}(N \times min(N, N_{ref}) \times log(max(N, N_{ref})))$
+
+\begin{enumerate}
+\item
+initialize $i$ and $r$ to $1$
+\item
+loop while both $i$ and $r$ are not out of bounds
+\item
+if $D_i - R_r < \alpha - D_j$, increment $i$ and loop
+\item
+if $D_i - R_r > \alpha - D_j$, increment $r$ and loop
+\item
+if $D_i - R_r = \alpha - D_j$, a pair has been found. Increment $i$ and $r$, and loop
+\end{enumerate}
+
+The complexity is $\mathcal{O}(N \times (N+N_{ref}))$.
+
+Note that depending on the size of $\{D\}$ and $\{R\}$ sets, a simple binary search based algorithm will be more efficient. If there are few references, the above can be advantageously replaced with
+\begin{enumerate}
+\item
+iterate over $R_r$
+\item
+binary search for $D_i = (\alpha - D_j + R_r)$ in $\{D\}$. 
+\end{enumerate}
+
+The complexity here is $\mathcal{O}(N_{ref} \times N \times log(N))$. While either of these methods could be chosen on a case-by-case basis, currently only the former is used, as it is more efficient for larger sets.
+
+
+For implementational ease and efficiency, it is worth noting that it is not required to handle bitstrings as actual arbitrary size integers when it comes to addition and substraction. While addition to bitstring was introduced as being associated with an excitation, it can actually be associated with any combination of creation and anihilation operators. It is therefore valid to consider each 64-bit integer as an independent ``sub-bitstring'' on which a subset of the operators will be applied. In short, additions and substactions can be done integer-wise, without the overhead of handling carries.
+
+When it comes to comparison, since the 64 bit integers corresponding to the lower orbitals will typically have more mobile electrons, they should be given them more weight to avoid unnecessary comparisons.
+
+\paragraph{Spinorbital occupation flipping}
+Now we express excitations using $\hat f_a$ an operator that flips the occupation status of a spinorbital. 
+\begin{align}
+  \begin{cases}
+  \hat f_p \ket A = a_p \ket A & \text{if }  a_p \ket A \neq 0\\
+  \hat f_p \ket A = a^\dagger_p \ket A & \text{if }  a^\dagger_p  \ket A \neq 0\\
+  \end{cases}
+\end{align}
+This avoids the burden of making a distinction between anihilation and creation operator, and check whether they can be applied to a determinant.
+
+
+The notation $\hat f_{ab\ldots}$ will be used as a shortcut for $\hat f_a \hat f_b \ldots$, and we define $\hat F_{A \rightarrow B} = \hat F_{B \rightarrow A}$ as the set of $\hat f$ operators that flips all spinorbitals whose occupation differ between $\ket A$ and $\ket B$.
+Clearly a set of $\hat f$ operators does not univocaly correspond to an excitation, but it's demonstrable that in this particular case, we can use $\hat F$ instead of the excitation operator $\hat T$, i.e. we can ensure $(R_r, D_i, D_j, \alpha)$ are forming a diamond by only verifying
+\begin{equation}
+\hat F_{R \rightarrow D_i} = \hat F_{D_j \rightarrow \alpha}
+\end{equation}
+
+It is easy to understand how this is a necessary condition, it is slighlty less obvious that it is also a sufficient one, i.e. that this can only happen if there is a diamond. In fact, it is not generally true. It is demonstrable in this particular case thanks to the known excitation degrees. It is known $\ket {D_i}$ and $\ket {D_j}$ are connected by at most a double excitation to $\kalpha$, therefore at most 4 orbitals have their occupation status flipping, two of them occupied and two unoccupied in $\kalpha$. For later clarity we use the dot ($\dot a$) notation to denote indices of spinorbitals that are occupied in $\kalpha$.
+
+\begin{equation}
+\hat F_{D_i \rightarrow \alpha} = \hat F_{R \rightarrow D_j} = \hat f_{\dot a \dot bcd} \; ; \; \hat F_{D_j \rightarrow \alpha} = \hat F_{R \rightarrow D_i} = \hat f_{\dot e \dot fgh}
+\end{equation}
+
+The reference determinant $\ket R$ is reached after chaining the two "flippenings"
+
+\begin{equation}
+\hat F_{R \rightarrow \alpha} = (\hat f_{\dot a \dot bcd})(\hat f_{\dot e \dot fgh})
+\end{equation}
+
+If indices $\dot a,\dot b,c,d,\dot e,\dot f,g,h$ are all unique, $\hat T_{R \rightarrow D_i}$ and $\hat T_{D_j \rightarrow \alpha}$ are independent and thus can be chained, so the diamond is valid. If they are not, the diamond is still known to be valid thanks to our knowledge that $\kalpha$ is at least a triple excitation from $\ket R$, and therefore at least 6 orbitals must flip. 
+
+It is trivial that
+
+\begin{equation}
+\hat f_{aa} = \hat 1
+\end{equation}
+
+so only 2 among the indices can refer to the same spinorbital $x$ (which we arbitrarily choose unoccupied in $\kalpha$). For obvious reasons one is found among $\dot a,\dot b,c,d$ and the other among $\dot e,\dot f,g,h$.
+
+\begin{equation}
+\hat F_{R \rightarrow \alpha} = (\hat f_{\dot a \dot bcx})(\hat f_{\dot e \dot fgx}) = (\hat f_{\dot a \dot bc})(\hat f_{\dot e \dot fg})
+\end{equation}
+
+As can be seen, both $\hat f_{\dot a \dot bc}$ and $\hat f_{\dot e \dot fg}$, when applied to $\kalpha$, will flip two occupied spinorbitals versus only one unoccupied one ; this implies $\ket R$ and $\kalpha$ do not have the same number of electrons. Because we know this not to be the case, we know such a situation cannot happen.
+
+
+
+To avoid having to iterate the full loops, we are going to use a trick.
 
 
 This algorithm works when bitstrings are considered binary integers of arbitrary size. However, no assumption is made about the operators involved in the diamond, they can be any combination of creations and anihilations. Therefore, for simplification purpose, it is possible to consider all 64-bit integers independently, each one carrying a subset of the operators involved in the excitation.
 
-Essentially, adding and substracting can be done integer-wise, without the added complexity of carry and overflow.
-Because integers of lower $\Nint$ vary more, they should be given more weight when comparing, as this will allow to shorcut the loop over $\Nint$ faster.
 
 \section{Computing $c_\alpha$}
 Whether the matrix dressing algorithm performs a shifted-Bk, an MR-CCSD or some other method, depends on the external space, i.e. the $c_\alpha$ coefficients. Our goal is to set up a framework in which stochastic matrix dressing can be done efficiently in an external space only defined by $Z(\alpha)$ a function that takes a determinant and returns the $c_\alpha$ it should be associated with.

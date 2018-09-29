@@ -243,7 +243,7 @@ Intuitively, the sum of ``one large, one medium and one small'' has a lower vari
 \subsection{Fully-computed teeth are moved to the deterministic range}
 
 Remembering we store $e_I$, given the first tooth $\mathcal{T}_t$ that contains an unknown $e_I$, the deterministic range extends to all $\mathcal{T}_{p<t}$. This makes $\mathcal{T}_t$ the first non-deterministic tooth.
-The number or samples in the deterministic range, therefore, is function of a tooth index $t$, and noted $n_0(t)$, as seen in figure \alert{XXXXXXXXXX}.
+The number or samples in the deterministic range, therefore, is function of a tooth index $t$, and noted $n_0(t)$, as seen in figure \ref{fig:boundaries_teeth}
 
 \begin{figure}[h!]
 	\begin{center}
@@ -308,7 +308,7 @@ perturbative contribution of multireference perturbation theory}
 
 The initial deterministic range $\mathcal{T}_0$ is a technical constraint.
 
-Because samples are sorted with decreasing $\tilde w_i$, it is guaranteed that $|\mathcal{T}_{t>t'}| \geq |\mathcal{T}_{t'>0}|-1$.
+Because samples are sorted with decreasing $\tilde w_i$, it is guaranteed that $|\mathcal{T}_{t>t'}| \geq |\mathcal{T}_{t' \neq 0}|-1$.
 For each comb, we draw a sample in each teeth, and when a tooth is entirely computed, it is moved to $\mathcal{D}$. Thus, it is immediately obvious that a tooth containing a single sample makes no sense, as it will be instantly moved to $\mathcal{D}$ ; it can as well be considered part of it. Because it's usually accepted (???) that it takes at least 30 samples to estimate a variance, we can go further and consider that a tooth with fewer than 5-10 samples will be moved to $\mathcal{D}$ too fast to be of real interest. Because the first $C_I^2$ are usually disproportionately large, it's not possible to fit that many in a tooth. Therefore they are immediately considered part of $\mathcal{D}$.
 
 \subsection{Desired \textit{vs} effective partition function}
@@ -344,7 +344,7 @@ This is illustrated in figure \ref{fig:toothbuilding}.
 		\caption{Adjusting sample weights}
 		\label{fig:toothbuilding}
 		 Desired weights $\tilde w_i$ are adjusted to effective weights $w_i$ so as to satisfy
-		 $$\sum_{I \in \mathcal{T}_n} w_I = W_T$$
+		 $$\sum_{I \in \mathcal{T}_{n \neq 0}} w_I = W_T$$
 	\end{center}
 \end{figure}
 

@@ -25,6 +25,7 @@
 \usepackage{color}
 \usepackage{subfiles}
 \usepackage{pdfpages}
+\usepackage{centernot}
 \usepackage[ED=SDM-PMat, Ets=UT3]{tlsflyleaf}
 
 \hypersetup{
@@ -72,16 +73,16 @@
 
 
 \lstset{% setup listings
-	language=Fortran,% set programming language
-	basicstyle=\ttfamily\footnotesize,% basic font style
-%	keywordstyle=\bfseries,% keyword style
+        language=Fortran,% set programming language
+        basicstyle=\ttfamily\footnotesize,% basic font style
+%       keywordstyle=\bfseries,% keyword style
 %        commentstyle=\ttfamily\itshape,% comment style
-%	numbers=left,% display line numbers on the left side
-%	numberstyle=\scriptsize,% use small line numbers
-%	numbersep=10pt,% space between line numbers and code
-	tabsize=2,% sizes of tabs
-	showstringspaces=false,% do not replace spaces in strings by a certain character
-	captionpos=b,% positioning of the caption below
+%       numbers=left,% display line numbers on the left side
+%       numberstyle=\scriptsize,% use small line numbers
+%       numbersep=10pt,% space between line numbers and code
+        tabsize=2,% sizes of tabs
+        showstringspaces=false,% do not replace spaces in strings by a certain character
+        captionpos=b,% positioning of the caption below
         breaklines=true,% automatic line breaking
         escapeinside={(*}{*)},% escaping to LaTeX
         extendedchars=false,% prohibit extended chars (chars of codes 128--255)
@@ -141,7 +142,7 @@ phase factors
 
 \chapter{Introduction}
 
-During the 3 years is spent at the LCPQ, my work focused on improving the Quantum Package, a suit of quantum chemistry code intended for developpers, which focuses on ease of implementation and parallelism.
+During the 3 years I spent at the LCPQ, I worked on improving the Quantum Package, a suit of quantum chemistry code intended for developpers, which focuses on ease of implementation and parallelism.
 
 Quantum chemistry is a field that relies on increasingly expensive computations. The algorithms and approaches proposed in this thesis have been designed in the context of the change in paradigm that has been going on for the last dozen years,\ref{Sutter_2005} in which the usual sequential algorithms are progressively replaced with parallel equivalents. Indeed, the increase in processors' frequency being challenged by physical barriers, increase in computational power has to be achieved through increase in the number of cores. However, where an increase in frequency mechanically lead to a faster execution of a code, an increase in number of cores may be challenged by algorithmic barriers, which may require adapting of even changing the algorithms.
 
@@ -170,7 +171,9 @@ Computation of $\EPT$ allows to correct the energy of our internal wavefunction 
 
 In addition, we set up a more general framework to enable refining of the variational wavefunction under the effect of a ``custom'', stochastically estimated external space. This was experimented by implementing a MR-CCSD external space.
 
+
 The efficiency for the implemented algorithms has been studied, and the code could give way to numerous applications, in particular to obtain reference energies for complicated molecular systems.
+Of course, the technical considerations were not the focus of the different articles that were produced. In particular, no publication was made about our CIPSI implementation. Because my work focused on the actual implementations of the methods at least as much as the theory behind them, this thesis is an opportunity to discuss the implementations in more details. In order for it to complete the articles as well as possible, I decided to write it in english.
 
 
 
@@ -195,8 +198,6 @@ The efficiency for the implemented algorithms has been studied, and the code cou
 
 \minitoc
 \subfile{pt2}
-
-
 \chapter{Matrix dressing}
 \minitoc
 \subfile{matrix_dressing}
