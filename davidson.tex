@@ -42,7 +42,7 @@ algorithm~\ref{alg:davidson}.
   $\mW' \gets \mW\, \my$ \;
   \For{$k=1,\Nstate$}{
     \For{$i=1,\Ndet$} {
-      $\mR_{ik}  \gets \frac{E_k (\mU_{ik}' - \mW_{ik}')}{\mH_{ii} - E_k}$ \;
+      $\mR_{ik}  \gets \frac{E_k \mU_{ik}' - \mW_{ik}'}{\mH_{ii} - E_k}$ \;
     }
   }
   $\texttt{converged} \gets \norm{\mR} < \epsilon$ \;
