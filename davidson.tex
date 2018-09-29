@@ -16,13 +16,46 @@ computation and the storage to $\order{\Nstate \Ndet^2}$, and is presented as
 algorithm~\ref{alg:davidson}.
 
 
-%TODO mettre ici le pseudocode 
+\begin{algorithm}
+ \newcommand{\mU}{\mathbf{U}}
+ \newcommand{\mW}{\mathbf{W}}
+ \newcommand{\mR}{\mathbf{R}}
+ \newcommand{\mh}{\mathbf{h}}
+ \newcommand{\my}{\mathbf{y}}
+ \caption{Davidson's diagonalization algorithm}
+ \label{alg:davidson}
+	\SetKwFunction{FMain}{DAVIDSON\_DIAG}
+	\SetKwProg{Fn}{Function}{:}{}
+\Fn(){\FMain{$\Nstate, \mU$}}{
+	\KwData{ $\Nstate$~: Number of requested states}
+	\KwData{ $\Ndet$~: Number of determinants}
+	\KwData{ $\mU$~: Guess vectors, $\Ndet \times \Nstate$}
+	\KwResult{ $\Nstate$ lowest eigenvalues eigenvectors of $\mH$ }
+\texttt{converged} $\gets \FALSE$ \;
+\While{$\neg{\texttt{converged}}$}
+{
+  Gram-Schmidt orthonormalization of $\mU$ \;
+  $\mW \gets \mH\, \mU$ \; 
+  $\mh \gets \mU^\dagger\, \mW$ \;
+  Diagonalize $\mh$ : eigenvalues $E$ and eigenvectors $\my$ \;
+  $\mU' \gets \mU\, \my$ \;
+  $\mW' \gets \mW\, \my$ \;
+  \For{$k=1,\Nstate$}{
+    \For{$i=1,\Ndet$} {
+      $\mR_{ik}  \gets \frac{E_k (\mU_{ik}' - \mW_{ik}')}{\mH_{ii} - E_k}$ \;
+    }
+  }
+  $\texttt{converged} \gets \norm{\mR} < \epsilon$ \;
+  $\mU \gets [ \mU, \mR ]$ \;
+}
+\KwRet{$\mU$}\;
+}
+\end{algorithm}
+
 
 
 \alert{
 \begin{itemize}
-\item Raconter ce qu'il y a dans le papier original : [ E.R.  Davidson, J.  Comput.  Phys.  17 (1975) 87 ].
-\item Mettre le pseudocode de l'algorithme.
 \item Parler de quelques ameliorations depuis : [ J.  Olsen, P.  Joregensen and J.  Simons, Chem.  Phys.  Letters 169 (1990) 463 ], [F.X.  Gadea /Chemical Physics Letters 227 (1994) 201-210] 
 \item Dire qu'on utilise l'algorithme original parce qu'on a toujours un bon guess (CIPSI)
 \item Pour etre fonction propre de $S^2$ on utilise une penalty method, comme dans [10.1021/acs.jctc.7b00466]. (D'ailleurs dans ce papier il y a un pseudocode pour Davidson). Et tu peux ajouter qu'on calcule $S^2c$ en meme temps que $Hc$.
@@ -30,8 +63,7 @@ algorithm~\ref{alg:davidson}.
 }
 
     
-Algorithmically, the expensive part of the Davidson diagonalization is the computation of the matrix-vector products $\mH \mc$.
-
+Algorithmically, the expensive part of the Davidson diagonalization is the computation of the matrix product $\mH\, \mathbf{U}$.
 Determinants are connected by $\mH$ only if they differ by no more than two
 spinorbitals. Therefore, the number of non-zero elements per line of $\mH$ is
 equal to the number of single and double excitation operators, namely
