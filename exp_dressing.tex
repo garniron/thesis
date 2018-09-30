@@ -128,6 +128,12 @@ Table \ref{tab:systematic_determination} indicates which $\kalpha = \ket {G_{pq}
 Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathcal{C}}_{s0}$ may share common elements. Given its frequency, it is important that this computation be efficient. As is sometimes the case, efficiency implies $\mathcal{C}_{rs}$ are not computed individually, but become available inside a loop. An implementation is proposed as algorithm \ref{alg:compute_connected}, which tries to reuse shared $\tilde{\mathcal{C}}_{rs}$ as much as possible.
 
 
+
+\section{Alternative definition of excitation amplitudes in multi-reference state-specific coupled cluster}\cite{Garniron_2017}
+\includepdf[page=2-]{article_mrcc}
+
+\section{Efficient application to Multi-Reference Coupled Cluster}
+
 \newcommand{\interC}[1]{\tilde{\mathcal{C}}_{#1}}
 \newcommand{\finC}[1]{\mathcal{C}_{#1}}
 
@@ -421,7 +427,7 @@ Assuming
 \hat T_{pq}^{rs} \ket I = \pm \ket i
 \end{equation}
 
-reference-independent notation for amplitude $t_{pq \rightarrow rs}$ and reference-dependent notation $t_{I \rightarrow i}$ could be wrongfully assumed equivalent. This is not the case, since $t_{pq \rightarrow rs}$ is associated with excitation $\hat T_{pq}^{rs}$ as described in \alert{CHAPTER DET DRIVENN}, while $t_{I \rightarrow i}$ is associated with $\hat T_{I \rightarrow i}$ so that
+reference-independent notation for amplitude $t_{pq \rightarrow rs}$ and reference-dependent notation $t_{I \rightarrow i}$ could be wrongfully assumed equivalent. This is not the case, since $t_{pq \rightarrow rs}$ is associated with excitation $\hat T_{pq}^{rs}$ as described in chapter \ref{chap:DET_DRIVEN}, while $t_{I \rightarrow i}$ is associated with $\hat T_{I \rightarrow i}$ so that
 
 \begin{equation}
 \hat T_{I \rightarrow i}  \ket I = \ket i
@@ -442,7 +448,7 @@ In order to compute $c_\alpha$ we are required to compute the phase factor
 
 
 
-which is noted $(-1)^{n(I \rightarrow \alpha)}$ in equation 26 or the presented article, with $I$ a reference determinant. The article uses reference-independent notation for amplitudes. Here we re-write the formula with reference-dependent notations, the term for each diamond becomes
+which is noted $(-1)^{n(I \rightarrow \alpha)}$ in equation 26 or the presented article, with $I$ a reference determinant. The article uses reference-independent notation for amplitudes. Here we re-write the formula with reference-dependent notations, the contribution for each diamond becomes
 
 \begin{equation}
 c_R \Phi(R \rightarrow \alpha) \frac{t_{R \rightarrow D_i}}{\Phi(R \rightarrow D_i)} \frac{t_{D_i \rightarrow \alpha}}{\Phi(D_i \rightarrow \alpha)} =c_R t_{R \rightarrow D_i} t_{D_i \rightarrow \alpha}

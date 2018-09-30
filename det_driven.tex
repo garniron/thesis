@@ -2,13 +2,29 @@
 
  
 \begin{document}
+\label{chap:DET_DRIVEN}
 
-Generally speaking, implementing a wavefunction method requires iteration over either two-electron integrals or determinants. \\
-ease of implementation VS performances \\
-ease of parallelism(?) \\
-Need to explicitly maintain a list of determinant. \\
+\alert{j'ai retiré le $\ordering$ de equation \ref{eq:ordering_removed} pour coherence avec la partie MRCC, ca n'a pas l'air de poser de probleme}\\
+Generally speaking, implementing a wavefunction method requires iteration over either two-electron integrals, or determinants. Those approaches are refererd to as \emph{integral-driven} and \emph{determinant-driven}. Because the number of determinants grows much faster than the number of double excitations, an efficient implementations would likely prioritize an integral driven approach. However, in most cases, the determinant-driven approach is more intuitive, as it stays closer to base equations. The \QP is intended for developpers, and thus prioritizes the approach that is easier for designing new methods.
 
-\alert{une intro svp!!}
+For performances, it is vital that some base operations are done efficiently. Notably, the computaion of matrix elements of $\hat H$.
+
+\begin{equation}
+\Hij{I}{J}
+\end{equation}
+
+This raises some questions that this chapter is going to address, by going through the basic concepts of our approach to determinant-driven computation.
+
+\begin{itemize}
+\item
+How to store bielectronic integrals?
+\item
+How to store determinants?
+\item
+How to compute excitation $\hat T$ so that $\hat T \ket I = \ket J$
+\item
+How to fetch the associated bielectronic integral(s)?
+\end{itemize}
 
 
 
@@ -315,7 +331,8 @@ All binary operators are of same precedence and left-associative.
 
 Some examples of how these instructions can be used are given below. They are key to understand how we can determine the holes and particles involved in the $\excdet{I}{J}$ excitation operator defined by
 \begin{equation}
-\kJ = \ordering \excdet{I}{J} \kI.
+\label{eq:ordering_removed}
+\kJ = \excdet{I}{J} \kI.
 \end{equation}
 Let $\bitI$ and $\bitJ$ be the bitstring representations of $\kI$ and $\kJ$, and $\bit{P}$ a bitstring with $\Nint=1$. 
 
@@ -834,95 +851,21 @@ As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ resul
 	\end{center}
 \end{figure}
 
-So we add an extra permutation if \alert{EST-CE QUE C'EST VERIFIÉ OU C'EST UN UNCOMMENTING D'UN TRUC QUE J'AVAIS LAISSE TRAINER?}
+So we add an extra permutation if
+
+%\begin{equation}
+%\neg \big ( max(p,r) < min(q,s) \vee max(q,s) < min(p,r) \big )
+%\end{equation}
+
 \begin{equation}
-\ior{[\ieor{(p-r)}{(p-s)}]}{[\ieor{(q-r)}{(q-s)}]} > 0
+ max(p,r) > min(q,s) \wedge max(q,s) > min(p,r)
 \end{equation}
 
 
-
-%\section{Generating a subspace of determinants}
-%\alert{
-%duplicates are avoided by checking connection to the past \\
-%******** (ptet exemple avec generator\_CAS versus generator\_full PSI is filtered with different function and supplied to the module using cas\_sd ( cas\_sd, mrcc ) or full\_ci ( pt2 stoch ) )?? \\
-%================
-%}
-%
-%Generally speaking, a subspace of determinants is defined by a reference and a class of excitation applied to it.
-%\alert{
-%Because of the determinant-driven approach, it may not be possible to store all the determinants of the considered subspace. \textbf{Pourquoi c'est lie au determinant-driven?}
-%}
-%
-%
-%
-%\paragraph{Reference space}
-%The \QP allows to define either a determinants of a CAS (Complete Active Space) or the full-CI space as the reference.\footnote{Although the full-CI space is a particular CAS, it is treated differently at the code level.}
-%
-%\paragraph{Excitation class}
-%The excitations to be applied to determinants of the reference space are defined by sets of orbitals describing:
-%\begin{itemize}
-%\item
-%Single excitations
-%\item
-%The first excitation of a double excitation
-%\item
-%The second excitation of a double excitation
-%\end{itemize}
-%For each set category, there is one set for the allowed holes and one set for the allowed particles.
-%This defines the rules used to generate determinants of the external space from the reference determinants.
-%
-%Typically, to define a CAS-SD (CAS augmented with all single and double excitations applied to all the determinants of the CAS), one defines:
-%\begin{description}
-%\item [Core orbitals:]
-%Orbitals always doubly occupied. They are not part of any of the sets.
-%\item [Inactive orbitals:]
-%Orbitals in which one or two holes may be created. They are part of the all the \emph{hole} sets.
-%\item [Active orbitals:]
-%Orbitals defining the CAS. They are part of all the sets.
-%\item [Virtual orbitals:]
-%Orbitals in which one or two particles may be created. They are part of the all the \emph{particle} sets.
-%\item [Deleted orbitals:]
-%Orbitals removed from the calculation, always unoccupied. They are not part of any set.
-%\end{description}
-%
-%
-% As will be seen later, determinants are selected iteratively. The general procedure is shown 
-%
-%
-
-\begin{algorithm}
-	\caption{GENERAL\_SELECTION}	
-	\label{alg:GENERAL_SELECTION}	
-	$\ket{\Psi} \gets \ket{\HF}$\;
-	Build the sets $\set{H}_0, \set{H}_1, \set{H}_2, \set{P}_0, \set{P}_1, \set{P}_2$ \;
-	$\set{T}$: the set of excitations allowed on the reference based on $\set{H}_0, \set{H}_1, \set{H}_2, \set{P}_0, \set{P}_1, \set{P}_2$ \;
-	
-	\While{some condition}{
-                $\set{D}$: the set of determinants in $\ket{\Psi}$ \;
-                $\set{D}' \gets \{ \}$ \;
-		\For{$i \gets 1, \Ndet$}{
-			\ForAll{$\hat{T}_j \in \set{T}$}{
-				$\kalpha \gets \ordering \hat{T}_j \ket {D_i}$ \;
-                \If{$\kalpha \neq 0$}{
-                /* Check if $\kalpha$ was not already generated before */ \;
-                \textit{found} $\gets$ False \;
-		\For{$l \gets 1, i-1$}{
-			\ForAll{$\hat{T}_k \in \set{T}$}{
-				$\textit{found} \gets \ior{\textit{found}}
-            {(\ordering \hat{T}_k \ket{D_{l}} \neq \kalpha)}$ \;
-				}
-				}
-                \If{$\iand{(\neg \textit{found})}{\textit{Selection\_criterion}}$ }{
-		$\set{D}' \gets \set{D}' \cup \kalpha $ \;			
-                }
-				}
-			}
-		}
-		do some selection in $\set{D}'$ \;
-		add selected determinants to $\set{D}$ \;
-		diagonalize $\hat{H}$ in $\set{D}$ to obtain $\ket{\Psi}$ \;
-	}
-\end{algorithm}
+%\alert{EST-CE QUE C'EST VERIFIÉ OU C'EST UN UNCOMMENTING D'UN TRUC QUE J'AVAIS LAISSE TRAINER?}
+%\begin{equation}
+%\ior{[\ieor{(p-r)}{(p-s)}]}{[\ieor{(q-r)}{(q-s)}]} > 0
+%\end{equation}
 
 
 \end{document}
