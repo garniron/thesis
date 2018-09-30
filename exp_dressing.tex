@@ -218,7 +218,9 @@ $r \gets 1$ \;
 %incomplet : c_\alpha = \sum_{(\hat p, \hat q, R);\hat p \hat q \ket R = \kalpha} \varphi \times c_R t_p t_q
 %\end{equation}
 
-The formula for $c_\alpha$ as well as the procedure for computing amplitudes is detailed in the presented article. By the formula of $c_\alpha$  we can see that in a practical sense, we are looking for "diamond" figures.
+The formula for $c_\alpha$ as well as the procedure for computing amplitudes is detailed in the presented article.
+Equation 26 shows the formula to compute $c_\alpha$, as a sum of terms, each associated with what can be described as a ``diamond'' structure.
+the formula of $c_\alpha$  we can see that in a practical sense, we are looking for "diamond" figures.
 
 %\begin{figure}[h!]
 	\begin{center}
@@ -244,7 +246,7 @@ so that
 \hat T_{R \rightarrow D_i} \hat T_{R \rightarrow D_j} \ket R = \pm \kalpha
 \end{equation}
 
-with $\hat T_{R \rightarrow D}$ an excitation operator so that $\hat T_{R \rightarrow D} \ket R = \pm \ket D$.
+with $\hat T_{R \rightarrow D}$ the excitation operator so that $\hat T_{R \rightarrow D} \ket R = \ket D$.
 
 
 
@@ -407,12 +409,55 @@ For implementational ease and efficiency, it is worth noting that it is not requ
 
 When it comes to comparison, since the 64 bit integers corresponding to the lower orbitals will typically have more mobile electrons, they should be given them more weight to resolve comparison as fast as possible.
 
-\paragraph{Computing the phase factor for }
+\paragraph{Computing the phase factor}
 
 
 
+Computation of the phase factor can be tricky, since confusion can easily arise from reference-dependent and reference-independent notations. To keep generality, we have to use reference-dependant notations, unlike in the formula for $c_\alpha$ presented in the article.
 
+Assuming
+
+\begin{equation}
+\hat T_{pq}^{rs} \ket I = \pm \ket i
+\end{equation}
+
+reference-independent notation for amplitude $t_{pq \rightarrow rs}$ and reference-dependent notation $t_{I \rightarrow i}$ could be wrongfully assumed equivalent. This is not the case, since $t_{pq \rightarrow rs}$ is associated with excitation $\hat T_{pq}^{rs}$ as described in \alert{CHAPTER DET DRIVENN}, while $t_{I \rightarrow i}$ is associated with $\hat T_{I \rightarrow i}$ so that
+
+\begin{equation}
+\hat T_{I \rightarrow i}  \ket I = \ket i
+\end{equation}
+
+preserving the phase factor of $\ket i$.
+
+
+\begin{equation}
+t_{I \rightarrow i} = \frac{t_{pq \rightarrow rs}}{\Phi(I \rightarrow i)}
+\end{equation}
+
+In order to compute $c_\alpha$ we are required to compute the phase factor
+
+\begin{equation}
+\Phi(R \rightarrow \alpha) = \Phi(R \rightarrow D_i) \Phi(D_i \rightarrow \alpha)
+\end{equation}
+
+
+
+which is noted $(-1)^{n(I \rightarrow \alpha)}$ in equation 26 or the presented article, with $I$ a reference determinant. The article uses reference-independent notation for amplitudes. Here we re-write the formula with reference-dependent notations, the term for each diamond becomes
+
+\begin{equation}
+c_R \Phi(R \rightarrow \alpha) \frac{t_{R \rightarrow D_i}}{\Phi(R \rightarrow D_i)} \frac{t_{D_i \rightarrow \alpha}}{\Phi(D_i \rightarrow \alpha)} =c_R t_{R \rightarrow D_i} t_{D_i \rightarrow \alpha}
+\end{equation}
+
+Amplitude for $t_{D_i \rightarrow \alpha}$ of course cannot be stored and would be too expensice to compute on the fly. Because $T_{D_i \rightarrow \alpha}$ involves the same orbitals as $T_{R \rightarrow D_j}$, their associated amplitudes are the same up to the phase factor
+
+\begin{equation}
+t_{D_i \rightarrow \alpha} = t_{R \rightarrow D_j} \times \Phi(R \rightarrow D_j)\Phi(D_i \rightarrow \alpha)
+\end{equation}
+
+So we can finally rewrite the contribution to $c_\alpha$ for each diamond
+
+\begin{equation}
+c_R t_{R \rightarrow D_i} t_{R \rightarrow D_j} \Phi(R \rightarrow D_j)\Phi(D_i \rightarrow \alpha)
+\end{equation}
 
 \end{document}
-
-
