@@ -427,3 +427,90 @@ phase(S,i\bar jk\bar l) = P^S_i \oplus P^S_{\bar j} \oplus P^S_{k+1} \oplus P^S_
 		}
 \end{algorithm}
 \end{comment}
+
+
+
+
+\section{Generating a subspace of determinants}
+\alert{
+duplicates are avoided by checking connection to the past \\
+******** (ptet exemple avec generator\_CAS versus generator\_full PSI is filtered with different function and supplied to the module using cas\_sd ( cas\_sd, mrcc ) or full\_ci ( pt2 stoch ) )?? \\
+================
+}
+
+Generally speaking, a subspace of determinants is defined by a reference and a class of excitation applied to it.
+\alert{
+Because of the determinant-driven approach, it may not be possible to store all the determinants of the considered ubspace. \textbf{Pourquoi c'est lie au determinant-driven?}
+}
+
+
+
+\paragraph{Reference space}
+The \QP allows to define either a determinants of a CAS (Complete Active Space) or the full-CI space as the reference.\footnote{Although the full-CI space is a particular CAS, it is treated differently at the code level.}
+
+\paragraph{Excitation class}
+The excitations to be applied to determinants of the reference space are defined by sets of orbitals describing:
+\begin{itemize}
+\item
+Single excitations
+\item
+The first excitation of a double excitation
+\item
+The second excitation of a double excitation
+\end{itemize}
+For each set category, there is one set for the allowed holes and one set for the allowed particles.
+This defines the rules used to generate determinants of the external space from the reference determinants.
+
+Typically, to define a CAS-SD (CAS augmented with all single and double excitations applied to all the determinants of he CAS), one defines:
+\begin{description}
+\item [Core orbitals:]
+Orbitals always doubly occupied. They are not part of any of the sets.
+\item [Inactive orbitals:]
+Orbitals in which one or two holes may be created. They are part of the all the \emph{hole} sets.
+\item [Active orbitals:]
+Orbitals defining the CAS. They are part of all the sets.
+\item [Virtual orbitals:]
+Orbitals in which one or two particles may be created. They are part of the all the \emph{particle} sets.
+\item [Deleted orbitals:]
+Orbitals removed from the calculation, always unoccupied. They are not part of any set.
+\end{description}
+
+
+ As will be seen later, determinants are selected iteratively. The general procedure is shown 
+
+
+
+\begin{algorithm}
+	\caption{GENERAL\_SELECTION}	
+	\label{alg:GENERAL_SELECTION}	
+	$\ket{\Psi} \gets \ket{\HF}$\;
+	Build the sets $\set{H}_0, \set{H}_1, \set{H}_2, \set{P}_0, \set{P}_1, \set{P}_2$ \;
+	$\set{T}$: the set of excitations allowed on the reference based on $\set{H}_0, \set{H}_1, \set{H}_2, \set{P}_0, \set{P}_1, \set{P}_2$ \;
+	
+	\While{some condition}{
+                $\set{D}$: the set of determinants in $\ket{\Psi}$ \;
+                $\set{D}' \gets \{ \}$ \;
+		\For{$i \gets 1, \Ndet$}{
+			\ForAll{$\hat{T}_j \in \set{T}$}{
+				$\kalpha \gets \ordering \hat{T}_j \ket {D_i}$ \;
+                \If{$\kalpha \neq 0$}{
+                /* Check if $\kalpha$ was not already generated before */ \;
+                \textit{found} $\gets$ False \;
+		\For{$l \gets 1, i-1$}{
+			\ForAll{$\hat{T}_k \in \set{T}$}{
+				$\textit{found} \gets \ior{\textit{found}}
+            {(\ordering \hat{T}_k \ket{D_{l}} \neq \kalpha)}$ \;
+				}
+				}
+                \If{$\iand{(\neg \textit{found})}{\textit{Selection\_criterion}}$ }{
+		$\set{D}' \gets \set{D}' \cup \kalpha $ \;			
+                }
+				}
+			}
+		}
+		do some selection in $\set{D}'$ \;
+		add selected determinants to $\set{D}$ \;
+		diagonalize $\hat{H}$ in $\set{D}$ to obtain $\ket{\Psi}$ \;
+	}
+\end{algorithm}
+

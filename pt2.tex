@@ -6,6 +6,24 @@
 
 \begin{document}
 \label{chap:PT2}
+
+\section{introduction}
+
+
+In some of the litterature, computation of $\EPT$ is considered part of CIPSI. This is understandable, as they involve gathering the same data.
+
+\begin{equation}
+\EPT = \sum_\alpha \frac{\Hij{\Psi}{\alpha}^2}{\Delta E_\alpha}
+\end{equation}
+
+It is essentially the sum all $\epsilon(\alpha)$ that are computed during a CIPSI selection.
+
+\begin{equation}
+\EPT = \sum_\alpha \epsilon(\alpha)
+\end{equation}
+
+We will however see that practically, computation of $\EPT$ is in practice more expensive than a CIPSI selection, then design a hybrid stochastic-deterministic scheme to get an acceptable estimation of $\EPT$ for a reasonable cost. 
+
 \section{$\EPT$ \textit{vs} selection}
 
 The selection of determinants and the calculation of $\EPT$, all approximations aside, both imply the computation of $\epsilon(\alpha)$ for all $\ket \alpha$, so both can be computed at the same time. The selection is about identifying the set of the most important contributions, $\EPT$ is about computing the sum over all of them. There are two main consequences to this:
@@ -32,7 +50,7 @@ A practical way to circumvent this problem was already proposed 20 years ago, by
 
 We eventually solved the previously discussed problem by turning the bias into an error bar. The basic idea is that, instead of trying to get the largest possible chunk of contribution, we can randomly pick $\epsilon(\alpha)$ contributions and make a Monte-Carlo estimate for the sum over all $\ket \alpha$. In this case, to avoid any bias we must set
 \begin{equation}
-n_g = \Ngen \; ; \; n_s = \Ndet.
+n_g = \Ndet \; ; \; n_s = \Ndet.
 \end{equation}
 Not only the estimate will be unbiased and much closer to the actual $\EPT$, but we will have an estimate for the error. Because $\EPT$ is itself used as an approximation
 \begin{equation}
@@ -44,7 +62,7 @@ The actual Monte-Carlo computation is significantly more convoluted than simply 
 
 \paragraph{$\epsilon(\alpha)$ are packed into elementary contributions $e_I$}
 Individual $\epsilon(\alpha)$ are expensive to compute. In the CIPSI algorithm, each generator determinant creates a number of unique $\kalpha$, and computes $\epsilon(\alpha)$ for each one of them.
-Essentially, the set of $\kalpha$ can be grouped in $\Ngen$ disjoint sets, each associated with a generator determinant, as shown in figure \ref{fig:mu_sample}.
+Essentially, the set of $\kalpha$ can be grouped in $\Ngen$ disjoint sets, each associated with a generator determinant, as shown in figure \ref{fig:a_sample}.
 \begin{equation}
 \epsilon(\alpha) \in \mathcal{A}_I \; ; \; \Hij{\alpha}{I} \neq 0 \; ; \;   \forall J < I, \Hij{\alpha}{J} = 0.
 \end{equation}
@@ -447,7 +465,7 @@ Relying on the fact that relative values of $\tilde w_I$ get closer and closer, 
 
 \begin{algorithm}
 	\caption{Compute teeth weights and bounaries}
-	\KwData{$\tilde w_i$, $\Nteeth$, $\minDetInT$ as perviously described}
+	\KwData{$\tilde w_i$, $\Nteeth$, $\minDetInT$ as previously described}
 	\KwResult{$n_0(1),u_0,W_T$}
 	
 	$\tilde W_I = \sum_{i \leq I} {\tilde w_i}$ \;
@@ -654,9 +672,9 @@ For a massively parallel implementation, we need to create a task queue. Because
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.5\columnwidth]{figures/pt2/mu_sample}
+		\includegraphics[width=0.5\columnwidth]{figures/pt2/a_sample}
 		\caption{}
-		\label{fig:mu_sample}
+		\label{fig:a_sample}
 		Construction of batches of $\ket \alpha$
 	\end{center}
 \end{figure}
