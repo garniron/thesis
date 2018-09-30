@@ -4,7 +4,6 @@
 \begin{document}
 \label{chap:DET_DRIVEN}
 
-\alert{j'ai retiré le $\ordering$ de equation \ref{eq:ordering_removed} pour coherence avec la partie MRCC, ca n'a pas l'air de poser de probleme}\\
 Generally speaking, implementing a wavefunction method requires iteration over either two-electron integrals, or determinants. Those approaches are refererd to as \emph{integral-driven} and \emph{determinant-driven}. Because the number of determinants grows much faster than the number of double excitations, an efficient implementations would likely prioritize an integral driven approach. However, in most cases, the determinant-driven approach is more intuitive, as it stays closer to base equations. The \QP is intended for developpers, and thus prioritizes the approach that is easier for designing new methods.
 
 For performances, it is vital that some base operations are done efficiently. Notably, the computaion of matrix elements of $\hat H$.
@@ -774,10 +773,10 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=0.5\columnwidth]{figures/determinant_driven/phase}
-		\caption{
-		\label{generators_selectors}
-		phasemask
+		\caption[phasemask illustration]{
+		$i$ and $j$ are the lower and higher spinorbitals involved in the excitation. $E_i^S$ is the number of electrons in spinorbitals under $i$ and of same spin, $P_i^S$ is its parity. $E_j^S - E_{i+1}^S$ gives the number of electrons that are ``crossed'' during the excitation, $\phi = P^S_{i+1} \oplus P^S_j$ the parity of that number, $(-1)^\phi$ is the phase factor.
 		}
+		\label{generators_selectors}
 	\end{center}
 \end{figure}
 
@@ -858,7 +857,7 @@ So we add an extra permutation if
 %\end{equation}
 
 \begin{equation}
- max(p,r) > min(q,s) \wedge max(q,s) > min(p,r)
+ \big ( max(p,r) > min(q,s) \big ) \wedge \big ( max(q,s) > min(p,r) \big )
 \end{equation}
 
 
