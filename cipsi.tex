@@ -683,7 +683,7 @@ Arguably the simplest way to make an algorithm parallel is, whenever possible, t
 
 As figure \ref{fig:selection} suggests, iterations for the outermost loop --- over generators --- are independent. This is due to our choice to perform the initial filtering on a ``generator by generator'' basis, giving a total complexity of $\mathcal{O}(\Ndet^{3/2})$ (algorithm \ref{alg:generators_filtering}) rather that $\mathcal{O}(\Ndet)$ as our Davidson algorithm does ; to achieve $\mathcal{O}(\Ndet)$ the outermost loop would need to be over $\{U_\alpha\}$ and $\{U_\beta\}$. This would give a smaller number of iterations/tasks with extremely unbalanced costs, which does not suit well a parallel scheme. Since in practice the filtering steps only account for a few percent of the total CPU time, we stuck to 1 task = 1 generator. Even so, the cost for different tasks is still very much unbalanced, the first few generators with large coefficients being very expensive, and the cost quickly decreasing.
 
-For a better load balancing, we split the first, expensive tasks into smaller \emph{fragments}, using a fairly simple approach. Essentially, some tasks will require computing just a subset of the $\ket {G_{pq}}$ batches associated with a generator $\ket G$, as opposed to all of them. This implies some overhead, since some filtering steps will be duplicated. However, this overhead was found to be small, and only a relatively small number of expensive tasks need to be split.
+For a better load balancing, we split the first, expensive tasks into smaller \emph{fragments}, using a fairly simple approach. Essentially, some tasks will require computing just a subset of the $\ket {G_{pq}}$ batches associated with a generator $\ket G$, as opposed to all of them. This implies some overhead, since some filtering steps will be duplicated. Fortunately, only a relatively small number of expensive tasks need to be split.
 
 
 
@@ -738,8 +738,20 @@ Task $i$ is put in the job queue $F_i$ times, each time associated with an index
 
 This fragmentation scheme is shown in a simpler and more general way when used to compute $\EPT$ in chapter \ref{chap:PT2}. In a nutshell, we can see it as a toy problem where we want to print for each generator the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ it has generated. The algorithm for this on the master and slave side is shown as algorithm \ref{alg:tasksplit_master} and \ref{alg:tasksplit_slave} respectively.
 
+\section{conclusion}
 
+The newer CIPSI algorithm runs orders of magnitude faster than the former one thanks to several key improvements.
+\begin{itemize}
+\item
+Excitations do not need to be computed explicitly using algorithms such as those presented in chapter \ref{chap:DET_DRIVEN}. However the associated phase factors still has to be computed.
+\item
+Although not directly related to the CIPSI algorithm, the computation of said phase factors has been made much cheaper thanks to the use of phasemasks (see chapter \ref{chap:PHASEMASK})
+\item
+Selector determinant are simultaneously compared to $~{N_{virt}}^2$ external determinants $\kalpha$ thanks to the batch system.
+\item
+Selector determinants go through a filtering system that narrows down the number of selector determinants to be considered against a particular $\kalpha$ (a particular batch of $\kalpha$).
+\end{itemize}
 
-\alert{Il faut mettre une petite conclusion / resume ici.}
+This made way for applications that were not affordable before,\cite{1806.05115} and was used as the basis for the methods presented in the next chapters.
 
 \end{document}

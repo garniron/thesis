@@ -621,7 +621,7 @@ Using the above formulas and taking into account the bitstring's internal repres
 
 
 \subsection{Phasemasks}
-
+\label{chap:PHASEMASK}
 
 Algorithm \ref{alg:PHASE_SINGLE} is a general one, efficient for computing the phase factor for two arbitrary determinants. However, a phase computation is typically needed every time two determinants are compared, resulting in a vast amount of computational power being consumed. When only this method was used in the \QP, it was not uncommon to find that a large fraction of the computational time was spent in phase computations.
 Advantage can be taken of the fact that, in most cases, the considered determinants aren't actually arbitrary. Usually, the phase computation will be performed repeatedly with the same determinant. For a fairly modest computational price, it is possible to compress the phase information from a particular determinant and make it cheaper to extract. The underlying principle is little more than a cumulative sum. If, for a determinant $\ket{S}$ that is going to be used repeatedly for phase computations, we pre-compute
