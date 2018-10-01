@@ -2,9 +2,9 @@
 \coordinate (A) at (0,0.5);
 
 
-\draw (A) node[draw] (Psi){$\Psi = \sum_I c_I D_I$};
+\draw (A) node[draw] (Psi){$|\Psi \rangle = \sum_I c_I | D_I \rangle $};
 
-\draw (A)+(0,-1.5) node[right] (S){$S= D_J$};
+\draw (A)+(0,-1.5) node[right] (S){$|S\rangle = |D_J\rangle$};
 \draw (A)+(5,-2) node[right] (G){$G= D_I$};
 \draw[dashed] (A)+(-5,-2) -- (G);
 
@@ -76,7 +76,7 @@
 \coordinate (s) at (-2.5,-12);
 \draw (s) node[below] (S) {
   \begin{tabular}{l}
-  $S=a^\dagger_i a^\dagger_j G_{pq}$ \\
+  $|S\rangle =a^\dagger_i a^\dagger_j |G_{pq}\rangle$ \\
   tag $P_{ij}(G_{pq})$
   \end{tabular}
 };

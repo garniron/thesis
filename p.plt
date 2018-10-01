@@ -151,7 +151,6 @@ set lmargin  -1
 set bmargin  -1
 set rmargin  -1
 set tmargin  -1
-set locale "fr_FR.UTF-8"
 set pm3d explicit at s
 set pm3d scansautomatic
 set pm3d interpolate 1,1 flush begin noftriangles noborder corners2color mean
@@ -169,5 +168,5 @@ set grid
 GNUTERM = "qt"
 x = 0.0
 ## Last datafile plotted: "data_pt2"
-plot  x w l title 'Ideal', 'data_pt2' index 0 u 1:(44873.5377/$2) w lp title 'Ground state', 'data_pt2' index 1 u 1:(50361.7078/$2) w lp title 'Excited state'
+plot  x w l title 'Ideal', 'data_pt2' index 0 u 1:(6354.7462/$2) w lp title 'Ground state', 'data_pt2' index 1 u 1:(7964.4548/$2) w lp title 'Excited state'
 #    EOF

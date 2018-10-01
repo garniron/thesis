@@ -10,8 +10,8 @@
 #    	gnuplot home:     http://www.gnuplot.info
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
-# set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
-# set output 'figures/perf/scaling_pt2_det.pdf'
+set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
+set output 'figures/perf/scaling_pt2_det.pdf'
 unset clip points
 set clip one
 unset clip two
@@ -156,7 +156,6 @@ set lmargin  -1
 set bmargin  -1
 set rmargin  -1
 set tmargin  -1
-set locale "fr_FR.UTF-8"
 set pm3d explicit at s
 set pm3d scansautomatic
 set pm3d interpolate 1,1 flush begin noftriangles noborder corners2color mean
@@ -172,5 +171,5 @@ set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap 
 GNUTERM = "qt"
 x = 0.0
 ## Last datafile plotted: "data_pt2"
-plot 'data_pt2' index 2 u 1:5 w lp title "Ground state", 'data_pt2' index 2 u 1:9 w lp title "Excited state", (x**1.45)*exp(-12.5) title '{/Symbol a}N_{det}^{1.45}'
+plot 'data_pt2' index 2 u 1:5 w lp title "Ground state", 'data_pt2' index 2 u 1:9 w lp title "Excited state", (x**1.07)*exp(-8.5) title '{/Symbol a}N_{det}^{1.07}'
 #    EOF

@@ -10,8 +10,8 @@
 #    	gnuplot home:     http://www.gnuplot.info
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
-# set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
-# set output 'figures/perf/cn3_energy.pdf'
+set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
+set output 'figures/perf/cn3_energy.pdf'
 unset clip points
 set clip one
 unset clip two
@@ -155,7 +155,6 @@ set lmargin  -1
 set bmargin  -1
 set rmargin  -1
 set tmargin  -1
-set locale "fr_FR.UTF-8"
 set pm3d explicit at s
 set pm3d scansautomatic
 set pm3d interpolate 1,1 flush begin noftriangles noborder corners2color mean

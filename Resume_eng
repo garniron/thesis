@@ -1,4 +1,26 @@
-This thesis, whose topic is quantum chemistry algorithms, is made in the context of the change in paradigm that has been going on for the last dozen years, in which the usual sequential algorithms are progressively replaced with parallel equivalents. Indeed, the increase in processors' frequency is challenged by physical barriers, increase in computational power is achieved through increase of the number of cores. However, where an increase of frequency mechanically lead to a faster execution of a code, an increase in number of cores may be challenged by algorithmic barriers, which may require adapting of even changing the algorithm. Among methods developped to circumvent this issue, we find in particular Monte-Carlo methods (stochastic methods), which are intrinsically "embarassingly parallel", meaning they are by design composed of a large number of independant task, and thus, particularly well-adapted to massively parallel architectures. In addition, they often are able to yield an approximate result for just a fraction of the cose of the equivalent deterministic, exact computation.
-During this thesis, massively parallel implementations of some deterministic quantum chemistry algorithms were realized. Those methods are: CIPSI, Davidson diagonalization, computation of second-order perturbation, shifted-Bk, Multi-Reference Coupled-Cluster. For some of these, as stochastic aspect was indtroduced in order to improve their efficiency.
-All of them were implemented on a distributed task model, with a central process distributing tasks and collecting results. In other words, slave nodes can be added during the computation from any location reachable through internet. Even though this aspect could unfortunately not be implemented within the time limit, this also allows in principle to remove slave nodes during the computation (in case of failure for instance).  
-The efficiency for the implemented algorithms has been studied, and the code could give way to numerous applications, in particular to obtain reference energies for complicated molecular systems.
+This thesis, whose topic is quantum chemistry algorithms, is made in the
+context of the change in paradigm that has been going on for the last decade,
+in which the usual sequential algorithms are progressively replaced with
+parallel equivalents. Indeed, the increase in processors' frequency is
+challenged by physical barriers, increase in computational power is achieved
+through increase of the number of cores. However, where an increase of
+frequency mechanically leads to a faster execution of a code, an increase in
+number of cores may be challenged by algorithmic barriers, which may require
+adapting of even changing the algorithm. Among methods developped to circumvent
+this issue, we find in particular Monte-Carlo methods (stochastic methods),
+which are intrinsically "embarassingly parallel", meaning they are by design
+composed of a large number of independant task, and thus, particularly
+well-adapted to massively parallel architectures. In addition, they often are
+able to yield an approximate result for just a fraction of the cost of the
+equivalent deterministic, exact computation.  During this thesis, massively
+parallel implementations of some deterministic quantum chemistry algorithms
+were realized. Those methods are: CIPSI, Davidson diagonalization, computation
+of second-order perturbation, shifted-Bk, Multi-Reference Coupled-Cluster. For
+some of these, a stochastic aspect was indtroduced in order to improve their
+efficiency.  All of them were implemented on a distributed task model, with a
+central process distributing tasks and collecting results. In other words,
+slave nodes can be added during the computation from any location reachable
+through internet. The
+efficiency for the implemented algorithms has been studied, and the code could
+give way to numerous applications, in particular to obtain reference energies
+for difficult molecular systems.
