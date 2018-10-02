@@ -104,8 +104,8 @@ Note that diagonal elements are not found be either algorithm.
 \caption{Find internal determinants connected by purely $\alpha$ or purely $\beta$ single or double excitations}
 \label{alg:davidson_aa}
 \KwData{$N_a$ the number of unique $\alpha$ spin parts present in $\ket \Psi$}
-\KwData{$D$ the array of determinants present in $\ket \Psi$, sorted by alpha-major order}
-\KwData{$A$ the array so that $A[n]$ is the index of the first occurence of the $n^{th}$ unique alpha bitstring in $D$, and $A[N_a +1] = \Ndet+1$ for algorithmic convenience}
+\KwData{$D$ the array of determinants present in $\ket \Psi$, sorted by alpha-major order (all determinants sharing the same $\alpha$ part are next to each other)}
+\KwData{$A$ the array so that $A[n]$ is the index of the first occurence of the $n^{th}$ unique $\alpha$ spin part in $D$. For algorithmic convenience we set $A[N_a +1] = \Ndet+1$}
 
 \For{$a \gets 1, N_a$}{
 \tcc{All determinants sharing $D[A(a)]_\alpha$ alpha spin part are in the range $[A(a), A(a+1)-1]$}
@@ -151,6 +151,9 @@ Note that diagonal elements are not found be either algorithm.
 \For{$a1 \gets 1, N_a$}{
 \If{$A(a1+1) -1 < \text{first}$}{
 	cycle $a1$ loop\;
+}
+\If{$A(a1) > \text{last}$)}{
+	return \;
 }
 $f \gets max(\text{first}, A(a1))$ \;
 $t \gets min(\text{last}, A(a1+1)-1)$ \;
