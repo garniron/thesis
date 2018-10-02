@@ -49,7 +49,7 @@ $  1~322~537$ & $-149.946~655$ & $-149.675~032$ & $7.39$  \\
 $  8~495~334$ & $-149.972~032$ & $-149.704~145$ & $7.29$  \\
 $  9~356~952$ & $-149.973~375$ & $-149.706~822$ & $7.25$  \\
 $ 42~779~636$ & $-149.987~370$ & $-149.721~470$ & $7.24$  \\
-$186~978~487$ & $            $ & $            $ & $7.22$  \\
+$186~978~487$ & $-149.998~582$ & $-149.733~039$ & $7.23$  \\
 \hline
 
 \multicolumn{4}{c}{$\Evar + \EPT$}  \\
@@ -62,7 +62,7 @@ $  1~322~537$ & $-150.017~89(7)$ & $-149.752~55(7)$ & $7.22$ \\
 $  8~495~334$ & $-150.015~97(4)$ & $-149.750~87(5)$ & $7.21$ \\
 $  9~356~952$ & $-150.015~95(4)$ & $-149.750~68(4)$ & $7.22$ \\
 $ 42~959~496$ & $-150.016~75(2)$ & $-149.751~88(2)$ & $7.21$ \\
-$186~978~487$ & $              $ & $              $ & $7.22$  \\
+$186~978~487$ & $-150.017~51(2)$ & $-149.752~90(2)$ & $7.20$ \\
 \hline
 \end{tabular}
 \end{center}
@@ -73,7 +73,7 @@ the ground and excited states as a function of the number of
 determinants, with and without the second order perturbative contribution.
 From these data, one can see that although $\EPT$ is still large ($\sim 0.04$~au)
 the excitation energies both at the variational level and with the perturbative
-correction converge to a value of $7.21$~eV compatible with the reference
+correction converge to a value of $7.20$~eV compatible with the reference
 energy obtained in a larger basis set.
 
 
@@ -142,7 +142,9 @@ determinants in the wave function.}
 
 We took a wave function with 42~959~496 determinants, and measured the wall-clock time required to
 perform one iteration of the Davidson diagonalization, with an increasing number of compute nodes.
-The timings are reported in table~\ref{tab:time_davidson} and the parallel speedup curve is represented in figure~\ref{fig:speedup_davidson}.
+The timings are reported in table~\ref{tab:time_davidson} and the parallel speedup curve is represented in figure~\ref{fig:speedup_davidson}. Using a log-log plot, we were able to fit the data and find
+a scaling as $\order{\Ndet^{3/2}}$, as expected.  As the communication scales as $\order{\Ndet}$, 
+the parallel efficiency increases together with $\Ndet$, as shown of figure~\ref{fig:speedup_davidson}.
 
 
 \clearpage
@@ -157,10 +159,10 @@ The timings are reported in table~\ref{tab:time_davidson} and the parallel speed
 \hline
 \tabc{$\Ndet$} & \tabc{seconds} \\
 \hline
-$      123$ & $     0.34$ \\
-$   29~409$ & $    40.31$ \\
-$  168~595$ & $   253.43$ \\
-$1~322~537$ & $ 2~006.30$ \\
+$      123$ & $      0.34$ \\
+$   29~409$ & $     40.31$ \\
+$  168~595$ & $    253.43$ \\
+$1~322~537$ & $  2~006.30$ \\
 $9~356~952$ & $ 15~251.15$ \\
 \hline
 \end{tabular}
@@ -242,13 +244,13 @@ is typically around $5\%$.
 \hline
 \tabc{$\Ndet$} & \tabc{Ground state} & \tabc{Excited state} \\
 \hline
-$      123$ &  $     0.48$ & $     0.53$ \\
-$    3~083$ &  $     1.53$ & $     2.05$ \\
-$   29~409$ &  $    13.71$ & $    23.75$ \\
-$  168~595$ &  $   138.17$ & $   155.36$ \\
-$1~322~537$ &  $ 2~456.66$ & $ 2~640.67$ \\
-$8~495~334$ &  $38~350.47$ & $42~796.15$ \\
-$9~356~952$ &  $44~873.53$ & $50~361.70$ \\
+$      123$ &  $     0.51$ & $     0.56$ \\
+$    3~083$ &  $     2.33$ & $     2.34$ \\
+$   29~409$ &  $    13.83$ & $    16.21$ \\
+$  168~595$ &  $    75.62$ & $   103.26$ \\
+$1~322~537$ &  $   708.53$ & $   818.58$ \\
+$8~495~334$ &  $ 5~578.76$ & $ 6~751.25$ \\
+$9~356~952$ &  $ 6~354.74$ & $ 7~964.45$ \\
 \hline
 \end{tabular}
 \end{center}
@@ -279,13 +281,13 @@ increasing number of 36-core compute nodes.}
 \hline
 \tabc{Nodes} & \tabc{Ground state} & \tabc{Excited state} \\
 \hline
-$ 1$ & $44~873.53$ & $50~361.70$ \\
-$ 5$ & $10~552.02$ & $11~260.12$ \\
-$10$ & $ 5~381.51$ & $ 5~918.34$ \\
-$20$ & $ 2~782.87$ & $ 3~043.94$ \\
-$30$ & $ 1~884.67$ & $ 2~069.17$ \\
-$40$ & $ 1~440.96$ & $ 1~568.30$ \\
-$50$ & $ 1~154.97$ & $ 1~273.66$ \\
+$1 $ & $6~354.74$  & $7~964.45$  \\
+$5 $ & $1~333.75$  & $1~663.57$  \\
+$10$ & $  709.09$  & $  891.85$  \\
+$20$ & $  399.86$  & $  487.94$  \\
+$30$ & $  293.63$  & $  378.31$  \\
+$40$ & $  239.67$  & $  308.83$  \\
+$50$ & $  209.89$  & $  270.44$  \\
 \hline
 \end{tabular}
 \end{center}
