@@ -236,7 +236,7 @@ the formula of $c_\alpha$  we can see that in a practical sense, we are looking 
 	\end{center}
 %\end{figure}
 
-With $\kalpha$ the external determinant being considered, $\ket {D_i}$ and $\ket {D_j}$ internal determinants, and $\ket R$ a reference determinant.  Parallel arrows indicate connections (excitation degree at most 2) by the same excitation, the vertical arrow indicates $\ket R$ and $\kalpha$ aren't connected (excitation degree at least 3). All the determinants and excitation operators we are considering are ordered according to $\mathcal{O}$.
+With $\kalpha$ the external determinant being considered, $\ket {D_i}$ and $\ket {D_j}$ internal determinants, and $\ket R$ a reference determinant.  Parallel arrows indicate connections (excitation degree at most 2) by the same excitation, the vertical arrow indicates $\ket R$ and $\kalpha$ aren't connected (excitation degree at least 3). All the determinants and excitation operators we are considering are ordered according to $\ordering$.
 
 The matrix dressing implementation supplies $\{\mathcal{D}\}$ the complete list of internal determinants that connect to $\kalpha$. We call $\{\mathcal{R}\}$ the list of reference determinants.
 
@@ -258,11 +258,11 @@ with $\hat T_{R \rightarrow D}$ the excitation operator so that $\hat T_{R \righ
 
 Using excitation operators, a diamond can be identified by only verifying
 \begin{equation}
-\hat T_{R \rightarrow D_i} = \hat T_{D_j \rightarrow \alpha}
+\hat T_{R \rightarrow D_i} = \pm \hat T_{D_j \rightarrow \alpha}
 \label{eq:excitation_diamond}
 \end{equation}
 
-
+In other words that $\hat T_{R \rightarrow D_i}$ and $\hat T_{D_j \rightarrow \alpha}$ involve the same holes and particles (the sign of $T_{D_j \rightarrow \alpha}$ sets the sign in of $\kalpha$).
 We first set up a method to identify a diamond, then two methods to ``locate'' them.
 
 
@@ -362,7 +362,7 @@ Those are desirable if one of $\{D\}$ or $\{R\}$ is relatively small, in particu
 \paragraph{Locating diamonds by rewritting excitations as additions}
 Althought the method could be chosen on a ``by-$\alpha$'' basis depending on $|R|$ and $|D|$, only this one is currently used in the \QP as it works for larger sets.
 Unlike the previous one, this method may yield false positives, thus it uses equation \ref{eq:diamond_xor} for confirmation.
-The idea is to express an excitation as an addition. As was said, bitstrings are essentially integers, so they can be added, substracted and compared as such. We can easily associate $T_{A \rightarrow B}$ and $T_p^q$ integer values with  excitations $\hat T_{A \rightarrow B}$ and $\hat T_p^q$ respectively
+The idea is to express an excitation as an addition. As was said, bitstrings are essentially integers, so they can be added, substracted and compared as such. As in the case of the $\hat f$ operator, this approach entierly ignores phase factors. We can easily associate $T_{A \rightarrow B}$ and $T_p^q$ integer values with  excitations $\pm \hat T_{A \rightarrow B}$ and $\pm \hat T_p^q$ respectively
 
 \begin{align}
 T_p^q = 2^{q-1} - 2^{p-1} \\
@@ -379,11 +379,11 @@ T_{R \rightarrow D_i} = T_{D_j \rightarrow \alpha}
 indeed 
 
 \begin{align}
-\hat T \ket A = \ket B \implies  T + A = B\\
-T + A = B \centernot \implies \hat T \ket A = \ket B
+\pm \hat T \ket A = \ket B \implies  T + A = B\\
+T + A = B \centernot \implies \pm \hat T \ket A = \ket B
 \end{align}
 
-with $T$ the integer associated with an excitation $\hat T$. If $\hat T \ket A = 0$, in most cases $T + A$ will yield a bitstring with a wrong number of bits/electrons, but this is not guaranteed, hence the presence of rare false positives.
+with $T$ the integer associated with an excitation $\pm \hat T$. If $\pm \hat T \ket A = 0$, in most cases $T + A$ will yield a bitstring with a wrong number of bits/electrons, but this is not guaranteed, hence the presence of rare false positives.
 
 Equation \ref{eq:excitation_diamond} implies
 
@@ -427,13 +427,13 @@ Assuming
 \hat T_{pq}^{rs} \ket I = \pm \ket i
 \end{equation}
 
-reference-independent notation for amplitude $t_{pq \rightarrow rs}$ and reference-dependent notation $t_{I \rightarrow i}$ could be wrongfully assumed equivalent. This is not the case, since $t_{pq \rightarrow rs}$ is associated with excitation $\hat T_{pq}^{rs}$ as described in chapter \ref{chap:DET_DRIVEN}, while $t_{I \rightarrow i}$ is associated with $\hat T_{I \rightarrow i}$ so that
+reference-independent notation for amplitude $t_{pq \rightarrow rs}$ and reference-dependent notation $t_{I \rightarrow i}$ could be wrongfully assumed equivalent. This is not the case, since $t_{pq \rightarrow rs}$ is associated with excitation $\hat T_{pq}^{rs}$ as described in chapter \ref{chap:DET_DRIVEN} - with a particular order for creation an anihilation operators - while $t_{I \rightarrow i}$ is associated with $\hat T_{I \rightarrow i}$ so that
 
 \begin{equation}
 \hat T_{I \rightarrow i}  \ket I = \ket i
 \end{equation}
 
-preserving the phase factor of $\ket i$.
+preserving the phase factor of $\ket i$. Therefore
 
 
 \begin{equation}
