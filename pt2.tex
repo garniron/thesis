@@ -1,28 +1,23 @@
 \documentclass[./thesis.tex]{subfiles}
 
 \newcommand{\minDetInT}{\text{minDetInT1}}
-\newcommand{\Nteeth}{N_\text{teeth}}
 \newcommand{\lTeethI}{\text{lTeethI}}
 
 \begin{document}
 \label{chap:PT2}
 
-\section{introduction}
+\section{Introduction}
 
 
-In some of the litterature, computation of $\EPT$ is considered part of CIPSI. This is understandable, as they involve gathering the same data.
-
+In some of the literature, computation of $\EPT$ is considered part of CIPSI. This is understandable, as they involve gathering the same data.
 \begin{equation}
 \EPT = \sum_\alpha \frac{\Hij{\Psi}{\alpha}^2}{\Delta E_\alpha}
 \end{equation}
-
 It is essentially the sum all $\epsilon(\alpha)$ that are computed during a CIPSI selection.
-
 \begin{equation}
 \EPT = \sum_\alpha \epsilon(\alpha)
 \end{equation}
-
-We will however see that practically, computation of $\EPT$ is in practice more expensive than a CIPSI selection, then design a hybrid stochastic-deterministic scheme to get an acceptable estimation of $\EPT$ for a reasonable cost. 
+We will however see that practically, the computation of $\EPT$ is in practice more expensive than a CIPSI selection, so we designed a hybrid stochastic-deterministic scheme to get an accurate estimation of $\EPT$ for a reasonable cost. 
 
 \section{$\EPT$ \textit{vs} selection}
 
@@ -152,7 +147,9 @@ Therefore, we propose to use
 p(\alpha) = {c_I^2}
 \end{equation}
 as a probability distribution. 
-\begin{figure}[h!]
+Figure~\ref{fig:ei} shows that using $c_I^2$ as a probability density gives less
+fluctuations in the samples.
+\begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=0.49\columnwidth]{figures/pt2/eI}
 		\includegraphics[width=0.49\columnwidth]{figures/pt2/eici2}
@@ -160,8 +157,6 @@ as a probability distribution.
 		\caption{Contribution $|e_I|$ (left) and $|e_I|/c_I^2$ (right) as a function of the uniform random number $u$ drawn. The green horizontal line is $\EPT$.}
 		\label{fig:ei}
 \end{figure}
-Figure~\ref{fig:ei} shows that using $c_I^2$ as a probability density gives less
-fluctuations in the samples.
 
 The representation we are going to use is an horizontal series of $\Ndet$ boxes of width $w_i = c_i^2$, containing the sample index $i$.
 The sample index $i$ associated with drawing a random number $u \in [0,1)_\mathbb{R}$ is noted $w[u]$. It is determined using the cumulative probability distribution function $W$
@@ -228,7 +223,7 @@ one sample is drawn in each domain independently. Then, all those $e_I$ are adde
 
 
 \section{Deterministic and stochastic ranges}
-Because $e_I$ decreases rapidly, most of the contribution is contained in the first samples. We can compute the exact energy contribution for the first samples, and only make a stochastic estimation for the sum over the smaller ones. This effectively splits the sample space in two ranges, a deterministic one $\mathcal{D}$, then a stochastic one $\mathcal{S}$ (hence the hybrid characteristic of this method). Being ranges, they are always made of contiguous samples. The estimated energy can be written as
+Because $e_I$ decreases rapidly, most of the contribution is contained in the first $e_I$. We can compute the exact energy contribution for the first $e_I$, and only make a stochastic estimation for the sum over the smaller ones. This effectively splits the sample space in two ranges, a deterministic one $\mathcal{D}$, then a stochastic one $\mathcal{S}$ (hence the hybrid characteristic of this method). Being ranges, they are always made of contiguous samples. The estimated energy can be written as
 \begin{equation}
 \EPT = E_D + E_S
 \end{equation}
@@ -239,16 +234,16 @@ The number of samples in $\mathcal{D}$ increases during the computation. Initial
 \end{equation}
 $\mathcal{T}_0$ is always computed before any stochastic estimation can take place.
 
-\subsection{Division of the stochastic domain in $N_{teeth}$ \emph{teeth}}
+\subsection{Division of the stochastic domain in $\Nteeth$ \emph{teeth}}
 
-As seen in section~\ref{sec:partition}, because $\frac{e_I}{w_I}$ mainly decreases, a range has a lower variance than the whole domain. The stochastic domain is split in $N_{teeth}$ ranges referred to as \emph{teeth}, noted $\mathcal{T}_1,\ldots,\mathcal{T}_{N_{teeth}}$ and sharing the same total weight $W_T$
+As seen in section~\ref{sec:partition}, because $\frac{e_I}{w_I}$ mainly decreases, a range has a lower variance than the whole domain. The stochastic domain is split in $\Nteeth$ ranges referred to as \emph{teeth}, noted $\mathcal{T}_1,\ldots,\mathcal{T}_{\Nteeth}$ and sharing the same total weight $W_T$
 \begin{equation}
 \sum_{I \in \mathcal{T}_{t \geq 1}} w_I=W_T.
 \end{equation}
 
  \begin{figure}[h!]
 	\begin{center}
-	\includegraphics[width=0.9\columnwidth]{figures/pt2/teeth}
+	\includegraphics[width=0.8\columnwidth]{figures/pt2/teeth}
 	\end{center}
 	\caption{Partitioning of the sample space.
 		The sample space is partitioned in so-called \emph{teeth} from $\mathcal{T}_0$ to $\mathcal{T}_{N_{teeth}}$, $\mathcal{T}_0$ of total weight $u_0$, the others of total weight $W_T$}
@@ -265,7 +260,7 @@ The number or samples in the deterministic range, therefore, is function of a to
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.9\columnwidth]{figures/pt2/tooththreshold}
+		\includegraphics[width=0.8\columnwidth]{figures/pt2/tooththreshold}
 	\end{center}
 	\caption{Boundaries of a teeth index-wise and probability-wise}
 	\label{fig:boundaries_teeth}
@@ -281,7 +276,7 @@ We can write the expression of $B_t(u)$ the sample value associated with a comb.
 B_t(u) = W_T \sum_{i=t-1}^{N_{teeth}-1} \frac{e_{y(u+i)}}{w_{y(u+i)}} \\
 y(x)=w[u_0+ W_T \times x, W]
 \end{align}
-\alert{merite sans doute plus d'explications...}
+\alert{merite sans doute plus d'explications... OUI, EN EFFET...}
 
 An illustrative exemple is given as figure \ref{fig:toothindet}.
 
@@ -301,13 +296,14 @@ An illustrative exemple is given as figure \ref{fig:toothindet}.
 After drawing $n$ random numbers forming the set $\{\mathcal{U}\}$, and given $\mathcal{T}_t$ the first non-deterministic tooth, $\EPT$ can be estimated as 
 
 \begin{equation}
-\EPT = \Big ( \sum_{I=1}^{n_0(t)} e_I + \frac{S_{t}}{n} \Big ) \pm \text{err}
+\EPT = \sum_{I=1}^{n_0(t)} e_I + \frac{S_{t}}{n}  \pm \text{err}
 \end{equation}
-
-with
+where the error is given by
+\begin{equation}
+\text{err}  = \sqrt{(S_{t}^{(2)} - {S_{t}}^2) (n-1)^{-1} } 
+\end{equation}
 \begin{align}
-err = \sqrt{(S_{t}^{(2)} - {S_{t}}^2) (n-1)^{-1} } \\
-S_{t} = \sum_{u \in \{\mathcal{U}\}} B_{t}(u) \\
+S_{t} & = \sum_{u \in \{\mathcal{U}\}} B_{t}(u) & 
 S^{(2)}_{t} = \sum_{u \in \{\mathcal{U}\}} B_{t}(u)^2
 \end{align}
 

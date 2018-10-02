@@ -79,7 +79,7 @@ Because of \ref{eq:arbitrary_dressing}, we have by construction
 {\bf \Delta} {\bf c} = {\pmb \kappa}
 \end{equation}
 with ${\pmb \kappa}$ the vector $\qty(\kappa_1, \ldots, \kappa_{\Ndet})$.
-Algorithmically, it boils down to computing ${\pmb \kappa}$, which is more expensive to compute than ${\bf \tilde H}{\bf c}$ needed for Davidson's diagonalization. But unlike ${\bf \tilde H}{\bf c}$ which is too large to be stored, and needs to be re-computed on the fly at each Davidson iteration, ${\pmb \kappa}$ can easily be stored, being only a vector with $\Ndet$ elements.
+Algorithmically, it boils down to computing ${\pmb \kappa}$, which is more expensive to compute than the product ${\bf \tilde H}{\bf c}$ needed for Davidson's diagonalization. But unlike ${\bf \tilde H}{\bf c}$ which is too large to be stored, and needs to be re-computed on the fly at each Davidson iteration, ${\pmb \kappa}$ is fixed and can easily be stored.
 
 
 An improved version to this original idea was proposed by Davidson and co-workers under the name shifted-\Bk,\cite{Nitzsche_1978a, Nitzsche_1978b, Rawlings_1983, Kozlowski_1995, Kozlowski_1994a, Kozlowski_1994b, Kozlowski_1994c} which is the one we implemented. Details about this improvement and on how it can be generalized to a multi-state case are available in the presented article.
@@ -93,17 +93,17 @@ An improved version to this original idea was proposed by Davidson and co-worker
 
 
 \section{Implementation}
-For clarity, indices will be named depending on what they refer to
-\begin{itemize}
-\item
-$i,j$ refer to samples/generator determinants
-\item
-$m$ refers to checkpoints
-\item
-$t$ refers to teeth
-\end{itemize}
+%For clarity, indices will be named depending on what they refer to
+%\begin{itemize}
+%\item
+%$i,j$ refer to samples/generator determinants
+%\item
+%$m$ refers to checkpoints
+%\item
+%$t$ refers to teeth
+%\end{itemize}
 
-In some respect, computing the dressing matrix is akin to computing $\EPT$. Matrix dressing can be seen as a sum of elementary dressing matrices $\delta(\alpha)$, each one associated with a particular $\ket \alpha$, just like $\EPT$ is a sum of $\epsilon(\alpha)$. It is possible to pack those elementary matrices together like we packed $\ket \alpha$ together for $\EPT$.
+In some respect, computing the dressing matrix is akin to computing $\EPT$. The dressing matrix can be decomposed as a sum of elementary dressing matrices $\delta(\alpha)$, each one associated with a particular $\ket \alpha$, just like $\EPT$ is a sum of $\epsilon(\alpha)$. It is possible to pack those elementary matrices together like we packed $\ket \alpha$ together for $\EPT$.
 \begin{equation}
 \Delta_I = \sum_{\alpha \in \mathcal{A}_I} \delta(\alpha)
 \end{equation}
@@ -115,9 +115,10 @@ So as we only need $\tilde{\bf H}{\bf c}$ for Davidson's algorithm, the quantity
 {\pmb \kappa}_I = \Delta_I\, {\bf c} = \sum_{\alpha \in \mathcal{A}_I} \delta(\alpha)\, {\bf c}
 \end{equation}
 
-Thus, ${\pmb \kappa}_I$ is a sum over all external determinants, and requires to find connections between those determinants and the internal wavefunction. Presumably, the norm of resulting elementary dressing vectors $\pmb \kappa_I$, will have a norm decreasing like $e_I$. Indeed, 
+Thus, ${\pmb \kappa}_I$ is a sum over all external determinants, and requires to find connections between those determinants and the wavefunction. Presumably, the norm of resulting elementary dressing vectors $\pmb \kappa_I$, will have a norm decreasing like $e_I$. Indeed, 
 \begin{equation}
 e_I = \frac{{\bf c}^\dagger {\bf \Delta}_I {\bf c}}{{\bf c}^\dagger {\bf c}} = \braket{\bf c}{\pmb \kappa_I}.
+\label{eq:c_kappa_i}
 \end{equation}
 Using the Cauchy–Schwarz inequality
 \begin{equation}
@@ -130,22 +131,18 @@ However there are a few significant differences.
 \begin{itemize}
 \item
 We were estimating a scalar, now we are estimating a vector. How can we quickly estimate the running error?
-\item
-In both cases we have $\Ngen$ samples, however in the case of $\EPT$ each sample is a scalar, here each sample is a vector of size $\Ndet$. It is easy to store $\Ngen$ scalars, not to store $\Ngen$ vectors of size $\Ndet$. In addition, these vectors must be transmitted from slave nodes to a master node, creating a potential network bottleneck, scaling with $\Ndet$.
-\item
-In the case of PT2 (at least in its Epstein-Nesbet version), each connection found only requires an increment of some elements of $P(G_{pq})$. At no point 2 connections need to be known at the same time. This is different for methods implemented with matrix dressing. It is possible that the detail of which variational determinants a $\ket \alpha$ connects to, needs to be known in order to be able to compute $delta_\alpha$.
-\end{itemize}
-
-To address the first problem, we decided to compute the error bar for $E_{\Delta}$ the energy contribution of $\Delta$. Our dressed matrix being $H + \Delta$, its energy is
-    
+To address this problem, we decided to compute the error bar associated with $E_{\Delta}$, the energy contribution of $\Delta$. Our dressed matrix being $H + \Delta$, the energy is
 \begin{equation}
 \frac{\langle \Psi |H + \Delta | \Psi\rangle}{\langle \Psi | \Psi \rangle} = \frac{\langle \Psi |H  | \Psi\rangle}{\langle \Psi | \Psi \rangle} + \frac{\langle \Psi |\Delta | \Psi\rangle}{\langle \Psi | \Psi \rangle} = E_H + E_{\Delta} 
 \end{equation}
+$E_H$ is the usual variational energy computed deterministically, and $E_{\Delta}$ is estimated the same way as $E_{PT2}$ was, based on individual contributions $e_{\Delta_I}$ (see eq.~\eqref{eq:c_kappa_i}).
+\item
+In both cases we have $\Ngen$ samples, however in the case of $\EPT$ each sample is a scalar, here each sample is a vector of size $\Ndet$. It is easy to store $\Ngen$ scalars, not to store $\Ngen$ vectors of size $\Ndet$. In addition, these vectors must be transmitted from slave nodes to a master node, creating a potential network bottleneck, scaling with $\Ndet$.
+\item
+In the case of PT2 (at least in its Epstein-Nesbet version), each connection found only requires an increment of some elements of $P(G_{pq})$. At no point 2 connections need to be known at the same time. This is different for methods implemented with matrix dressing. It is possible that one needs to know the detail of which variational determinants an $\ket \alpha$ connects to, in order to be able to compute $\delta(\alpha)$.
+\end{itemize}
 
 
-$E_{\Delta}$ will be estimated the same way as $E_{PT2}$ was, based on individual contributions $e_{\Delta_I}$
-
-\section{Implementational details}
 
 Implementationally speaking, just like the state-specific version requires computing a single ${\pmb \kappa}$ vector, the multi-state version requires a ${\pmb \kappa}_k$ vector to be computed for each desired state $k$. This, in principle, should come with minimal cost, since the loop over states can be set as the innermost one.
 
