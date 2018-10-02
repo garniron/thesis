@@ -4,23 +4,23 @@
 
 # Parallel scaling made with the 9356952-det wf
 # Nnode  seconds  (state 1)
-1     6354.7462
-5     1333.7598
-10     709.0933
-20     399.8660
-30     293.6388
-40     239.6717
-50     209.895
+1     6354.7462 # TODO
+5     1333.7598 # TODO
+10     709.0933 # TODO
+20     399.8660 # TODO
+30     293.6388 # TODO
+40     239.6717 # TODO
+50     231.7280
 
 
 # Nnode  seconds  (state 2)
-1     7964.4548 
-5     1663.5760 
-10     891.8599 
-20     487.9481 
-30     378.3109 
-40     308.8350 
-50     270.4451
+1     7964.4548  # TODO
+5     1663.5760  # TODO
+10     891.8599  # TODO
+20     487.9481  # TODO
+30     378.3109  # TODO
+40     308.8350  # TODO
+50     270.4451 # TODO
 
 
 #   Ndet     E(var)               E(var)+PT2       err(PT2)                   seconds     E(var)               E(var)+PT2       err(PT2)               seconds 
