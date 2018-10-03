@@ -135,7 +135,7 @@ To address this problem, we decided to compute the error bar associated with $E_
 \begin{equation}
 \frac{\langle \Psi |H + \Delta | \Psi\rangle}{\langle \Psi | \Psi \rangle} = \frac{\langle \Psi |H  | \Psi\rangle}{\langle \Psi | \Psi \rangle} + \frac{\langle \Psi |\Delta | \Psi\rangle}{\langle \Psi | \Psi \rangle} = E_H + E_{\Delta} 
 \end{equation}
-$E_H$ is the usual variational energy computed deterministically, and $E_{\Delta}$ is estimated the same way as $E_{PT2}$ was, based on individual contributions $e_{\Delta_I}$ (see eq.~\eqref{eq:c_kappa_i}).
+$E_H$ is the variational energy computed deterministically, and $E_{\Delta}$ is estimated the same way as $E_{PT2}$ was, based on individual contributions $e_I$ (see eq.~\eqref{eq:c_kappa_i}).
 \item
 In both cases we have $\Ngen$ samples, however in the case of $\EPT$ each sample is a scalar, here each sample is a vector of size $\Ndet$. It is easy to store $\Ngen$ scalars, not to store $\Ngen$ vectors of size $\Ndet$. In addition, these vectors must be transmitted from slave nodes to a master node, creating a potential network bottleneck, scaling with $\Ndet$.
 \item
@@ -146,15 +146,14 @@ In the case of PT2 (at least in its Epstein-Nesbet version), each connection fou
 
 Implementationally speaking, just like the state-specific version requires computing a single ${\pmb \kappa}$ vector, the multi-state version requires a ${\pmb \kappa}_k$ vector to be computed for each desired state $k$. This, in principle, should come with minimal cost, since the loop over states can be set as the innermost one.
 
-\begin{algorithm}[h!]
-\ForAll{generators}{
-	costly computation to find $\ket I$ and $\kalpha$ \;
-	\For{k=1,$N_{st}$}{
-		$\kappa_I^k \gets \kappa_I^k + c_\alpha^k H_{I\alpha}$ \;
-	}
-}
-\end{algorithm}
-
+%\begin{algorithm}[h!]
+%\ForAll{generators}{
+%	costly computation to find $\ket I$ and $\kalpha$ \;
+%	\For{k=1,$N_{st}$}{
+%		$\kappa_I^k \gets \kappa_I^k + c_\alpha^k H_{I\alpha}$ \;
+%	}
+%}
+%\end{algorithm}
 
 In practice, since the exact computation of ${\pmb \kappa}_k$ is as expensive than that of $\EPT$, we need to use the same hybrid stochastic-deterministic approach. Unfortunately, using state-average coefficients for the sampling did not yield satisfying results, so we have to stick to state-specific sampling and thus compute each ${\pmb \kappa}_k$ individually. The multi-state Davidson diagonalization, however, is done a single time per shifted-\Bk iteration.
 

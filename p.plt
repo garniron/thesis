@@ -168,5 +168,5 @@ set grid
 GNUTERM = "qt"
 x = 0.0
 ## Last datafile plotted: "data_pt2"
-plot  x w l title 'Ideal', 'data_pt2' index 0 u 1:(6354.7462/$2) w lp title 'Ground state', 'data_pt2' index 1 u 1:(7964.4548/$2) w lp title 'Excited state'
+plot  x w l title 'Ideal', 'data_pt2' index 0 u 1:(7779.7960/$2) w lp title 'Ground state', 'data_pt2' index 1 u 1:(9663.7863/$2) w lp title 'Excited state'
 #    EOF

@@ -362,12 +362,12 @@ This is illustrated in figure \ref{fig:toothbuilding}.
 
 \subsection{Tooth filling}
 
-This is an empirical mechanism to balance the stochastic and deterministic aspect of this method. For a tooth containing $n$ samples of equal weight, full computation is achieved after on average \alert{A VERIFXXXXXXXXXXXXXXXXXXXXXXX}
+This is an empirical mechanism to balance the stochastic and deterministic aspect of this method. For a tooth containing $n$ samples of equal weight, full computation is achieved after on average
 \begin{equation}
 \sum_{i=0}^{n-1} \frac{n}{n-i}
 \end{equation}
-combs are drawn. Thus, teeth containing thousands of determinants are very hard to move to $\mathcal{D}$. A tooth containing 10000 samples with a single uncomputed one, only needs computation that sample to be moved to $\mathcal{D}$, but it will take on average 10000 more combs to be drawn until this happens by chance.
-A convenient way to avoid this frustrating situation is, everytime a comb is drawn, to additionally compute the first uncomputed sample of the whole space. This ensures smooth filling of teeth, and that that the full deterministic computation will be achieved before $\Ngen$ combs are drawn.
+combs are drawn. Thus, teeth containing thousands of determinants are very hard to move to $\mathcal{D}$. A tooth containing 10000 samples with a single uncomputed one, only needs computation that sample to be moved to $\mathcal{D}$, but it will take on average 10000 more combs to be drawn until this happens by chance. With the non-uniform sampling, the situation is even worse.
+A convenient way to avoid this frustrating situation is, every time a comb is drawn, to additionally compute the first uncomputed sample of the whole space. This ensures smooth filling of teeth, and that that the full deterministic computation will be achieved before $\Ngen$ combs are drawn.
 
 
 \subsection{Comb drawing order}

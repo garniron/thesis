@@ -9,11 +9,11 @@ terms of computation, and $\order{\Ndet^2}$ in terms of storage, so the cost is
 prohibitive as $\Ndet$ ranges usually between a few million and a few billion.
 
 Fortunately,  not all the spectrum of $\hat H$ is required: only the few lowest
-eigenstates are of interest. The Davidson algorithm\cite{Davidson_1975} is an
-iterative algorithm which aims at extracting the first few $\Nstate$ lowest
-eigenstates of a large matrix. This algorithm reduces the cost of the 
-computation and the storage to $\order{\Nstate \Ndet^2}$, and is presented as
-algorithm~\ref{alg:davidson}.
+eigenstates are of interest. The Davidson
+algorithm\cite{Davidson_1975,Olsen_1990,Gadea_1994} is an iterative algorithm
+which aims at extracting the first few $\Nstate$ lowest eigenstates of a large
+matrix. This algorithm reduces the cost of the computation and the storage to
+$\order{\Nstate \Ndet^2}$, and is presented as algorithm~\ref{alg:davidson}.
 
 
 \begin{algorithm}
@@ -52,17 +52,9 @@ algorithm~\ref{alg:davidson}.
 }
 \end{algorithm}
 
+\clearpage
+\section{The computational bottleneck}
 
-
-\alert{
-\begin{itemize}
-\item Parler de quelques ameliorations depuis : [ J.  Olsen, P.  Joregensen and J.  Simons, Chem.  Phys.  Letters 169 (1990) 463 ], [F.X.  Gadea /Chemical Physics Letters 227 (1994) 201-210] 
-\item Dire qu'on utilise l'algorithme original parce qu'on a toujours un bon guess (CIPSI)
-\item Pour etre fonction propre de $S^2$ on utilise une penalty method, comme dans [10.1021/acs.jctc.7b00466]. (D'ailleurs dans ce papier il y a un pseudocode pour Davidson). Et tu peux ajouter qu'on calcule $S^2c$ en meme temps que $Hc$.
-\end{itemize}
-}
-
-    
 Algorithmically, the expensive part of the Davidson diagonalization is the computation of the matrix product $\mH\, \mathbf{U}$.
 Determinants are connected by $\mH$ only if they differ by no more than two
 spinorbitals. Therefore, the number of non-zero elements per line of $\mH$ is
@@ -178,5 +170,24 @@ To separate this computation in independent tasks with no overhead, a task shoul
 Some overhead appeared unavoidable, so it was decided to associate a task with a range of internal determinants sorted in alpha-major order. This implies splitting some sets of unique alpha part, and thus having some redundance in the comparaison of the associated $\alpha$ spin part with the other unique ones.
 This is achieved by small modifications to algorithm \ref{alg:davidson_ab} show in algorithm \ref{alg:davidson_ab_parallel}.
 
+
+\section{Ensuring the solutions have the desired spin state}
+
+When working in a truncated space of determinants, there is no guarantee that the eigenstate of $\hat H$ will also be eigenstates of the spin operator $\hat S^2$. And when the proper conditions are fulfilled (see chapter~\ref{chap:CIPSI}), all the lowest eigenvectors may be of different spin states.
+
+To help find solutions of the desired spin state, we use a penalty method in the diagonalization.\cite{Fales2017Sep} We modify the Hamiltonian as 
+\newcommand{\mS}{\mathbf{S}}
+\newcommand{\mU}{\mathbf{U}}
+\begin{equation}
+\tilde{\mH} = \mH + \alpha \qty( \mS^2 - \mathbf{I} \langle S^2 \rangle_\text{target} )^2
+\end{equation}
+where $\alpha$ is a fixed parameter.
+In the Davidson algorithm, this requires the additional computation of $\mS\, \mU$, for which the
+cost is expected to be the same as the cost of $\mH \, \mU$ as the expensive part is the search for the
+connections.
+
+We have modified the function computing $\mH \, \mU$ so that it also computes $\mS\, \mU$ on the fly.
+Indeed, once a pair of connected determinants has been found, if they correspond to an $\alpha \beta$ double excitation or to a diagonal term, the $\hat S^2$ contribution is added to an extra output vector,
+with almost no extra computational cost.
 
 \end{document}
