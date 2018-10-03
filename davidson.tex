@@ -90,14 +90,23 @@ not connected by $\mH$, and iterate only over connected pairs.  We have
 implemented an algorithm similar to the \emph{Direct Selected Configuration
 Interaction Using Strings} (DISCIUS) algorithm,\cite{Povill_1995}.
 
-We present our algorithm for finding non-null $\widehat{H}$ elements - in other words, pairs of connected internal determinants - as algorithm ~\ref{alg:davidson_aa} and \ref{alg:davidson_ab}. The finality is to build \alert{deja un autre nom?} $W = \widehat{H} c$, so each time a connected pair of determinants $(\ket I, \ket J \neq \ket I)$ is found, $W$ should be updated accordingly
+We present our algorithm for finding non-zero $\widehat{H}$ elements - in other words, pairs of connected internal determinants - as algorithm ~\ref{alg:davidson_aa} and \ref{alg:davidson_ab}. Note that diagonal elements are not found be either algorithm. The finality is to build \alert{deja un autre nom?} $W = \widehat{H} c$, so each time a connected pair of determinants $(\ket {D_I}, \ket {D_{J \neq I}})$ is found, $W$ should be updated accordingly. Ideally, taking into account the symmetry of $\widehat H$, each pair should be found once, and the associated update be
 
 \begin{align}
-W_I \gets W_I + c_J \Hij{I}{J} \\
-W_J \gets W_J + c_I \Hij{I}{J}
+W_I \gets W_I + c_J \Hij{D_I}{D_J} \\
+W_J \gets W_J + c_I \Hij{D_I}{D_J}
 \end{align}
 
-Note that diagonal elements are not found be either algorithm.
+However, this may be problematic in case of a massively parallel implementation, for data transfer reasons. We can compare the situations if we take the symmetry of $\widehat H$ into account, as was just shown, and the situation where we do not, i.e. each pair is found twice and each time only one element of $W$ is updated.
+
+\paragraph{Taking the symmetry of $\widehat H$ into account}
+A task will correspond to some set of determinants $\{\mathcal{I}\}$ for which connections only to ``later'' determinants must be found, to avoid double finding a connected pair. Each found connection will involve $\ket {D_{I \in \mathcal{I}}}$ and $\ket {D_{J>I}}$, and causes an increment to $W_{I \in \mathcal{I}}$ and $W_{J>I}$. The result for a task is a vector size up to $\Ndet$.
+
+\paragraph{Not taking the symmetry of $\widehat H$ into account}
+In this case, all connections involving determinants of $\{\mathcal{I}\}$ must be found. Each found connection involves $\ket {D_{I \in \mathcal{I}}}$ and $\ket {D_{J}}$. But since we can only take into account the increment to $W_{I \in \mathcal{I}}$, the result is a vector size $|\mathcal{I}|$ the number of elements in $\{\mathcal{I}\}$, which is much smaller than $\Ndet$.
+
+\paragraph{}
+Even though the later approach doubles the amount of work, it drastically reduces the amount of data transfer in our task-result parallel sheme, therefore it is the one currently implemented.
 
 
 \begin{algorithm}
@@ -122,8 +131,8 @@ Note that diagonal elements are not found be either algorithm.
 
 
 \begin{algorithm}
-\label{alg:davidson_ab}
 \caption{Find internal determinants connected by $\alpha \beta$ double excitations}
+\label{alg:davidson_ab}
 \KwData{see algorithm \ref{alg:davidson_aa}}
 
 \For{$a1 \gets 1, N_a$}{
@@ -157,7 +166,7 @@ Note that diagonal elements are not found be either algorithm.
 }
 $f \gets max(\text{first}, A(a1))$ \;
 $t \gets min(\text{last}, A(a1+1)-1)$ \;
-\For{$a2 \gets a1+1, N_a$}{
+\For{$a2 \gets 1, N_a$}{
 \If{$\text{EXC\_DEGREE}(D[A(a1)]_\alpha, D[A(a2)]_\alpha) \neq 1$}{
 	cycle $a2$ loop\;
 }

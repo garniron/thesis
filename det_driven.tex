@@ -12,7 +12,7 @@ For performances, it is vital that some base operations are done efficiently. No
 \Hij{I}{J}
 \end{equation}
 
-This raises some questions that this chapter is going to address, by going through the basic concepts of our approach to determinant-driven computation.
+This raises some questions :
 
 \begin{itemize}
 \item
@@ -25,7 +25,7 @@ How to compute excitation $\hat T$ so that $\hat T \ket I = \ket J$
 How to fetch the associated bielectronic integral(s)?
 \end{itemize}
 
-
+This chapter is going to address these, by going through the basic concepts of our approach to determinant-driven computation.
 
 \paragraph{Notation}
 \begin{itemize}
@@ -249,7 +249,7 @@ The Fortran representation of an $\alpha \beta$-bitstring is a two dimensional a
 \lstset{frame=none}
 
 
-In formulas or algorithms, depending on the level of detail desired, a bitstring may also be treated as a single mathematical integer (in $\mathbb{Z}$), avoiding the cumbersome separation into 64-bit packs. However, in algorithms we will usually try to stay closer to the actual implementation. $\bitI$ being the $\alpha \beta$-bitstring associated with $\kI$, we can explicitly refer to a single element of the 64-bit integer array as
+In formulas or algorithms, depending on the level of detail desired, a bitstring or $\alpha\beta$-bitstring may also be treated as a single mathematical integer (in $\mathbb{Z}$), avoiding the cumbersome separation into 64-bit packs. However, in algorithms we will usually try to stay closer to the actual implementation. $\bitI$ being the $\alpha  \beta$-bitstring associated with $\kI$, we can explicitly refer to a single element of the 64-bit integer array as
 \begin{equation}
 \bitI_{\sigma}[i]\; ;\; \sigma \in \{\alpha, \beta\}\; ;\; 0 \le i < \Nint
 \end{equation}
@@ -802,8 +802,11 @@ In the case of an $\alpha \beta$ double excitation, the two single excitations a
 There is a slight complication for $\alpha \alpha$ or $\beta \beta$ excitations. The ordering we defined for excitation operators is of importance. In order to write a double excitation as a product of two singles, it must be ensured that the ordering matches the one we defined : lowest particle with lowest hole, highest particle with highest hole.
 
 As far as phase computation goes, it is irrelevant which index of an excitation operator is a creation and which is an annihilation. So, for convenience, we can define
+%\begin{equation}
+%\tilde T_{ab} \in \{\hat T_a^b, \hat T_b^a \}
+%\end{equation}
 \begin{equation}
-\tilde T_{ab} \in \{\hat T_a^b, \hat T_b^a \}
+\tilde T_{ab} = \hat T_a^b + \hat T_b^a
 \end{equation}
 
 
@@ -850,7 +853,7 @@ As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ resul
 	\end{center}
 \end{figure}
 
-So we add an extra permutation if
+So we add an extra permutation (flip the phase factor) if
 
 %\begin{equation}
 %\neg \big ( max(p,r) < min(q,s) \vee max(q,s) < min(p,r) \big )
