@@ -51,8 +51,37 @@ As can be seen, $C$ isn't described as the product of $A+B$ as it should, since 
 
 Some methods aim at partially or fully correct this size-consistency error by eliminating the unlinked effects of the CISD. The so-called \emph{Davidson corrections}, that are essentially correction to the energy\cite{Langhoff_1974}. \alert{citation a verif}, and the so-called \emph{Coulpled Electron Pair Approximations (CEPA)} that correct the CI equations\cite{Kelly_1963,Kelly_1964,Meyer_1971,Meyer_1973,Meyer_1974,Ahlrichs_1975}. Many different variations have been proposed, for a review see \cite{Koch_1981}.
 
+An alternative to CI approach is the so-called Coupled-Cluster (CC) approach, that does not suffer this problem. The wavefunction is given an exponential structure
+
+\begin{equation}
+\ket \Psi = e^{\hat T} \ket {HF}
+\end{equation}
+
+with $\hat T$ a so-called \emph{cluster operator}. In the widely used \emph {Coulpled Cluster Single and Double (CCSD)} method, the cluster operators is
+\begin{equation}
+\hat T = \hat T_1 + \hat T_2
+\end{equation}
+
+with $\hat T_1$ and $\hat T_2$ the 1 and 2 orbitals cluster operators 
+
+\begin{align}
+\hat T_1 = \sum_{pr} t_p^r \hat T_p^r \\
+\hat T_2 = \sum_{pqrs} t_{pq}^{rs} \hat T_{pq}^{rs}
+\end{align}
+
+with $\hat T_{pq}^{rs}$ the usual excitation operator, and $t_{pq}^{rs}$ the so-called \emph{amplitude} associated with it.
+
+Again considering a system made of two infinitely distant sub-systems $A$ and $B$, thanks to the exponential expression, if one uses local orbitals - that is, the reference determinant $\ket {HF}$ is factorisable in $\ket{HF_A}$ and $\ket{HF_B}$ determinants isolated on $A$ and $B$ - the energy and wavefunction on the isolated fragments will be the same as on the $A+B$ supersystem.
+Indeed, amplitudes associated with excitations involving orbitals for both fragments will be null due to the infinite distance. Therefore $\hat T$ can be split in $\hat T_A$ and $\hat T_B$ the cluster operators involving one fragment.
+
+\begin{equation}
+\ket \Psi = e^{\hat T} \ket {HF} = \ket \Psi = e^{\hat T_A + \hat T_B} \ket {HF} = e^{\hat T_A} \ket {HF_A} e^{\hat T_B} \ket {HF_B}
+\end{equation}
+
+The wavefunction of the supersystem is the product of the wavefunctions for the isolated subsystems.
 
 
+In a previously published article \alert{DDDDDDD} we had proposed a definition for amplitudes for coupled cluster in a multi-reference context. The somewhat bruteforce initial implementation of our MRCC was re-written as a stochastic matrix dressing, based on our shifted-bk implementation.
 
 \section{Computing $c_\alpha$}
 Whether the matrix dressing algorithm performs a shifted-Bk, an MR-CCSD or some other method, depends on the external space, i.e. the $c_\alpha$ coefficients. Our goal is to set up a framework in which stochastic matrix dressing can be done efficiently using an external space only defined by $Z(\alpha, \ldots)$ a function that takes $\kalpha$ a determinant and returns the $c_\alpha$ it should be associated with. The ``$\ldots$'' notation indicates that the returned value may depend on any number of global parameters, such as $\ket \Psi$, approximation thresholds, etc...
