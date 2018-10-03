@@ -12,16 +12,17 @@ Fortunately,  not all the spectrum of $\hat H$ is required: only the few lowest
 eigenstates are of interest. The Davidson
 algorithm\cite{Davidson_1975,Olsen_1990,Gadea_1994} is an iterative algorithm
 which aims at extracting the first few $\Nstate$ lowest eigenstates of a large
-matrix. This algorithm reduces the cost of the computation and the storage to
-$\order{\Nstate \Ndet^2}$, and is presented as algorithm~\ref{alg:davidson}.
+matrix. This algorithm reduces the cost of the computation
+to $\order{\Nstate \Ndet^2}$, and of the storage to $\order{\Nstate \Ndet}$.
+It is presented as algorithm~\ref{alg:davidson}.
 
+\newcommand{\mU}{\mathbf{U}}
+\newcommand{\mW}{\mathbf{W}}
+\newcommand{\mR}{\mathbf{R}}
+\newcommand{\mh}{\mathbf{h}}
+\newcommand{\my}{\mathbf{y}}
 
 \begin{algorithm}
- \newcommand{\mU}{\mathbf{U}}
- \newcommand{\mW}{\mathbf{W}}
- \newcommand{\mR}{\mathbf{R}}
- \newcommand{\mh}{\mathbf{h}}
- \newcommand{\my}{\mathbf{y}}
  \caption{Davidson's diagonalization algorithm}
  \label{alg:davidson}
 	\SetKwFunction{FMain}{DAVIDSON\_DIAG}
@@ -59,11 +60,11 @@ Algorithmically, the expensive part of the Davidson diagonalization is the compu
 Determinants are connected by $\mH$ only if they differ by no more than two
 spinorbitals. Therefore, the number of non-zero elements per line of $\mH$ is
 equal to the number of single and double excitation operators, namely
-$\order{\Nelec^2 \times (\Norb - \Nelec)^2}$. As $\mH$ is symmetric, the number
+$\order{\Nalpha^2 \times (\Norb - \alpha)^2}$. As $\mH$ is symmetric, the number
 of non-zero elements per column is identical. This makes the $\mH$ matrix very
-sparse, but for large basis sets the whole $\mH$ matrix may not fit in the
+sparse, but for large basis sets the whole $\mH$ matrix may still not fit in the
 memory of a single node, as the number of non-zero entries to store is
-$\order{\Ndet \times \Nelec^2 \times (\Norb - \Nelec)^2}$.  One possibility
+$\order{\Ndet \times \Nalpha^2 \times (\Norb - \Nalpha)^2}$.  One possibility
 would be to distribute the storage of Hamiltonian among multiple compute nodes,
 and use a distributed library such as PBLAS\cite{pblas} to perform the
 matrix-vector operations. Another approach is to use a so-called \emph{direct}
@@ -74,23 +75,29 @@ is the approach chosen in the \QP.
 This effectively means iterating over all pairs of determinants $\ki$ and
 $\kj$, checking whether $\ki$ and $\kj$ are connected by $\mH$ and if they are,
 accessing the corresponding integral(s) and computing the phase factor.  Even
-though we presented a very effective method to compute the excitation degree
+though we presented in chapter~\ref{chap:DET_DRIVEN} a very efficient method to
+compute the excitation degree
 between two determinants, the number of such computations to be made scales as
 $\Ndet^2$, which can still be prohibitively high. To get an efficient
 implementation it is mandatory to filter out all pairs of determinants that are
-not connected by $\mH$, and iterate only over connected pairs.  We have
-implemented an algorithm similar to the \emph{Direct Selected Configuration
-Interaction Using Strings} (DISCIUS) algorithm,\cite{Povill_1995}.
+not connected by $\mH$, and iterate only over connected pairs. To reach this
+goal, we have implemented an algorithm similar to the \emph{Direct Selected
+Configuration Interaction Using Strings} (DISCIUS)
+algorithm.\cite{Povill_1995}
 
-We present our algorithm for finding non-null $\widehat{H}$ elements - in other words, pairs of connected internal determinants - as algorithm ~\ref{alg:davidson_aa} and \ref{alg:davidson_ab}. The finality is to build \alert{deja un autre nom?} $W = \widehat{H} c$, so each time a connected pair of determinants $(\ket I, \ket J \neq \ket I)$ is found, $W$ should be updated accordingly
+The finality is to build the matrix $\mW$ as
+\begin{equation}
+W_{Ik} = \sum_J H_{IJ}\, U_{Jk}.
+\label{eq:whu}
+\end{equation}
+The diagonal of $\mH$ is precomputed and stored in a one-dimensional array, as it is
+used both for the calculation of $\mW$ and the residual $\mR$.
+$\mW$ is initialized with $W_{Ik} = H_{II}\, U_{Ik}$, and
+each time a connected pair of determinants $(I, J \neq I)$ is found, the $I$-th component of all states $k$ stored in $\mW$ is updated accordingly. To make this step efficient memory-wise, $\mU$ and $\mW$ are stored transposed, such that the state indices $k$ are contiguous in memory.
 
-\begin{align}
-W_I \gets W_I + c_J \Hij{I}{J} \\
-W_J \gets W_J + c_I \Hij{I}{J}
-\end{align}
-
-Note that diagonal elements are not found be either algorithm.
-
+We present our algorithm for iterating over only off-diagonal non-zero elements
+of $\mH$ ---~in other words, pairs of connected determinants~--- as
+algorithms~\ref{alg:davidson_aa} and~\ref{alg:davidson_ab}.
 
 \begin{algorithm}
 \caption{Find internal determinants connected by purely $\alpha$ or purely $\beta$ single or double excitations}
@@ -104,18 +111,18 @@ Note that diagonal elements are not found be either algorithm.
 \For{$b1 \gets A(a), A(a+1)-1$}{
 \For{$b2 \gets b1+1, A(a+1)-1$}{
 	\If{$\text{EXC\_DEGREE}(D[b1]_\beta, D[b2]_\beta) \leq 2$}{
-		$\ket {D[b1]}$ connected to $\ket {D[b2]}$ by simple or double $\beta$ excitation.	
+		$\ket {D[b1]}$ connected to $\ket {D[b2]}$ by single or double $\beta$ excitation.	
 	}
 }
 }
 }
-\tcc{simple and double $\alpha$ excitations are found by the same algorithm after flipping spins}
+\tcc{Single and double $\alpha$ excitations are found by the same algorithm after flipping spins}
 \end{algorithm}
 
 
 \begin{algorithm}
-\label{alg:davidson_ab}
 \caption{Find internal determinants connected by $\alpha \beta$ double excitations}
+\label{alg:davidson_ab}
 \KwData{see algorithm \ref{alg:davidson_aa}}
 
 \For{$a1 \gets 1, N_a$}{
@@ -126,7 +133,8 @@ Note that diagonal elements are not found be either algorithm.
 \For{$b1 \gets A(a1), A(a1+1)-1$}{
 \For{$b2 \gets A(a2), A(a2+1)-1$}{
 	\If{$\text{EXC\_DEGREE}(D[b1]_\beta, D[b2]_\beta) = 1$}{
-		$\ket {D[b1]}$ connected to $\ket {D[b2]}$ by $\alpha \beta$ excitation.	
+		$\ket {D[b1]}$ connected to $\ket {D[b2]}$ by $\alpha \beta$ excitation.
+                Update result at 
 	}
 }
 }
@@ -149,7 +157,7 @@ Note that diagonal elements are not found be either algorithm.
 }
 $f \gets max(\text{first}, A(a1))$ \;
 $t \gets min(\text{last}, A(a1+1)-1)$ \;
-\For{$a2 \gets a1+1, N_a$}{
+\For{$a2 \gets 1, N_a$}{
 \If{$\text{EXC\_DEGREE}(D[A(a1)]_\alpha, D[A(a2)]_\alpha) \neq 1$}{
 	cycle $a2$ loop\;
 }
@@ -164,11 +172,163 @@ $t \gets min(\text{last}, A(a1+1)-1)$ \;
 }
 \end{algorithm}
 
-The loops finding purely $\alpha$ and purely $\beta$ excitations are considerably less costly than the one finding $\alpha \beta$ excitations, to the point of being negligible. For parallelization purpose, we only focus on $\alpha \beta$ excitations.
+Computing the contributions the same-spin single and double excitations
+(algorithm~\ref{alg:davidson_aa}) scales as $\order{N_a^2}$, which is equal to
+$\order{\Ndet}$ when the FCI is reached since $\Ndet^{\FCI} = N_a^{\FCI} \times
+N_b^{\FCI}$.
 
-To separate this computation in independent tasks with no overhead, a task should corresond to one unique $\alpha$ spinpart / one value of $a1$ in algorithm \ref{alg:davidson_aa}. However, this gives a potentially small number of extremely unbalanced tasks, some unique $\alpha$ spin parts being both well-connected to other $\alpha$ parts and associated with a great number of $\beta$ parts.
-Some overhead appeared unavoidable, so it was decided to associate a task with a range of internal determinants sorted in alpha-major order. This implies splitting some sets of unique alpha part, and thus having some redundance in the comparaison of the associated $\alpha$ spin part with the other unique ones.
-This is achieved by small modifications to algorithm \ref{alg:davidson_ab} show in algorithm \ref{alg:davidson_ab_parallel}.
+The $\alpha \beta$ double excitations are the most expensive (algorithm~\ref{alg:davidson_ab})
+as they scale as~$\order{N_a  N_b^2} = \order{N_a^3}$. Indeed, the cycle instruction at line~4 makes the
+iterations over $b1$ and $b2$ do the computation only a number of times bounded by the number of 
+possible single excitations ($\Na \times \qty(\Norb - \Na)$). So at the FCI level, this step scales as
+$\order{\Ndet^{3/2}}$.
+
+One can remark that during the computation of the contributions of the single
+excitations, one can store the lists of all singly-excited determinants
+for all $\alpha$ and $\beta$ spin parts.
+These lists can be reused in the computation of the contributions of the $\alpha \beta$
+double excitations, so as to loop only over the single excitations on
+$D_\alpha$, and on the single excitations on $D_\beta$. As the lengths of the
+lists of single excitations are bounded by $\Na \times \qty(\Norb - \Na)$, the
+algorithm then scales linearly with $\Ndet$.  However, in practice the CIPSI
+selection produces wave functions where $N_a$ and $N_b$ are much larger
+that $\Ndet^{1/2}$, and the storage of the single excitations can become a
+memory bottleneck that we want to avoid at the cost of more computation.
+
+\section{Sorting}
+
+The presented algorithm requires to sort the determinants by $\alpha$-major order~: all determinants
+sharing the same $\alpha$ spin part next to each other. To perform this sort, we simply consider the
+bitstring representation of the determinants as tuples of integers and sort the list of tuples.
+
+Surprisingly, the sort can be done in $\order{\Ndet}$ instead of $\order{\Ndet \log(\Ndet)}$ with the
+radix sort algorithm.\cite{Davis1992Dec}
+The principle of the radix sort is presented in algorithm~\ref{alg:radix}.  The
+key feature enabling the transition from $\order{\Ndet}$ to $\order{\Ndet
+\log(\Ndet)}$ is the fact that the set of sorted integers is bounded, and one
+can easily verify that the number of operations is proportional to $64\times
+\Ndet$. So sorting the determinants of the wave function is never a bottleneck.
+
+\begin{algorithm}
+\caption{Radix sort algorithm for non-negative integers}
+\label{alg:radix}
+\SetKwFunction{FMain}{RADIX\_SORT} 
+\SetKwProg{Fn}{Function}{:}{}
+\Fn(){\FMain{$D,N$}}{
+ \KwData{$D$: Array of integers to sort in input, sorted in output}
+ \KwData{$N$: Length of the array $D$}
+ RADIX\_SORT\_rec($D,N,64$) \;
+}
+
+\SetKwFunction{FMain}{RADIX\_SORT\_rec} 
+\SetKwProg{Fn}{Function}{:}{}
+\Fn(){\FMain{$D,N,i$}}{
+ \KwData{$D$: Array of integers to sort in input, sorted in output}
+ \KwData{$N$: Length of the array $D$}
+ \KwData{$r$: index of the inspected bit}
+
+ \If{$r \ge 0$}{
+
+  Allocate temporary arrays $D_0(1:N)$ and $D_1(1:N)$\;
+  $l\gets 1$ \; $r\gets 1$ \;
+  \For{$k \gets 1, N$}{
+
+   \uIf{$\btest{D(k)}{i}$}{
+    $D_1[l] \gets D[k]$ \;
+    $l \gets l+1$ \;
+   }
+   \Else {
+     $D_0[r] \gets D[k]$ \;
+     $r \gets r+1$ \;
+   }
+  }
+
+  RADIX\_SORT\_rec($D_0,r,i-1$) \;
+  RADIX\_SORT\_rec($D_1,l,i-1$) \;
+  \For{$k \gets 1, l$}{
+    $D(k) \gets D_0(k)$ \;
+  }
+  $r \gets 1$ \;
+  \For{$k \gets l+1, N$}{
+    $D(k) \gets D_1(r)$ \;
+    $r \gets r+1$ \;
+  }
+ }
+}
+\end{algorithm}
+
+
+
+
+\section{Parallelization}
+
+To minimize the network communication, we separate the calculation in tasks
+such that the tasks build disjoint pieces of the result. A task corresponds a
+range of indices $I$ in Eq~\eqref{eq:whu}. Therefore, the communication for the
+result is $\order{\Ndet}$, and independent of the number of compute nodes.
+However, each task needs the full $\mU$ matrix, so its needs to be
+broadcast efficiently on every compute node at the beginning of the
+calculation. This broadcast if performed via an MPI library call for optimal
+performance,\cite{MPI} and we use one MPI process per node such that the amount of
+communication scales with the number of nodes and not with the number of cores.
+
+When idle, an MPI process requests a task to the server, and computes the
+corresponding result in parallel with OpenMP.\cite{openmp} This allows
+the sharing of the $\mU$ matrix, as well as the result array for $\mW$,
+but also of all the large constant data needed for the calculation, such as
+the two-electron integrals.
+The OpenMP parallelization is made on the outermost loop, so the write
+access to the result is guaranteed to be safe, without requiring a lock.
+As the OpenMP tasks are not guaranteed to be balanced, we have used a
+dynamic scheduling, with a chunk size of 64 elements. The reason for this
+chunk sized is to force that multiple threads accumulate their results in 
+memory addresses far apart, avoiding the so-called \emph{false sharing}
+performance degradation that occurs when multiple threads write simultaneously
+in the same cache line.\cite{Bolosky1993Sep} 
+When the result is fully computed, it is sent back to the master process and
+a new task is requested, until the task queue is empty.
+
+
+\section{Symmetry of $\mH$}
+
+Taking into account the symmetry of $\widehat H$, each pair should be found only once, and the associated update could be
+\begin{align}
+W_{Ik} \gets W_{Ik} + U_{Jk} H_{IJ} \\
+W_{Jk} \gets W_{Jk} + U_{Ik} H_{IJ}
+\end{align}
+This reduces the computational effort by a factor of two, but the result of
+each task now has a size of $\Ndet$ and no more the reduced size of $\Ndet / N_\text{task}$,
+since all the elements of $\mW$ can potentially me modified.
+This increase of communication which has the effect of killing the parallel
+efficiency.
+
+There are some additional drawbacks.
+First, in the non-symmetric case, a thread accumulates data in $W_{Ik}$, a memory
+location which is the same for multiple consecutive accesses, and in which no other
+thread can write. This pattern is memory-efficient.
+In the symmetric case, there is also an access to $W_{Jk}$. The access to
+$W_{Jk}$ are non-contiguous and don't have a predictable pattern by the hardware.
+Such memory access patterns are terribly inefficient, especially when writing.
+In addition, a global memory lock should be acquired since there is no
+guarantee than another thread is not writing in that memory location at the
+same time. To avoid the lock, another solution is to use an output vector which
+is private to the thread, but it would make he memory grow as $N_\text{CPU}
+\times \Nstate \times \Ndet$, which is what
+we wanted to avoid using shared memory parallelism.
+
+For a large number of nodes it is indisputably preferable not to use the
+symmetry of $\mH$, even though it might seem surprising that increasing the
+number of operations can give a better time to solution.
+
+%\paragraph{Taking the symmetry of $\widehat H$ into account}
+%A task will correspond to some set of determinants $\{\mathcal{I}\}$ for which connections only to ``later'' determinants must be found, to avoid double finding a connected pair. Each found connection will involve $\ket {D_{I \in \mathcal{I}}}$ and $\ket {D_{J>I}}$, and causes an increment to $W_{I \in \mathcal{I}}$ and $W_{J>I}$. The result for a task is a vector size up to $\Ndet$.
+%
+%\paragraph{Not taking the symmetry of $\widehat H$ into account}
+%In this case, all connections involving determinants of $\{\mathcal{I}\}$ must be found. Each found connection involves $\ket {D_{I \in \mathcal{I}}}$ and $\ket {D_{J}}$. But since we can only take into account the increment to $W_{I \in \mathcal{I}}$, the result is a vector size $|\mathcal{I}|$ the number of elements in $\{\mathcal{I}\}$, which is much smaller than $\Ndet$.
+%
+%\paragraph{}
+%Even though the later approach doubles the amount of work, it drastically reduces the amount of data transfer in our task-result parallel scheme, therefore it is the one currently implemented.
+
 
 
 \section{Ensuring the solutions have the desired spin state}
@@ -189,5 +349,17 @@ connections.
 We have modified the function computing $\mH \, \mU$ so that it also computes $\mS\, \mU$ on the fly.
 Indeed, once a pair of connected determinants has been found, if they correspond to an $\alpha \beta$ double excitation or to a diagonal term, the $\hat S^2$ contribution is added to an extra output vector,
 with almost no extra computational cost.
+
+\section{Summary}
+
+Davidson's diagonalization algorithm was implemented in its multi-state
+version. A direct algorithm was designed for arbitrary sets of determinants, and the
+formal scaling was reduced to $\order{\Ndet^{3/2}}$, and can be further reduced to $\order{\Ndet}$
+at the cost of additional storage. The implementation was parallelized
+using two levels of parallelism, MPI and OpenMP, keeping in mind the reduction
+of the communication. The empirical speedup measurements are presented in
+chapter~\ref{chap:PERF}.
+
+
 
 \end{document}
