@@ -5,8 +5,8 @@
 \label{chap:CIPSI}
 
 
-\section{The base algorithm}
-My initial and most important work has been the improvement of the CIPSI algorithm present in the \QP, that had been implemented by my predecessor.\cite{giner:tel-01077016} As was briefly described in the previous chapter, it is an \emph{on the fly} iterative selection algorithm, where determinants are added to the variational wavefunction according to a perturbative criterion. Because it gathers a large amount of information, this CIPSI algorithm has been the basis for other subsequent works presented in the next chapters.
+\section{The basic algorithm}
+My initial and most important work has been the improvement of the CIPSI algorithm present in the \QP, that had been implemented by my predecessor.\cite{giner:tel-01077016} As was briefly described in section~\ref{sec:meth_cipsi}, it is an \emph{on the fly} iterative selection algorithm, where determinants are added to the variational wavefunction according to a perturbative criterion. Because it gathers a large amount of information, this CIPSI algorithm has been the basis for other subsequent works presented in the next chapters.
 
 The $n^\text{th}$ iteration of CIPSI can be described like so:
 
@@ -15,7 +15,7 @@ The $n^\text{th}$ iteration of CIPSI can be described like so:
 
 The variational function $\ket {\Psi^{(n)}}$ is defined over a set of determinants $  \mathcal{D}^{(n)}$ in which we diagonalize $\widehat{H}$
 \begin{equation}
-\ket{\Psi^{(n)}} = \sum_{S \in \mathcal{D}^{(n)}} c_S^{(n)} \ket{S}
+\ket{\Psi^{(n)}} = \sum_{I \in \mathcal{D}^{(n)}} c_I^{(n)} \ket{I}
 \end{equation}
 The determinants in $\mathcal{D}^{(n)}$ will be characterized as \emph{internal}.
 
@@ -57,49 +57,39 @@ There are, perhaps schematically, two ways to do this :
 \item
 ``external to internal'', looping over all possible $\kalpha$ and computing $e_\alpha$.
 \item
-``internal to external'', looping over all internal determinants $\ket I$ and all single or double excitations $\hat T$, creating $\kalpha = \hat T \ket I$, then incrementing $\tilde e_{\alpha \notin \Psi}$ by $\Hij{I}{\alpha}$. Finally get $e_{\alpha} = \frac{\tilde e_\alpha^2}{E^{(n)} - H_{\alpha \alpha}}$.
+``internal to external'', looping over all internal determinants $\ket I$ and all single or double excitations $\hat T$, creating $\kalpha = \hat T \ket I$, then incrementing $\tilde e_{\alpha \notin \mathcal{D}}$ by $\Hij{I}{\alpha}$. Finally get $e_{\alpha} = \frac{\tilde e_\alpha^2}{E^{(n)} - H_{\alpha \alpha}}$.
 \end{itemize}
 
 %\begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.5\columnwidth]{figures/matrix_dressing/interactions}
+		\includegraphics[width=0.4\columnwidth]{figures/matrix_dressing/interactions}
 	\end{center}
 	%\caption{\label{interactions}}
 %\end{figure}
 
 The first approach is less tempting, as it means finding connections between the arbitrary set of internal determinants, and another arbitrary set of $\kalpha$ typically orders of magnitude larger.
 
-While the second approach sounds more straightforward, it has the obvious issue of requiring all $e_\alpha$ to be stored in memory simultaneously. Unfortunately this is usually not feasible, since their number scales as $\order{\Ndet \times \mathcal{O}_{virt}^2 \times \mathcal{O}_{occ}^2}$, with $\mathcal{O}_{occ}$ the number of occupied orbitals and $\mathcal{O}_{virt}$ the number of virtual orbitals.
+While the second approach sounds more straightforward, it has the obvious issue of requiring all $e_\alpha$ to be stored in memory simultaneously. Unfortunately this is usually not feasible, since their number scales as $\order{\Ndet \times \Nalpha^2 \times \qty(\Norb - \Nalpha)^2}$.
 The first approach therefore seems simpler when it comes to computing $e_\alpha$, but it begs the question of how to generate all possible $\kalpha$ not simultaneously and with no duplicates. 
 
 
-\section{Obtaining spin-pure states}
-
-The presented algorithm generates a wavefunction which is expressed on a truncated space of Slater determinants. Determinants are not necessarily eigenfunctions of the $\widehat S^2$ operator, so the eigenfunctions of the Hamiltonian are not guaranteed to be also eigenfunctions of $\widehat S^2$.
-
-A conventional solution for truncated CI methods is to work in the basis of \emph{Configuration State Functions} (CSFs). These are linear combinations of determinants which are eigenfunctions of $\widehat S^2$, and with the desired eigenvalue. Diagonalizing $\widehat H$ in this basis ensures that the solution is spin pure.
-
-Working with CSFs instead of determinants has the additional advantage that the space of CSFs is smaller than the space of determinants. CSFs could in principle be used for CIPSI, but that makes the computation of the matrix elements of $\widehat H$ less straightforward.
-
-We have chosen a more practical solution. After the selection step, we add to the variational space all the determinants that are necessary to obtain a spin pure solution. These determinants correspond to all the possible spin flips in open shell determinants with the constraint that $\Nalpha$ and $\Nbeta$ are constant. The diagonalization of $\widehat H$ will automatically yield spin pure eigenfunctions at the cost of increasing the size of the wavefunction with many determinants with very small weights.
-
 \section{Approximations}
 
-Given the qualitative nature of this procedure --- each $\kalpha$ is either selected or not --- it is possible to save a vast amount of computation with minimal approximations. These were present in the original implementation and retained in the new one.
+Given the qualitative nature of this procedure ---~each $\kalpha$ is either selected or not~--- it is possible to save a vast amount of computation with minimal approximations. These were present in the original implementation and retained in the new one.
 
 Both the former and newer version of CIPSI generate the external space in an ``internal to external'' way, that is, by applying single and double excitations to internal determinants ; a determinant used for creation of $\kalpha$ is referred to as a \emph{generator}.
 
-Ensuring each $\epsilon(\alpha)$ is considered only once, is done by checking all newly generated $\kalpha$ for connection (at most double excitation) to a determinant $\ket {D_I}$ previously used as a generator ; if a connection $\hat T$ is found, it means $\kalpha$ was already generated from $\ket {D_I}$ as $\hat T \ket {D_I}$.
+Ensuring each $\epsilon(\alpha)$ is considered only once, is done by checking all newly generated $\kalpha$ for connection (at most double excitation) to a determinant $\ket {I}$ previously used as a generator ; if a connection $\hat T$ is found, it means $\kalpha$ was already generated from $\ket {I}$ as $\ordering \hat T \ket {I}$.
 
-Determinants $D_I \in \Psi$ are sorted by decreasing absolute values of $c_I$. Two approximations are made :
+$D$ is the list of determinants $\kI \in \mathcal{D}$ sorted by decreasing absolute values of $c_I$. Two approximations are made :
 
 \begin{itemize}
 \item
-The first approximation restricts the set $\{\kalpha\}$. It is very unlikely $\ket \alpha$ will be selected if it's not connected to any $\ket D$ with a large coefficient. Therefore, it is possible to only consider the determinants of larger coefficient as generators. We choose a number of generators $\Ngen$ and only consider $D_{I \leq \Ngen}$ as generators. In practice we set $\Ngen$ according to a norm threshold $n_g$, picking $\Ngen$ as the highest value fulfilling
+The first approximation restricts the set $\{\kalpha\}$. It is very unlikely $\ket \alpha$ will be selected if it is not connected to any $\ket I$ with a large coefficient. Therefore, it is possible to only consider the determinants of larger coefficient as generators. We choose a number of generators $\Ngen$ and only consider $D_{I \leq \Ngen}$ as generators. In practice we set $\Ngen$ according to a norm threshold $n_g$, picking $\Ngen$ as the highest value fulfilling
 \begin{equation}
 \sum_{I \leq \Ngen} c_I^2 \leq n_g.
 \end{equation}
-This approximation is the \emph{three-class CIPSI},\cite{Evangelisti_1983}
+This approximation is a variant of the \emph{three-class CIPSI},\cite{Evangelisti_1983}
 and typically $n_g=0.99$ is used in the calculations.
 \item The second approximation reduces the cost of $\epsilon_\alpha$.
 We do not need extremely accurate values for $\epsilon(\alpha)$ as small differences are unlikely to substantially change the subset of the largest ones.
@@ -109,7 +99,7 @@ This approximation is achieved in a similar way by defining a threshold $n_s$
 on the norm of the wavefunction, and $N_{sel} \geq \Ngen$ a number of so-called
 \emph{selectors}. We approximate 
 \begin{equation}
-  \Hij{\Psi}{\alpha} \approx \sum_{i \leq N_{sel}} c_i \Hij{D_i}{\alpha}.
+  \Hij{\Psi}{\alpha} \approx \sum_{I \leq N_{sel}} c_I \Hij{I}{\alpha}.
 \end{equation}
 Typically, we use $n_s = 0.999$.
 
@@ -121,9 +111,9 @@ Note that generator determinants are a subset of selector determinants. See figu
 \begin{figure}[h!]
         
         \begin{center}
-                \includegraphics[width=0.4\columnwidth]{figures/cipsi/selexemple2}
+                \includegraphics[width=0.25\columnwidth]{figures/cipsi/selexemple2}
         \end{center}
-        \caption{$\ket \Psi$ is sorted by decreasing ${c_I}^2$; generator and selector subsets are defined.}
+        \caption{$D = \mathcal{D}$ sorted by decreasing ${c_I}^2$ ; generator and selector subsets are defined.}
         \label{fig:generators_selectors}
 \end{figure}
 
@@ -138,7 +128,7 @@ Originally, the \QP generated the external space in a ``internal to external'' w
         \label{alg:cipsi_manu}
                 \KwData{ $\ket \Psi$ }
                 \KwResult{Guarantees all $\epsilon(\alpha)$ are computed only once.}
-                sort $\{D_I\}$ by decreasing ${c_i}^2$ \;
+                $D \gets \mathcal{D}$ sorted by decreasing ${c_I}^2$ \;
                 \For {$g \gets 1, \Ngen$}{
                 \tcc{apply all double excitations on $|D_g \rangle$}
                 \ForAll {$\ket \alpha$ ; $\langle D_g | H | \alpha \rangle \neq 0$}{
@@ -149,7 +139,7 @@ Originally, the \QP generated the external space in a ``internal to external'' w
                         }
                 }
                 \If{$\kalpha \in $ $\{D_{\Nsel+1},\ldots,D_{\Ndet}\}$}{
-                        \tcc{$\kalpha \in \Psi$}
+                        \tcc{$\kalpha \in \mathcal{D}$}
                         discard this $\kalpha$
                 }
                  $R \gets 0$ \;
@@ -157,7 +147,7 @@ Originally, the \QP generated the external space in a ``internal to external'' w
                         $R \gets R + c_s \Hij{D_s}{\alpha}$ \;      
                         \tcc{$\ket {D_s}=\kalpha$ is noticed when computing $\Hij{D_s}{\alpha}$}       
                         \If{$\ket {D_s}=\kalpha$}{
-                                \tcc{$\kalpha \in \Psi$}
+                                \tcc{$\kalpha \in \mathcal{D}$}
                                 discard this $\ket \alpha$
                         }
                 }
@@ -167,21 +157,21 @@ Originally, the \QP generated the external space in a ``internal to external'' w
                 }
 \end{algorithm}
 
-While this implementation is obsolete, since it is relatively simple, it is briefly presented for pedagogical reasons. A slightly more detailed algorithmic version is shown as algorithm \ref{alg:cipsi_manu}.
+While this relatively simple implementation has been abandoned, it is briefly presented for pedagogical reasons. A slightly more detailed algorithmic version is shown as algorithm \ref{alg:cipsi_manu}.
 
 \begin{enumerate}
 \item
-$\ket {D_I}$ are sorted with decreasing ${c_I}^2$.
+$D$ is the list of determinants $\kI \in \mathcal{D}$ sorted with decreasing ${c_I}^2$.
 \item
-loop over generators $\ket G$
+Loop over generators $\ket G$
 \item
-generate all singly and doubly excited determinants connected to $\ket G$
+Generate all singly and doubly excited determinants connected to $\ket G$
 \item
-from this set, discard those that appear in $\Psi$. This is now a set of $\ket \alpha$
+From this set, discard those that appear in $\mathcal{D}$. This is now a set of $\ket \alpha$
 \item
-from this set, discard those that have already been generated before, i.e. those connected to $D_K$ with $K<I$. This is now a set of unique $\ket \alpha$.
+From this set, discard those that have already been generated before, i.e. those connected to $D_{K<I}$. This is now a set of unique $\ket \alpha$.
 \item
-compute $\epsilon(\alpha) = \frac{\langle \alpha|H|\Psi\rangle^2}{\Evar - \Hij{\alpha}{\alpha}}$ for those new $\ket \alpha$.
+Compute $\epsilon(\alpha) = \frac{\langle \alpha|H|\Psi\rangle^2}{\Evar - \Hij{\alpha}{\alpha}}$ for those new $\ket \alpha$.
 \end{enumerate}
 
 
@@ -199,19 +189,19 @@ Determinants contained in the $\ket {G_{pq}}$ batch , some of which may be uniqu
 \ordering a^\dagger_r a^\dagger_s a_p a_q  \ket G = \Gpqrs.
 \end{equation}
 
-Essentially, determinants in a batch are defined by their difference to $G_{pq}$. Therefore, comparing $G_{pq}$ to a selector determinant allows to systematically determine which $\kalpha$ of the batch it will connect to, and by what excitation. Additional filtering mechanisms are set up to avoid considering selectors that do not interact with the current batch. Those will be made explicit later on. Comparing figures \ref{fig:old_cipsi} and \ref{fig:new_cipsi} hints the differences between the former an newer algorithm. Note that because generators are a subset of selectors, a particular $\kalpha$ generated from $\ket {D_g}$ must be checked for connection to all selectors either as generators or as selectors.
+Essentially, determinants in a batch are defined by their difference to $\ket{G_{pq}}$. Therefore, comparing $\ket{G_{pq}}$ to a selector determinant allows to systematically determine which $\kalpha$ of the batch it will connect to, and by what excitation. Additional filtering mechanisms are set up to avoid considering selectors that do not interact with the current batch. Those will be made explicit later on. Comparing figures \ref{fig:old_cipsi} and \ref{fig:new_cipsi} hints the differences between the former an newer algorithm. Note that because generators are a subset of selectors, a particular $\kalpha$ generated from $D_g$ must be checked for connection to all selectors either as generators or as selectors.
 
 \begin{itemize}
 \item
-$\ket {D_{1 \le I < g}}$ as generators to check if $\kalpha$ has been previously generated
+$D_{1 \le I < g}$ as generators to check if $\kalpha$ has been previously generated
 \item
-$\ket {D_{g \le I \le \Nsel}}$ as selectors to compute $\Hij{\Psi}{\alpha}$.
+$D_{g \le I \le \Nsel}$ as selectors to compute $\Hij{\Psi}{\alpha}$.
 \end{itemize}
 
 
 \begin{figure}[h!]
         \begin{center}
-                \includegraphics[width=0.7\columnwidth]{figures/cipsi/old_cipsi}
+                \includegraphics[width=0.6\columnwidth]{figures/cipsi/old_cipsi}
         \end{center}
         \caption{Original CIPSI schematic representation, some details omitted}
         \label{fig:old_cipsi}
@@ -220,7 +210,7 @@ $\ket {D_{g \le I \le \Nsel}}$ as selectors to compute $\Hij{\Psi}{\alpha}$.
 
 \begin{figure}[h!]
         \begin{center}
-                \includegraphics[width=0.8\columnwidth]{figures/cipsi/new_cipsi}
+                \includegraphics[width=0.6\columnwidth]{figures/cipsi/new_cipsi}
         \end{center}
         \caption{New CIPSI schematic representation, some details omitted.}
         \label{fig:new_cipsi}
@@ -235,11 +225,11 @@ Filtering of selectors is a somewhat natural idea that was actually implemented 
 \begin{enumerate}
 %\setlength{\itemindent}{2em}
 \item
-Iterate over $\ket {D_{I \leq \Ngen}} = \ket G$
+Iterate over $\ket {G} \in \left \{ D_{I \leq \Ngen} \right \}$
 \item
 Iterate over all possible $a_p a_q \ket G = \ket {G_{pq}}$
 \item
-allocate a zero-initialized matrix $P(G_{pq})$ indexed by $r$ and $s$. Each cell is associated with $\ordering a^\dagger_r a^\dagger_s a_p a_q  \ket G = \Gpqrs$. Some cells will be tagged as not being associated with a unique $\ket \alpha$, but either one of :
+Allocate a zero-initialized array $P(G_{pq})$ indexed by $r$ and $s$. Each cell is associated with $\ordering a^\dagger_r a^\dagger_s a_p a_q  \ket G = \Gpqrs$. Some cells will be tagged as not being associated with a unique $\ket \alpha$, but either one of :
 \begin{itemize}
 \item
 a determinant already present in the wavefunction
@@ -254,15 +244,15 @@ Since two electrons cannot occupy the same spinorbital, tag cells where $r$ or $
 \item
 Apply single excitation tagging. This ensures single excitations of $\ket G$ are generated exactly once. It is described in section \ref{single_tagging}.
 \item
-\textbf{selector loop}: Iterate over $\ket {D_J} = \ket S$ 
+\textbf{selector loop}: Iterate over $\ket {S} \in \left \{ D_{J \le \Nsel} \right \}$
 \item
-Determine whether there is a pair $(r,s)$ so that $\ket S = \ket {G_{pq}^{rs}}$. In other words, look for $\ket S$ in the current batch. If there is, tag the corresponding cell, $\Gpqrs \in \Psi$.
+Determine whether there is a pair $(r,s)$ so that $\ket S = \ket {G_{pq}^{rs}}$. In other words, look for $\ket S$ in the current batch. If there is, tag the corresponding cell, $\Gpqrs \in \mathcal{D}$.
 \item
 Determine $(r,s)$ pairs so that $\ket {G_{pq}^{rs}}$ is connected to $\ket S$
 \item
-If $J<I$, tag the corresponding cells ; $\Gpqrs$ has already been generated by $\ket {D_J}$.
+If $J<I$, tag the corresponding cells ; $\Gpqrs$ has already been generated by $D_J$.
 \item
-If $J \geq I$, increment all untagged $P_{rs}(G_{pq})$ matrix elements by $\Delta P_{rs}(G_{pq}) = c_J \Hij{S}{G^{rs}_{pq}}$. Note that the excitation operator $\hat{T}$ so that $\ket S=\hat{T} \Gpqrs$, useful for computing the associated matrix element, can be determined at the same time as the $(r,s)$ pair.
+If $J \geq I$, increment all untagged $P_{rs}(G_{pq})$ matrix elements by $\Delta P_{rs}(G_{pq}) = c_J \Hij{S}{G^{rs}_{pq}}$. Note that the excitation operator $\hat{T}$ so that $\ket S=\ordering \hat{T} \Gpqrs$, useful for computing the associated matrix element, can be determined at the same time as the $(r,s)$ pair.
 \item
 End \textbf{selector loop}. All untagged cells are guaranteed to be associated with a unique $\ket \alpha$ and $P_{rs}(G_{pq}) = \langle \Psi |H|G^{rs}_{pq} \rangle$. $\epsilon(\alpha)$'s for the current batch can be computed  \\
 
@@ -278,7 +268,7 @@ End of other loops. All $\epsilon(\alpha)$ have been computed a single time.
 \subsection{Tagging}
 
 Tagged cells are simply tracked using a boolean matrix $B(G_{pq})$ with $B_{rs}(G_{pq})$ keeping the tag status of $\Gpqrs$, defaulting to $\FALSE$.
-In some cases, full columns/rows are to be tagged. Keeping track of fully tagged rows or columns is useful for performance purpose, as it allows to shortcut some loops. A simple way to do it, is to add an extra column and an extra row of index $0$ to $B$ ; $B_{0s}(G_{pq}) = \TRUE\,$ means the whole $s$ column is tagged, $B_{r0}(G_{pq}) = \TRUE\,$ means the whole $s$ line is tagged. The actual tag status of $\Gpqrs$ becomes
+In some cases, full columns/rows are to be tagged. Keeping track of fully tagged rows or columns is useful for performance purpose, as it allows to bypass some loop iterations. A simple way to do it, is to add an extra column and an extra row of index $0$ to $B$ ; $B_{0s}(G_{pq}) = \TRUE\,$ means the whole $s$ column is tagged, $B_{r0}(G_{pq}) = \TRUE\,$ means the whole $s$ line is tagged. The actual tag status of $\Gpqrs$ becomes
 \begin{equation}
 B_{r0}(G_{pq}) \vee B_{0s}(G_{pq}) \vee B_{rs}(G_{pq}).
 \end{equation}
@@ -288,9 +278,9 @@ While significant, this optimization is fairly simple to set up and use, so for 
 \subsection{Single excitation tagging}
 \label{single_tagging}
 The algorithm is designed to generate all $\ket {G_{pq}^{rs}}$, which are doubly excited from $\ket G$. The singly excited determinants are not explicitly generated, but are formally present as $\ket{G_{pq}^{ps}}$.
-The issue is that $\ket{G_{pq}^{ps}}$ refers to the same determinant $\ordering a^\dagger_s a_q \ket{G}$ regardless of $p$, and the base algorithm only tags a $\kalpha$ as duplicate if it has a previous generator $\ket K$, i.e. if
+The issue is that $\ket{G_{pq}^{ps}}$ refers to the same determinant $\ordering a^\dagger_s a_q \ket{G}$ regardless of $p$, and the base algorithm only tags a $\kalpha$ as duplicate if it has a previous generator $\ket J$, i.e. if
 \begin{equation}
-\ket {G_{pq}^{rs}} = \ket {K_{p'q'}^{r's'}} \; ; \; \ket G = \ket {D_I} \; ; \; \ket K = \ket {D_{I'<I}}
+\ket {G_{pq}^{rs}} = \ket {K_{p'q'}^{r's'}} \; ; \; \ket G = D_I \; ; \; \ket J = D_{J<I}
 \end{equation}
 As can be seen this doesn't cover the case where $G_{pq}^{ps} = G_{p'q}^{p's}$.
 
@@ -318,7 +308,7 @@ Pick $Q$ any ``non-frozen'' $\alpha$ spinorbital occupied in $\ket G$. Again we 
         \begin{center}
                 \includegraphics[width=0.70\columnwidth]{figures/cipsi/systematic_determination}
         \end{center}
-        \caption{Illustrative example of systematic determination of connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ have the same spin.}
+        \caption{Illustrative example of systematic determination of the connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ have the same spin. \alert{IL FAUT METTRE UN CHAPEAU SUR H DANS LA FIGURE!}}
         \label{fig:systematic_determination}
         
 \end{figure}
@@ -328,7 +318,7 @@ Pick $Q$ any ``non-frozen'' $\alpha$ spinorbital occupied in $\ket G$. Again we 
         \begin{center}
                 \includegraphics[width=0.90\columnwidth]{figures/cipsi/systematic_determination2}       
         \end{center}
-        \caption{Illustrative example of systematic determination of connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ are of different spin.}
+        \caption{Illustrative example of systematic determination of the connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ are of different spins. \alert{IL FAUT METTRE UN CHAPEAU SUR H DANS LA FIGURE!}}
         \label{fig:systematic_determination2}
 \end{figure}
 
@@ -347,12 +337,12 @@ More differences : $\ket S$ isn't connected to any $\ket {G_{pq}^{rs}}$ and can 
 
 \end{itemize}
 
-Based on these indices, it's possible to immediately deduce any $(r,s)$ pair so that $\ket {G_{pq}^{rs}}$ is at most a double excitation of $\ket S$, as well as the excitation operator $\hat{T}$ so that $\ket {G_{pq}^{rs}}=\hat{T} \ket S$. Figures \ref{fig:systematic_determination} and \ref{fig:systematic_determination2} show two possible cases as example.
+Based on these indices, it is possible to immediately deduce any $(r,s)$ pair so that $\ket {G_{pq}^{rs}}$ is at most a double excitation of $\ket S$, as well as the excitation operator $\hat{T}$ so that $\ket {G_{pq}^{rs}}=\ordering \hat{T} \ket S$. Figures \ref{fig:systematic_determination} and \ref{fig:systematic_determination2} show two possible cases as examples.
 
-While this could be done in a more compact way, we took a more case by case approach, allowing more specialized code for each situation. Taking spin into account, the different cases are listed in table \ref{tab:systematic_determination}.
+While this could be done in a more compact way, we took a ``case by case'' approach, allowing more specialized code for each situation. Taking spin into account, the different cases are listed in table \ref{tab:systematic_determination}.
 
 
-It's noticeable that, because of the ``wildcard'' indices $X$ and $Y$ :
+It is noticeable that, because of the ``wildcard'' indices $X$ and $Y$ :
 \begin{itemize}
 
 \item
@@ -385,7 +375,7 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
                         $C_\sigma \gets S_\sigma \wedge \neg [G_{pq}]_\sigma$ \; %c \gets \IAND{S}{\NOT{G_{pq}}}$ \; 
                         \If{$||C_\sigma|| = 2$}{
                                 $e \gets \texttt{LIST\_FROM\_BITSTRING}(C_\sigma)$\; 
-                                $B_{e[1], e[2]} \gets \TRUE$\;                     
+                                $B_{e[1]\, e[2]} \gets \TRUE$\;                     
                         }                       
                         \tcc{see table \ref{tab:systematic_determination} for $(r,s)$ pairs}
                         \uIf{$t < g$}{
@@ -437,9 +427,9 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
 
 \section{Filtering and loop breaking}
 
-A large amount of processing power is used, because every doubly ionized generator $\ket {G_{pq}}$ is compared to all internal determinants. In the vast majority of cases, it will show no connection can be made and the internal determinant will be ignored. Thus, it's interesting to filter internal determinants in the outermost loops (loop over generators, and loop over first ionization).
+A large amount of CPU time is wasted because every doubly ionized generator $\ket {G_{pq}}$ is compared to all internal determinants. In the vast majority of cases, it will show no connection can be made and the internal determinant will be ignored. Thus, it is interesting to filter internal determinants in the outermost loops (loop over generators, and loop over first ionization).
 
-This can be done using the distance $f_A^B = f_B^A$, defined as the minimal number of operations --- moving, annihilating or creating an electron --- that must be done to go from a determinant $\ket A$ to a determinant $\pm \ket B$ (i.e. ignoring the phase factor) with respectively $n_a$ and $n_b$ electrons.
+This can be done using the distance $f_A^B = f_B^A$, defined as the minimal number of operations ---~moving, annihilating or creating an electron~--- that must be done to go from a determinant $\ket A$ to a determinant $\pm \ket B$ (i.e. ignoring the phase factor) with respectively $n_a$ and $n_b$ electrons.
 Alternatively, it can be defined as the maximum between the number of annihilations and the number of creations required to go from $\ket A$ to $\pm \ket B$.
 
 
@@ -513,11 +503,11 @@ The first loop discards some internal determinants and separates the others in t
 Right branch : determinants that may contribute to some $P(G_{pq})$ matrix or tag previously generated $\ket \alpha$. In other words, selectors that may connect to some $\ket {G_{pq}^{rs}}$. 
 
 \item
-Left branch : Determinants that aren't selectors, but are equal to some $\ket {G_{pq}^{rs}}$. Being non-selectors, those will not be checked for connection to any $\ket {G_{pq}^{rs}}$, but they still must be checked for equality in order to ensure $\ket {G_{pq}^{rs}} \notin \Psi$
+Left branch : Determinants that aren't selectors, but are equal to some $\ket {G_{pq}^{rs}}$. Being non-selectors, those will not be checked for connection to any $\ket {G_{pq}^{rs}}$, but they still must be checked for equality in order to ensure $\ket {G_{pq}^{rs}} \notin \mathcal{D}$
 \end{itemize}
 
 
-This step sets the algorithm's complexity with respect to $\Ndet$. Naively, $f_G^S$ must be computed for all pairs of internal determinants, setting the complexity to $\mathcal{O}(\Ndet^2)$.
+This step sets the complexity of the algorithm with respect to $\Ndet$. Naively, $f_G^S$ must be computed for all pairs of internal determinants, setting the complexity to $\mathcal{O}(\Ndet^2)$.
 \begin{algorithm}
 \caption{Filtering internal determinants for generator $\ket G$}
 \label{alg:generators_filtering}
@@ -546,7 +536,7 @@ Note that the only point of separating those two categories rather than merging 
 %If both those lists were merged, a $selector$ condition would need to be added for reaching the right list of the second loop, and $past$ tests would be performed pointlessly on those determinants that would have gone in the left list of the first loop.
 This most likely is of little interest, depending on the implementation.
 %$past$ and $selector$ should at worst mean fetching an index in an array of indices, and compare it to $I$ or $N_{sel}$ respectively.
-But because it's the actual implementation and because it reduces the number of operations, it is still shown.
+But because it is the actual implementation and because it reduces the number of operations, it is still shown.
 
 \item
 The second loop discards some internal determinants and separates the other in two categories, this time not disjoint.
@@ -619,10 +609,10 @@ If $\neg past$, $\ket {G_{pq}^{rs}}$ must be tagged for referring to a determina
 \caption{Systematic ``case by case'' determination of connections between a selector $\ket S$ and determinants of a batch $\Gpq$} 
 \label{tab:systematic_determination}
 \begin{center}
-\begin{minipage}[l]{0.5\textwidth}
+\begin{minipage}[l]{0.6\textwidth}
         \begin{tabular}{ c|c|c }
                 \hline \hline \rule{0pt}{3ex}
-                $\ket S$                                                                        &$ r, s$        & $\hat T ; \hat T \ket S = \Gpqrs$     \\
+                $\ket S$                                                                        &$ r, s$        & $\hat T$ such that $\ordering \hat T \ket S = \Gpqrs$     \\
                 \hline \hline \rule{0pt}{3ex}
                 $\ac {ij} \Gpq$                                         & $X,Y$         &$ij \rightarrow XY$            \\
                                                                                         & $X,i$         &$j \rightarrow X$              \\
@@ -662,7 +652,7 @@ If $\neg past$, $\ket {G_{pq}^{rs}}$ must be tagged for referring to a determina
                 $\an {a  \bar b} \ac {ij \bar k \bar l} \Gpbq$                  &$i,\bar k$             &$a \bar b \rightarrow j \bar l$                \\
         \end{tabular} 
 \end{minipage}
-\begin{minipage}[r]{0.4\textwidth}
+\begin{minipage}[r]{0.3\textwidth}
 \begin{itemize}
 \item
 the bar notation $\bar a$ is used to indicate relative spins
@@ -682,7 +672,7 @@ $X$ and $Y$ are ``wildcard'' indices referring to any spinorbital unoccupied in 
         \begin{center}
                 \includegraphics[height=0.90\textheight]{figures/cipsi/selection}
         \end{center}
-        \caption{$S$ is the internal determinant currently flowing down the chart.
+        \caption{$\ket S$ is the internal determinant currently flowing down the chart.
         Tagging is fully computed, and \emph{drop} instructions eventually reached before any update is done to $P(G_{pq})$.}
         \label{fig:selection}   
 \end{figure}
@@ -702,14 +692,14 @@ We have empirically chosen the following expression for the fragmentation of the
 F_{\max} & = 1 + \min \qty( \Nelec (\Nelec-1)/2, \lfloor \sqrt{\Nsel} \rfloor/10 ) \\
 F_i & = 1 + F_{\max} \qty( \max_{k=1}^{\Nst} |c_{ik}|^{1/2} )
 \end{align}
-which is an estimated cost of task $i$. In practice $F_i = 1$ for the majority.
+where $F_i$ is an estimated cost of task $i$. In practice $F_i = 1$ for the majority.
 
 Task $i$ is put in the job queue $F_i$ times, each time associated with an index $s$ ranging from $0$ to $F_i-1$, which together with $F_i$ defines the subset of batches this task corresponds to.
 %Disjoint subsets are created using modulus, so that subsets are interleaved and thus more balanced.
 % Cette phrase n'etait pas facile a comprendre. Le plus simple, c'etait de la virer...
  
 \begin{algorithm}
-        \caption{task splitting, pseudocode for master}
+        \caption{Task splitting, pseudocode for master}
         \label{alg:tasksplit_master}
         \tcc{A logical task is the computation of $e[i]$, the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ generated from generator $\ket {G_i}$}
         choose $F_i$ for all $i$\;
@@ -730,7 +720,7 @@ Task $i$ is put in the job queue $F_i$ times, each time associated with an index
 \end{algorithm}
 
 \begin{algorithm}
-        \caption{task splitting, pseudocode for slave}
+        \caption{Task splitting, pseudocode for slave}
         \label{alg:tasksplit_slave}
         \While{}{
                 get task $(i, s \in [0,F_i-1])$ from the queue \;
@@ -753,10 +743,20 @@ Task $i$ is put in the job queue $F_i$ times, each time associated with an index
         }
 \end{algorithm}
 
-This fragmentation scheme is shown in a simpler and more general way when used to compute $\EPT$ in chapter \ref{chap:PT2}. In a nutshell, we can see it as a toy problem where we want to print for each generator the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ it has generated. The algorithm for this on the master and slave side is shown as algorithm \ref{alg:tasksplit_master} and \ref{alg:tasksplit_slave} respectively.
+This fragmentation scheme is shown in a simpler and more general way when used to compute $\EPT$ in chapter \ref{chap:PT2}. In a nutshell, we can see it as a toy problem where we want to print for each generator the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ it has generated. The algorithm for this on the master and slave side is shown as algorithms \ref{alg:tasksplit_master} and \ref{alg:tasksplit_slave} respectively.
 
 
-For the determinant selection, we still use the mixed MPI/OpenMP paradigm, where one MPI process per node is used for efficient broadcasting of the replicated data. But, as opposed the Davidson implementation where each task was parallelized with OpenMP, here each OpenMP thread handles independently a task, computed with a single core. The first reason is that the number of tasks is larger than $\Ndet$, which is usually order of magnitude larger than the number of CPU cores. Moreover, the computation of a task in parallel would require a synchronization barrier at the beginning and the end of the OpenMP section. Here, all the OpenMP threads are completely independent during the whole calculation of the selection, and this explains the very good scaling properties of the implementation, as shown in chapter~\ref{chap:PERF}.
+For the determinant selection, we still use the mixed MPI/OpenMP paradigm, where one MPI process per node is used for efficient broadcasting of the replicated data. But, as opposed the Davidson implementation where each task was parallelized with OpenMP, here each OpenMP thread handles independently a task, computed with a single core. The first reason is that the number of tasks is larger than $\Ndet$, which is usually orders of magnitude larger than the number of CPU cores. Moreover, the computation of a task in parallel would require a synchronization barrier at the beginning and the end of the OpenMP section. Here, all the OpenMP threads are completely independent during the whole calculation of the selection, and this explains the very good scaling properties of the implementation, as shown in chapter~\ref{chap:PERF}.
+
+\section{Obtaining spin-pure states}
+
+The presented algorithm generates a wavefunction which is expressed on a truncated space of Slater determinants. Determinants are not necessarily eigenfunctions of the $\widehat S^2$ operator, so the eigenfunctions of the truncated Hamiltonian are not guaranteed to be also eigenfunctions of $\widehat S^2$.
+
+A conventional solution to avoid this issue is to work in the basis of \emph{Configuration State Functions} (CSFs). These are linear combinations of determinants which are eigenfunctions of $\widehat S^2$, and with the desired eigenvalue. Diagonalizing $\widehat H$ in this basis ensures that the solution is spin pure.
+
+Working with CSFs instead of determinants has the additional advantage that the space of CSFs is smaller than the space of determinants. CSFs could in principle be used for CIPSI, but that makes the computation of the matrix elements of $\widehat H$ less straightforward.
+
+We have chosen a more practical solution.\cite{Bytautas_2009} After the selection step, we add to the variational space all the determinants that are necessary to obtain a spin pure solution. These determinants correspond to all the possible spin flips in open shell determinants with the constraint that $\Nalpha$ and $\Nbeta$ are constant. The diagonalization of $\widehat H$ will automatically yield spin pure eigenfunctions at the cost of increasing the size of the wavefunction with many determinants with very small weights.
 
 \section{Conclusion}
 
@@ -765,13 +765,14 @@ The newer CIPSI algorithm runs orders of magnitude faster than the former one th
 \item
 Excitations do not need to be computed explicitly using algorithms such as those presented in chapter \ref{chap:DET_DRIVEN}. However the associated phase factors still has to be computed.
 \item
-Although not directly related to the CIPSI algorithm, the computation of said phase factors has been made much cheaper thanks to the use of phase masks (see chapter \ref{chap:PHASEMASK})
+Although not directly related to the CIPSI algorithm, the computation of the phase factors has been made much cheaper thanks to the use of phase masks (see section~\ref{chap:PHASEMASK})
 \item
-Selector determinant are simultaneously compared to $~{N_{virt}}^2$ external determinants $\kalpha$ thanks to the batch system.
+Selector determinants are simultaneously compared to $(\Norb-\Nalpha)^2$ external determinants $\kalpha$ thanks to the batch system.
 \item
-Selector determinants go through a filtering system that narrows down the number of selector determinants to be considered against a particular $\kalpha$ (a particular batch of $\kalpha$).
+Selector determinants go through a filtering mechanism that narrows down the number of selector determinants to be considered against a particular $\kalpha$ (a particular batch of $\kalpha$).
 \end{itemize}
 
-This made way for applications that were not affordable before,\cite{1806.05115} and was used as the basis for the methods presented in the next chapters.
+This made way for applications that were not affordable before, such as those presented in chapter~\ref{chap:APPLICATIONS}, as well as an additional application to copper complexes.\cite{1806.05115}
+The algorithms presented in this chapter also lead to the methods presented in the next chapters.
 
 \end{document}

@@ -1,10 +1,10 @@
-﻿\begin{tikzpicture}
+\begin{tikzpicture}
 \coordinate (A) at (0,0.5);
 
 
-\draw (A) node[draw] (Psi){$|\Psi \rangle = \sum_I c_I | D_I \rangle $};
+\draw (A) node[draw] (Psi){$|\Psi \rangle = \sum_I c_I  D_I $};
 
-\draw (A)+(0,-1.5) node[right] (S){$|S\rangle = |D_J\rangle$};
+\draw (A)+(0,-1.5) node[right] (S){$|S\rangle = D_J$};
 \draw (A)+(5,-2) node[right] (G){$G= D_I$};
 \draw[dashed] (A)+(-5,-2) -- (G);
 

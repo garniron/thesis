@@ -1,3 +1,6 @@
+Remplacer alpha et beta par fleches pour les spins? Si oui, ne pas oublier na et nb dans la section 5.7 Filtering and loop breaking.
+
+
 1) Exp dressing
 CISD -> CCSD
 Quand Ref n'est pas HF mais CAS -> MR-CCSD.

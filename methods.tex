@@ -1,7 +1,7 @@
  
 \documentclass[./thesis.tex]{subfiles}
 \begin{document}
-
+\label{chap:METHODS}
 
 Quantum chemistry aims at describing the electronic structure of molecular
 systems.  The velocity of the nuclei is considered negligible compared to that
@@ -234,7 +234,7 @@ One usual approach is to perform a FCI by allowing excitations from a reference 
 Another usual CI approach is to select determinants according to their excitation degree --- by how many occupied orbitals they differ --- with respect to some reference. If the reference is the Hartree-Fock determinant and if only single and double excitations are considered, the method is known as \emph{Configuration Interaction with Single and Double excitations (CISD)}. Alternatively, the reference can be a CAS-CI, in which case it is known as \emph{Multi-Reference Configuration Interaction (MR-CI)}.
 
 Regardless of the method, integrals involving all orbitals implied in at least one Slater determinant need to be computed in order to diagonalize $\widehat{H}$. Therefore CI methods cost is at least $\order{M^5}$, due to the four-index transformation.
-In addition, the cost for fully diagonalizing $\widehat{H}$ is $\order{\Ndet^3}$ with $\Ndet$ the number of determinants in the considered subspace, which can be up to a few billion. This usually not feasible, but only the few eigenvectors associated with lowest eigenvalues are typically of interest, so iterative methods can be used. The standard choice in quantum chemistry is to use the \emph{Davidson diagonalization} originally developed by Ernst R. Davidson\cite{Davidson_1975} specifically for CI methods. 
+In addition, the cost for fully diagonalizing $\widehat{H}$ is $\order{\Ndet^3}$ with $\Ndet$ the number of determinants in the considered subspace, which can be up to a few billion. This usually not feasible, but only the few eigenvectors associated with lowest eigenvalues are typically of interest, so iterative methods can be used. The standard choice in quantum chemistry is to use the \emph{Davidson diagonalization} originally developed by Ernest R. Davidson\cite{Davidson_1975} specifically for CI methods. 
 
 
 \section{Perturbative methods}
@@ -306,12 +306,13 @@ order to get an improvement on the energy:
 
 
 \section{Selected CI methods}
+\label{sec:meth_cipsi}
 
 These methods rely on the same principle as the usual CI approaches, except that determinants aren't chosen \textit{a priori} based on an occupation or excitation criterion, but selected \emph{on the fly} among the entire set of determinant based on their estimated contribution to the FCI wavefunction. Conventional CI methods can be seen as an exact resolution of Schrödinger's equation for a complete, well-defined set of determinants (and for a given atomic basis set), while selected CI methods are more of a truncation of the FCI.
 The main advantages of these methods compared to the more conventional \textit{a priori} selected ones, are that since the most relevant determinants are considered, they will typically yield a more accurate description of physical phenomena, and a much lower energy for an equivalent number of determinants.
-It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction. Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been proposed from the late 60's by Bender and Davidson\cite{Bender_1969} as well as Whitten and Hackmeyer\cite{Whitten_1969} and is still very much under investigation, we can name its stochastic variant the MC3I method\cite{Ohtsuka_2017} or the very recent \emph{Machine Learning Configuration Interaction (MLCI)}.\cite{1808.05787}
+It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction.\cite{Bytautas_2009,Anderson_2018} Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been proposed from the late 60's by Bender and Davidson\cite{Bender_1969} as well as Whitten and Hackmeyer\cite{Whitten_1969} and is still very much under investigation, we can name its stochastic variant the MC3I method\cite{Ohtsuka_2017} or the very recent \emph{Machine Learning Configuration Interaction (MLCI)}.\cite{1808.05787}
 
-The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developped by Huron, Rancurel and Malrieu,\cite{Huron_1973} that iteratively selects \emph{external} determinants $\kalpha$ (determinants which are not present in the wavefunction $\Psi$) using a perturbative criterion
+The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developed by Huron, Rancurel and Malrieu,\cite{Huron_1973} that iteratively selects \emph{external} determinants $\kalpha$ (determinants which are not present in the wavefunction $\Psi$) using a perturbative criterion
 \begin{equation}
 e_\alpha = \frac{\Hij{\Psi}{\alpha}^2}{\Evar - H_{\alpha \alpha}}.
 \end{equation}
