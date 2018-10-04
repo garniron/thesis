@@ -749,6 +749,7 @@ This fragmentation scheme is shown in a simpler and more general way when used t
 For the determinant selection, we still use the mixed MPI/OpenMP paradigm, where one MPI process per node is used for efficient broadcasting of the replicated data. But, as opposed the Davidson implementation where each task was parallelized with OpenMP, here each OpenMP thread handles independently a task, computed with a single core. The first reason is that the number of tasks is larger than $\Ndet$, which is usually orders of magnitude larger than the number of CPU cores. Moreover, the computation of a task in parallel would require a synchronization barrier at the beginning and the end of the OpenMP section. Here, all the OpenMP threads are completely independent during the whole calculation of the selection, and this explains the very good scaling properties of the implementation, as shown in chapter~\ref{chap:PERF}.
 
 \section{Obtaining spin-pure states}
+\label{sec:cipsi_s2}
 
 The presented algorithm generates a wavefunction which is expressed on a truncated space of Slater determinants. Determinants are not necessarily eigenfunctions of the $\widehat S^2$ operator, so the eigenfunctions of the truncated Hamiltonian are not guaranteed to be also eigenfunctions of $\widehat S^2$.
 

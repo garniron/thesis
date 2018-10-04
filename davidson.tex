@@ -61,7 +61,7 @@ Algorithmically, the expensive part of the Davidson diagonalization is the compu
 Determinants are connected by $\mH$ only if they differ by no more than two
 spinorbitals. Therefore, the number of non-zero elements per line of $\mH$ is
 equal to the number of single and double excitation operators, namely
-$\order{\Nalpha^2 \times (\Norb - \alpha)^2}$. As $\mH$ is symmetric, the number
+$\order{\Nalpha^2 \times (\Norb - \Nalpha)^2}$. As $\mH$ is symmetric, the number
 of non-zero elements per column is identical. This makes the $\mH$ matrix very
 sparse, but for large basis sets the whole $\mH$ matrix may still not fit in the
 memory of a single node, as the number of non-zero entries to store is
@@ -75,8 +75,8 @@ is the approach chosen in the \QP.
 
 This effectively means iterating over all pairs of determinants $\ki$ and
 $\kj$, checking whether $\ki$ and $\kj$ are connected by $\mH$ and if they are,
-accessing the corresponding integral(s) and computing the phase factor.  Even
-though we presented in chapter~\ref{chap:DET_DRIVEN} a very efficient method to
+accessing the corresponding integral(s) and computing the phase factor. Even
+though we presented in section~\ref{sec:det_exc} a very efficient method to
 compute the excitation degree
 between two determinants, the number of such computations to be made scales as
 $\Ndet^2$, which can still be prohibitively high. To get an efficient
@@ -135,7 +135,6 @@ algorithms~\ref{alg:davidson_aa} and~\ref{alg:davidson_ab}.
 \For{$b2 \gets A(a2), A(a2+1)-1$}{
 	\If{$\text{EXC\_DEGREE}(D[b1]_\beta, D[b2]_\beta) = 1$}{
 		$\ket {D[b1]}$ connected to $\ket {D[b2]}$ by $\alpha \beta$ excitation.
-                Update result at 
 	}
 }
 }
@@ -146,7 +145,7 @@ algorithms~\ref{alg:davidson_aa} and~\ref{alg:davidson_ab}.
 \begin{algorithm}
 \label{alg:davidson_ab_parallel}
 \caption{Find internal determinants connected by $\alpha \beta$ double excitations, one in the range $[\text{first}, \text{last}]$ the other in the range $[\text{first}, \Ndet]$}
-\KwData{see algorithm \ref{alg:davidson_ab}}
+\KwData{see algorithm \ref{alg:davidson_aa}}
 \KwData{$\text{first}$, $\text{last}$ : the boundaries of the range of determinants (in $D$) the current task should process}
 
 \For{$a1 \gets 1, N_a$}{
@@ -179,7 +178,7 @@ $\order{\Ndet}$ when the FCI is reached since $\NFCI = N_a^{\text{FCI}} \times
 N_b^{\text{FCI}}$.
 
 The $\alpha \beta$ double excitations are the most expensive (algorithm~\ref{alg:davidson_ab})
-as they scale as~$\order{N_a  N_b^2} = \order{N_a^3}$. Indeed, the cycle instruction at line~4 makes the
+as they scale as~$\order{N_a  N_b^2} = \order{N_a^3}$. Indeed, the \texttt{cycle} instruction at line~4 makes the
 iterations over $b1$ and $b2$ do the computation only a number of times bounded by the number of 
 possible single excitations ($\Na \times \qty(\Norb - \Na)$). So at the FCI level, this step scales as
 $\order{\Ndet^{3/2}}$.
@@ -208,7 +207,8 @@ The principle of the radix sort is presented in algorithm~\ref{alg:radix}.  The
 key feature enabling the transition from $\order{\Ndet}$ to $\order{\Ndet
 \log(\Ndet)}$ is the fact that the set of sorted integers is bounded, and one
 can easily verify that the number of operations is proportional to $64\times
-\Ndet$. So sorting the determinants of the wave function is never a bottleneck.
+\Ndet$. So sorting the determinants of the wave function is not a bottleneck,
+and the flop-optimal algorithm still scales as $\order{\Ndet}$.
 
 \begin{algorithm}
 \caption{Radix sort algorithm for non-negative integers}
@@ -267,7 +267,7 @@ To minimize the network communication, we separate the calculation in tasks
 such that the tasks build disjoint pieces of the result. A task corresponds a
 range of indices $I$ in Eq~\eqref{eq:whu}. Therefore, the communication for the
 result is $\order{\Ndet}$, and independent of the number of compute nodes.
-However, each task needs the full $\mU$ matrix, so its needs to be
+However, each task needs the complete $\mU$ matrix, so its needs to be
 broadcast efficiently on every compute node at the beginning of the
 calculation. This broadcast if performed via an MPI library call for optimal
 performance,\cite{MPI} and we use one MPI process per node such that the amount of
@@ -282,7 +282,7 @@ The OpenMP parallelization is made on the outermost loop, so the write
 access to the result is guaranteed to be safe, without requiring a lock.
 As the OpenMP tasks are not guaranteed to be balanced, we have used a
 dynamic scheduling, with a chunk size of 64 elements. The reason for this
-chunk sized is to force that multiple threads accumulate their results in 
+chunk size is to force that multiple threads accumulate their results in 
 memory addresses far apart, avoiding the so-called \emph{false sharing}
 performance degradation that occurs when multiple threads write simultaneously
 in the same cache line.\cite{Bolosky1993Sep} 
@@ -292,15 +292,15 @@ a new task is requested, until the task queue is empty.
 
 \section{Symmetry of $\mH$}
 
-Taking into account the symmetry of $\widehat H$, each pair should be found only once, and the associated update could be
+Taking into account the symmetry of $\widehat H$, each pair should be found only once, and the associated update would be
 \begin{align}
 W_{Ik} \gets W_{Ik} + U_{Jk} H_{IJ} \\
 W_{Jk} \gets W_{Jk} + U_{Ik} H_{IJ}
 \end{align}
 This reduces the computational effort by a factor of two, but the result of
 each task now has a size of $\Ndet$ and no more the reduced size of $\Ndet / N_\text{task}$,
-since all the elements of $\mW$ can potentially me modified.
-This increase of communication which has the effect of killing the parallel
+since all the elements of $\mW$ can potentially be modified.
+This increase of communication has the effect of killing the parallel
 efficiency.
 
 There are some additional drawbacks.
@@ -334,7 +334,7 @@ number of operations can give a better time to solution.
 
 \section{Ensuring the solutions have the desired spin state}
 
-When working in a truncated space of determinants, there is no guarantee that the eigenstate of $\hat H$ will also be eigenstates of the spin operator $\hat S^2$. And when the proper conditions are fulfilled (see chapter~\ref{chap:CIPSI}), all the lowest eigenvectors may be of different spin states.
+When working in a truncated space of determinants, there is no guarantee that the eigenstate of $\hat H$ will also be eigenstates of the spin operator $\hat S^2$. And when the proper conditions are fulfilled (see section~\ref{sec:cipsi_s2}), all the lowest eigenvectors may be of different spin states.
 
 To help find solutions of the desired spin state, we use a penalty method in the diagonalization.\cite{Fales2017Sep} We modify the Hamiltonian as 
 \begin{equation}
