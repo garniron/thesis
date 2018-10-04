@@ -10,8 +10,8 @@
 #    	gnuplot home:     http://www.gnuplot.info
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
-# set terminal qt 0 font "Sans,9"
-# set output
+set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
+set output 'figures/perf/scaling_davidson_ndet.pdf'
 unset clip points
 set clip one
 unset clip two
@@ -170,6 +170,7 @@ set psdir
 set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap v5
 GNUTERM = "qt"
 x = 0.0
+set key bottom
 ## Last datafile plotted: "data_davidson"
 plot 'data_davidson' index 0 u 1:2 w lp title '', x**1.5*exp(-17) title '{/Symbol a} N_{det}^{1.5}'
 #    EOF

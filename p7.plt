@@ -10,8 +10,8 @@
 #    	gnuplot home:     http://www.gnuplot.info
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
-# set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
-# set output 'figures/perf/scaling_sel_det.pdf'
+set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
+set output 'figures/perf/scaling_sel_det.pdf'
 unset clip points
 set clip one
 unset clip two
@@ -169,5 +169,5 @@ set psdir
 set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap v5
 GNUTERM = "qt"
 ## Last datafile plotted: "data_selection"
-plot 'data_selection' index 2 w lp title '', 0.00025*x**1.20 title '{/Symbol a} x^{1.2}'
+plot 'data_selection' index 1 w lp title '', 0.00020*x**1.15 title '{/Symbol a} x^{1.15}'
 #    EOF

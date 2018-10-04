@@ -167,5 +167,5 @@ set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap 
 GNUTERM = "qt"
 x = 0.0
 ## Last datafile plotted: "data_selection"
-plot 'data_selection' index 0 u 1:(14945.796/$2) w lp title "", x title "Ideal"
+plot 'data_selection' index 0 u 1:(22560.336/$2) w lp title "", x title "Ideal"
 #    EOF

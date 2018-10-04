@@ -110,7 +110,7 @@ since the binary search is bounded by 15 misses and the maximum size of the
 array of keys is 64~kiB, the typical size of the L1 cache.
 
 \begin{table}
-\caption{Time to access the integrals (in ns/integral) with different access patterns. The time to generate random numbers (measured as 67~ns/integral) was not counted in the random access results.}
+\caption{Time to access the integrals (in nanoseconds/integral) with different access patterns. The time to generate random numbers (measured as 67~ns/integral) was not counted in the random access results.}
 \label{tab:integrals}
 \begin{center}
   \begin{tabular}{lrr}
@@ -620,7 +620,7 @@ Using the above formulas and taking into account the bitstring's internal repres
 \end{algorithm}
 
 
-\subsection{Phasemasks}
+\subsection{Phase masks}
 \label{chap:PHASEMASK}
 
 Algorithm \ref{alg:PHASE_SINGLE} is a general one, efficient for computing the phase factor for two arbitrary determinants. However, a phase computation is typically needed every time two determinants are compared, resulting in a vast amount of computational power being consumed. When only this method was used in the \QP, it was not uncommon to find that a large fraction of the computational time was spent in phase computations.
@@ -646,7 +646,7 @@ This requires to store $E^S$ which is an integer array of size $2 \times (\Norb+
 %Note that although only $2 \times \Norb$ integers are required to store the whole information, for practical reasons the actual size of the array is $2 \times (\Norb+1)$ because when the last orbital is involved, we need to access $E_{\Norb+1}$. The reason for this loss is that $E_1$ contains no information - there are always 0 electrons under the first orbital, $E^S_1 = 0 \forall \ket S$.
 %\end{comment}
 
-This may be somewhat memory consuming if we want to pre-compute and store $E$ for each determinant. However, because the actual information needed isn't $N^S_{ij}$, but merely its parity, we only need to store the so-called ``phasemask'' array $P^S$
+This may be somewhat memory consuming if we want to pre-compute and store $E$ for each determinant. However, because the actual information needed isn't $N^S_{ij}$, but merely its parity, we only need to store the so-called ``phase mask'' array $P^S$
 \begin{equation}
 \label{eq:phasemask}
 P^S(i) = p(E^S(i))
@@ -691,9 +691,9 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 	\SetKwFunction{FMain}{PHASEMASK}
 	\SetKwProg{Fn}{Function}{:}{}
 	
-	\Fn(\tcc*[h]{Compute a phasemask}){\FMain{$I$}}{
+	\Fn(\tcc*[h]{Compute a phase mask}){\FMain{$I$}}{
 		\KwData{ $I$ the bitstring representation of $\ket I$}
-		\KwResult{ $P$ is the phasemask vector associated with $\ket I$, as described in Eq.~\eqref{eq:phasemask}}
+		\KwResult{ $P$ is the phase mask vector associated with $\ket I$, as described in Eq.~\eqref{eq:phasemask}}
 		   
 		\For{$\sigma \in \{\alpha, \beta\}$}{
 		 $p \gets 0$ \;
@@ -720,9 +720,9 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 	\SetKwFunction{FMain}{PHASEMASK\_bit}
 	\SetKwProg{Fn}{Function}{:}{}
 	
-	\Fn(\tcc*[h]{Compute a phasemask}){\FMain{$\bitI$}}{
+	\Fn(\tcc*[h]{Compute a phase mask}){\FMain{$\bitI$}}{
 		\KwData{ $\bitI$ the bitstring representation of $\kI$}
-		\KwResult{ $\bitP$ is the phasemask vector associated with $\kI$, as described in Eq.~\eqref{eq:phasemask}}
+		\KwResult{ $\bitP$ is the phase mask vector associated with $\kI$, as described in Eq.~\eqref{eq:phasemask}}
 		   
 		\For{$\sigma \in \{\alpha, \beta\}$}{
 		$r \gets 0$ \;
@@ -751,8 +751,8 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 	\SetKwFunction{FMain}{PHASE\_FROM\_PHASEMASK}
 	\SetKwProg{Fn}{Function}{:}{}
 	
-	\Fn(\tcc*[h]{Compute phase from phasemask}){\FMain{$P^I$, $i$, $j$}}{
-		\KwData{ $P^I$ is the phasemask vector associated with $\kI$, as described in Eq.~\eqref{eq:phasemask}. $i$ and $j$ spinorbitals of spin $\sigma \in \{\alpha, \beta \}$ so that $\excorb{i}{j} \kI \neq 0 $.}
+	\Fn(\tcc*[h]{Compute phase from phase mask}){\FMain{$P^I$, $i$, $j$}}{
+		\KwData{ $P^I$ is the phase mask vector associated with $\kI$, as described in Eq.~\eqref{eq:phasemask}. $i$ and $j$ spinorbitals of spin $\sigma \in \{\alpha, \beta \}$ so that $\excorb{i}{j} \kI \neq 0 $.}
 		\KwResult{ The phase factor associated with $\ordering \excorb{i}{j} \kI$.}
 
 		\uIf{$j < i$}{
@@ -773,8 +773,8 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=0.5\columnwidth]{figures/determinant_driven/phase}
-		\caption[phasemask illustration]{
-		$i$ and $j$ are the lower and higher spinorbitals involved in the excitation. $E_i^S$ is the number of electrons in spinorbitals under $i$ and of same spin, $P_i^S$ is its parity. $E_j^S - E_{i+1}^S$ gives the number of electrons that are ``crossed'' during the excitation, $\phi = P^S_{i+1} \oplus P^S_j$ the parity of that number, $(-1)^\phi$ is the phase factor.
+		\caption[phase mask illustration]{
+		$i$ and $j$ are the lower and higher spinorbitals involved in the excitation. $E_i^S$ is the number of electrons in spinorbitals below $i$ and of same spin, $P_i^S$ is its parity. $E_j^S - E_{i+1}^S$ gives the number of electrons that are ``crossed'' during the excitation, $\phi = P^S_{i+1} \oplus P^S_j$ the parity of that number, $(-1)^\phi$ is the phase factor.
 		}
 		\label{generators_selectors}
 	\end{center}
@@ -783,7 +783,7 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 
 Currently, the \QP does not store the $\bitP$ vector for each determinant of the wavefunction, but recomputes it whenever needed before a loop. The memory cost being negligible this way, for a CPU performance reason each bit is stored on a separate 32-bit integer.
 The algorithm for computing $P^S$ is shown as algorithm \ref{alg:PHASEMASK}. 
-With this method, the cost of computing a phase --- after paying the overhead of computing $P$ --- is accessing two integers and applying the \lstinline{IEOR} function to them, in addition to the tests. Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the cumbersome boundaries of 64-bit integers.
+With this method, the cost of computing a phase ---~after paying the overhead of computing $P$~--- is accessing two integers and applying the \lstinline{IEOR} function to them, in addition to the tests. Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the cumbersome boundaries of 64-bit integers.
 
 
 
@@ -856,11 +856,11 @@ As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ resul
 So we add an extra permutation (flip the phase factor) if
 
 %\begin{equation}
-%\neg \big ( max(p,r) < min(q,s) \vee max(q,s) < min(p,r) \big )
+%\neg \big ( \max(p,r) < \min(q,s) \vee \max(q,s) < \min(p,r) \big )
 %\end{equation}
 
 \begin{equation}
- \big ( max(p,r) > min(q,s) \big ) \wedge \big ( max(q,s) > min(p,r) \big )
+ \big ( \max(p,r) > \min(q,s) \big ) \wedge \big ( \max(q,s) > \min(p,r) \big )
 \end{equation}
 
 

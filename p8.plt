@@ -10,8 +10,8 @@
 #    	gnuplot home:     http://www.gnuplot.info
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
-# set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
-# set output 'figures/perf/scaling_sbk_det.pdf'
+set terminal pdfcairo  transparent enhanced fontscale 0.5 size 5.00in, 3.00in 
+set output 'figures/perf/scaling_sbk_det.pdf'
 unset clip points
 set clip one
 unset clip two
@@ -169,5 +169,5 @@ set psdir
 set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap v5
 GNUTERM = "qt"
 ## Last datafile plotted: "data_sbk"
-plot 'data_sbk' index 2 u 1:2 w lp title 'Ground state', 'data_sbk' index 2 u 1:3 w lp title 'Excited state', .00005*x**1.25 title "{/Symbol a}x^{1.25}"
+plot 'data_sbk' index 2 u 1:2 w lp title 'Ground state', 'data_sbk' index 2 u 1:3 w lp title 'Excited state', .0002*x**1.15 title "{/Symbol a}x^{1.15}"
 #    EOF
