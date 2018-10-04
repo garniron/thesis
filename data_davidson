@@ -8,7 +8,7 @@
  1322537    56.2410000000091
  8495334  1039.35240000000
  9356952  1260.14010000002
-42959496  12361.680 #
+42959496  11853.9518000000
 
 
 # Parallel scaling done with the 9356952-det wavefunction
@@ -25,7 +25,7 @@
 
 # Parallel scaling done with the 42959496-det wavefunction
 # Nnode  seconds  (state 1)
- 1  11996.5361 #
+ 1  11853.9518000000
  5   2451.3968
 10   1269.8551
 20    671.8683

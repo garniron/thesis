@@ -690,17 +690,23 @@ $X$ and $Y$ are ``wildcard'' indices referring to any spinorbital unoccupied in 
 \clearpage
 \section{Parallel computation}
 
-Arguably the simplest way to make an algorithm parallel is, whenever possible, to create independent tasks corresponding to one iteration of the outermost loop. 
-
+Arguably the simplest way to make an algorithm parallel is, whenever possible, to create independent tasks corresponding to one iteration of the outermost loop.
 As figure \ref{fig:selection} suggests, iterations for the outermost loop --- over generators --- are independent. This is due to our choice to perform the initial filtering on a ``generator by generator'' basis, giving a total complexity of $\mathcal{O}(\Ndet^{3/2})$ (algorithm \ref{alg:generators_filtering}) ; to achieve $\mathcal{O}(\Ndet)$ the outermost loop would need to be over $\{U_\alpha\}$ and $\{U_\beta\}$. This would give a smaller number of iterations/tasks with extremely unbalanced costs, which does not suit well a parallel scheme. Since in practice the filtering steps only account for a few percent of the total CPU time, we stuck to 1 task = 1 generator. Even so, the cost for different tasks is still very much unbalanced, the first few generators with large coefficients being very expensive, and the cost quickly decreasing.
 
 For a better load balancing, we split the first, expensive tasks into smaller \emph{fragments}, using a fairly simple approach. Essentially, some tasks will require computing just a subset of the $\ket {G_{pq}}$ batches associated with a generator $\ket G$, as opposed to all of them. This implies some overhead, since some filtering steps will be duplicated. Fortunately, only a relatively small number of expensive tasks need to be split.
 
 
+Each generator $\ket {G_i}$ defines as a ``logical'' task $i$, and for each one we define $F_i$ a fragmentation level, defining the number of independent ``actual'' tasks it should be decomposed in.
+We have empirically chosen the following expression for the fragmentation of the tasks:
+\begin{align}
+F_{\max} & = 1 + \min \qty( \Nelec (\Nelec-1)/2, \lfloor \sqrt{\Nsel} \rfloor/10 ) \\
+F_i & = 1 + F_{\max} \qty( \max_{k=1}^{\Nst} |c_{ik}|^{1/2} )
+\end{align}
+which is an estimated cost of task $i$. In practice $F_i = 1$ for the majority.
 
-Each generator $\ket {G_i}$ defines as a ``logical'' task $i$, and for each one we define $F_i$ a fragmentation level, defining the number of independent ``actual'' tasks it should be decomposed in. In practice $F_i = 1$ for the majority. Ideally, $F_i$ should be based on an estimated cost of task $i$. 
-
-Task $i$ is put in the job queue $F_i$ times, each time associated with an index $s$ ranging from $0$ to $F_i-1$, which together with $F_i$ defines the subset of batches this task corresponds to. Disjoint subsets are created using modulus, so that subsets are interleaved and thus more balanced.
+Task $i$ is put in the job queue $F_i$ times, each time associated with an index $s$ ranging from $0$ to $F_i-1$, which together with $F_i$ defines the subset of batches this task corresponds to.
+%Disjoint subsets are created using modulus, so that subsets are interleaved and thus more balanced.
+% Cette phrase n'etait pas facile a comprendre. Le plus simple, c'etait de la virer...
  
 \begin{algorithm}
         \caption{task splitting, pseudocode for master}
@@ -749,7 +755,10 @@ Task $i$ is put in the job queue $F_i$ times, each time associated with an index
 
 This fragmentation scheme is shown in a simpler and more general way when used to compute $\EPT$ in chapter \ref{chap:PT2}. In a nutshell, we can see it as a toy problem where we want to print for each generator the sum of $\epsilon(\alpha)$ over all unique $\kalpha$ it has generated. The algorithm for this on the master and slave side is shown as algorithm \ref{alg:tasksplit_master} and \ref{alg:tasksplit_slave} respectively.
 
-\section{conclusion}
+
+For the determinant selection, we still use the mixed MPI/OpenMP paradigm, where one MPI process per node is used for efficient broadcasting of the replicated data. But, as opposed the Davidson implementation where each task was parallelized with OpenMP, here each OpenMP thread handles independently a task, computed with a single core. The first reason is that the number of tasks is larger than $\Ndet$, which is usually order of magnitude larger than the number of CPU cores. Moreover, the computation of a task in parallel would require a synchronization barrier at the beginning and the end of the OpenMP section. Here, all the OpenMP threads are completely independent during the whole calculation of the selection, and this explains the very good scaling properties of the implementation, as shown in chapter~\ref{chap:PERF}.
+
+\section{Conclusion}
 
 The newer CIPSI algorithm runs orders of magnitude faster than the former one thanks to several key improvements.
 \begin{itemize}
