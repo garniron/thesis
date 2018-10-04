@@ -17,6 +17,7 @@ to $\order{\Nstate \Ndet^2}$, and of the storage to $\order{\Nstate \Ndet}$.
 It is presented as algorithm~\ref{alg:davidson}.
 
 \newcommand{\mU}{\mathbf{U}}
+\newcommand{\mS}{\mathbf{S}}
 \newcommand{\mW}{\mathbf{W}}
 \newcommand{\mR}{\mathbf{R}}
 \newcommand{\mh}{\mathbf{h}}
@@ -174,8 +175,8 @@ $t \gets min(\text{last}, A(a1+1)-1)$ \;
 
 Computing the contributions the same-spin single and double excitations
 (algorithm~\ref{alg:davidson_aa}) scales as $\order{N_a^2}$, which is equal to
-$\order{\Ndet}$ when the FCI is reached since $\Ndet^{\FCI} = N_a^{\FCI} \times
-N_b^{\FCI}$.
+$\order{\Ndet}$ when the FCI is reached since $\NFCI = N_a^{\text{FCI}} \times
+N_b^{\text{FCI}}$.
 
 The $\alpha \beta$ double excitations are the most expensive (algorithm~\ref{alg:davidson_ab})
 as they scale as~$\order{N_a  N_b^2} = \order{N_a^3}$. Indeed, the cycle instruction at line~4 makes the
@@ -336,8 +337,6 @@ number of operations can give a better time to solution.
 When working in a truncated space of determinants, there is no guarantee that the eigenstate of $\hat H$ will also be eigenstates of the spin operator $\hat S^2$. And when the proper conditions are fulfilled (see chapter~\ref{chap:CIPSI}), all the lowest eigenvectors may be of different spin states.
 
 To help find solutions of the desired spin state, we use a penalty method in the diagonalization.\cite{Fales2017Sep} We modify the Hamiltonian as 
-\newcommand{\mS}{\mathbf{S}}
-\newcommand{\mU}{\mathbf{U}}
 \begin{equation}
 \tilde{\mH} = \mH + \alpha \qty( \mS^2 - \mathbf{I} \langle S^2 \rangle_\text{target} )^2
 \end{equation}
