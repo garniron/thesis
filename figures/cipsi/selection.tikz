@@ -1,10 +1,10 @@
-\begin{tikzpicture}
+﻿\begin{tikzpicture}
 \coordinate (A) at (0,0.5);
 
 
-\draw (A) node[draw] (Psi){$|\Psi \rangle = \sum_I c_I  D_I $};
+\draw (A) node[draw] (Psi){$\left \{ \left| D_I \right \rangle \right \}$};
 
-\draw (A)+(0,-1.5) node[right] (S){$|S\rangle = D_J$};
+\draw (A)+(0,-1.5) node[right] (S){$|S\rangle = | D_J$};
 \draw (A)+(5,-2) node[right] (G){$G= D_I$};
 \draw[dashed] (A)+(-5,-2) -- (G);
 
@@ -112,7 +112,7 @@
 
 \draw (-5,-15.5) rectangle (7,-20.8) ;
 
-\draw (-5,-16) node[right] {$S\phantom{_{|pq}}$ : selector};
+\draw (-5,-16) node[right] {$S\phantom{_{|pq}}$ : determinant in $\left \{ \left| D_I \right \rangle \right \}$};
 \draw (-5,-16.5) node[right] {$G\phantom{_{pq}}$ : generator};
 \draw (-5,-17) node[right] {$G_{p\phantom{q}}$ : singly ionized generator};
 \draw (-5,-17.5) node[right] {$G_{pq}$ : doubly ionized generator};
