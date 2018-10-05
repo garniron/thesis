@@ -7,7 +7,7 @@ In this chapter, we present applications that were made possible thanks by
 the optimized CIPSI implementation presented in this thesis, and the hybrid
 stochastic-deterministic algorithm. 
 We first present a difficult benchmark of excited states, and then the use
-of CIPSI wave functions for quantum Monte Carlo calculations.
+of CIPSI wavefunctions for quantum Monte Carlo calculations.
 
 \section{Excited states benchmark}
 
@@ -43,7 +43,7 @@ as a stochastic average with the $3N$-dimensional density $\Psi \times \Phi^{\te
 \begin{equation}
   \EDMC = \left \langle \frac{{\hat H}\Psi(\rn)}{\Psi(\rn)} \right \rangle_{\Psi \times \Phi^{\text{FN}}}.
 \end{equation}
-$\Phi^{\text{FN}}$ is an improved wave function of the form
+$\Phi^{\text{FN}}$ is an improved wavefunction of the form
 \begin{equation}
 \Phi^{\text{FN}}(\rn)  = \Psi(\rn) \times w (\rn)
 \end{equation}
@@ -56,12 +56,12 @@ process with drift and branching.\cite{Hammond_1994}
 
 This non-negativity constraint of $w$ implies that the nodal
 hyper-surfaces of $\Phi^{\text{FN}}$ coincide with those of $\Psi$, but not with
-those of the exact wave function. Hence, the Diffusion Monte Carlo (DMC) method
+those of the exact wavefunction. Hence, the Diffusion Monte Carlo (DMC) method
 suffers from the so-called \emph{fixed-node approximation}. But if the trial wave
-function has nodes which coincide with those of the exact wave function, the
+function has nodes which coincide with those of the exact wavefunction, the
 exact energy is obtained.
 
-There is no way to improve the nodes of the wave function by minimizing $\EDMC$.
+There is no way to improve the nodes of the wavefunction by minimizing $\EDMC$.
 However, it has recently been shown\cite{Caffarel_2016} that for each atomic basis
 set there was an $\EDMC$ associated with the FCI wavefunction, and increasing the
 size of the basis set enabled an extrapolation to the exact energy.

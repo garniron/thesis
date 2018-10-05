@@ -11,9 +11,9 @@ prohibitive as $\Ndet$ ranges usually between a few million and a few billion.
 Fortunately,  not all the spectrum of $\hat H$ is required: only the few lowest
 eigenstates are of interest. The Davidson
 algorithm\cite{Davidson_1975,Liu_1978,Olsen_1990,Gadea_1994,Crouzeix_1994} is an iterative algorithm
-which aims at extracting the first few $\Nstate$ lowest eigenstates of a large
+which aims at extracting the first few $\Nst$ lowest eigenstates of a large
 matrix. This algorithm reduces the cost of the computation
-to $\order{\Nstate \Ndet^2}$, and of the storage to $\order{\Nstate \Ndet}$.
+to $\order{\Nst \Ndet^2}$, and of the storage to $\order{\Nst \Ndet}$.
 It is presented as algorithm~\ref{alg:davidson}.
 
 \newcommand{\mU}{\mathbf{U}}
@@ -28,11 +28,11 @@ It is presented as algorithm~\ref{alg:davidson}.
  \label{alg:davidson}
 	\SetKwFunction{FMain}{DAVIDSON\_DIAG}
 	\SetKwProg{Fn}{Function}{:}{}
-\Fn(){\FMain{$\Nstate, \mU$}}{
-	\KwData{ $\Nstate$~: Number of requested states}
+\Fn(){\FMain{$\Nst, \mU$}}{
+	\KwData{ $\Nst$~: Number of requested states}
 	\KwData{ $\Ndet$~: Number of determinants}
-	\KwData{ $\mU$~: Guess vectors, $\Ndet \times \Nstate$}
-	\KwResult{ $\Nstate$ lowest eigenvalues eigenvectors of $\mH$ }
+	\KwData{ $\mU$~: Guess vectors, $\Ndet \times \Nst$}
+	\KwResult{ $\Nst$ lowest eigenvalues eigenvectors of $\mH$ }
 \texttt{converged} $\gets \FALSE$ \;
 \While{$\neg{\texttt{converged}}$}
 {
@@ -42,7 +42,7 @@ It is presented as algorithm~\ref{alg:davidson}.
   Diagonalize $\mh$ : eigenvalues $E$ and eigenvectors $\my$ \;
   $\mU' \gets \mU\, \my$ \;
   $\mW' \gets \mW\, \my$ \;
-  \For{$k=1,\Nstate$}{
+  \For{$k=1,\Nst$}{
     \For{$i=1,\Ndet$} {
       $\mR_{ik}  \gets \frac{E_k \mU_{ik}' - \mW_{ik}'}{\mH_{ii} - E_k}$ \;
     }
@@ -101,40 +101,40 @@ of $\mH$ ---~in other words, pairs of connected determinants~--- as
 algorithms~\ref{alg:davidson_aa} and~\ref{alg:davidson_ab}.
 
 \begin{algorithm}
-\caption{Find internal determinants connected by purely $\alpha$ or purely $\beta$ single or double excitations}
+\caption{Find internal determinants connected by purely $\uparrow$ or purely $\downarrow$ single or double excitations}
 \label{alg:davidson_aa}
-\KwData{$N_a$ the number of unique $\alpha$ spin parts present in $\ket \Psi$}
-\KwData{$D$ the array of determinants present in $\ket \Psi$, sorted by alpha-major order (all determinants sharing the same $\alpha$ part are next to each other)}
-\KwData{$A$ the array so that $A[n]$ is the index of the first occurence of the $n^{th}$ unique $\alpha$ spin part in $D$. For algorithmic convenience we set $A[N_a +1] = \Ndet+1$}
+\KwData{$\Nalphadet$ the number of unique $\uparrow$ spin parts present in $\ket \Psi$}
+\KwData{$D$ is the array of determinants present in $\ket \Psi$, sorted by $\uparrow$-major order (all determinants sharing the same $\uparrow$ part are next to each other)}
+\KwData{$A$ the array so that $A[n]$ is the index of the first occurence of the $n^{th}$ unique $\uparrow$ spin part in $D$. For algorithmic convenience we set $A[\Nalphadet +1] = \Ndet+1$}
 
-\For{$a \gets 1, N_a$}{
-\tcc{All determinants sharing $D[A(a)]_\alpha$ alpha spin part are in the range $[A(a), A(a+1)-1]$}
+\For{$a \gets 1, \Nalphadet$}{
+\tcc{All determinants sharing $D[A(a)]_\uparrow$ $\uparrow$-spin part are in the range $[A(a), A(a+1)-1]$}
 \For{$b1 \gets A(a), A(a+1)-1$}{
 \For{$b2 \gets b1+1, A(a+1)-1$}{
-	\If{$\text{EXC\_DEGREE}(D[b1]_\beta, D[b2]_\beta) \leq 2$}{
-		$\ket {D[b1]}$ connected to $\ket {D[b2]}$ by single or double $\beta$ excitation.	
+	\If{$\text{EXC\_DEGREE}(D[b1]_\downarrow, D[b2]_\downarrow) \leq 2$}{
+		$\ket {D[b1]}$ connected to $\ket {D[b2]}$ by single or double $\downarrow$ excitation.	
 	}
 }
 }
 }
-\tcc{Single and double $\alpha$ excitations are found by the same algorithm after flipping spins}
+\tcc{Single and double $\uparrow$ excitations are found by the same algorithm after flipping spins}
 \end{algorithm}
 
 
 \begin{algorithm}
-\caption{Find internal determinants connected by $\alpha \beta$ double excitations}
+\caption{Find internal determinants connected by $\uparrow\downarrow$ double excitations}
 \label{alg:davidson_ab}
 \KwData{see algorithm \ref{alg:davidson_aa}}
 
-\For{$a1 \gets 1, N_a$}{
-\For{$a2 \gets a1+1, N_a$}{
-\If{$\text{EXC\_DEGREE}(D[A(a1)]_\alpha, D[A(a2)]_\alpha) \neq 1$}{
+\For{$a1 \gets 1, \Nalphadet$}{
+\For{$a2 \gets a1+1, \Nalphadet$}{
+\If{$\text{EXC\_DEGREE}(D[A(a1)]_\uparrow, D[A(a2)]_\uparrow) \neq 1$}{
 	cycle $a2$ loop\;
 }
 \For{$b1 \gets A(a1), A(a1+1)-1$}{
 \For{$b2 \gets A(a2), A(a2+1)-1$}{
-	\If{$\text{EXC\_DEGREE}(D[b1]_\beta, D[b2]_\beta) = 1$}{
-		$\ket {D[b1]}$ connected to $\ket {D[b2]}$ by $\alpha \beta$ excitation.
+	\If{$\text{EXC\_DEGREE}(D[b1]_\downarrow, D[b2]_\downarrow) = 1$}{
+		$\ket {D[b1]}$ connected to $\ket {D[b2]}$ by $\uparrow\downarrow$ excitation.
 	}
 }
 }
@@ -142,63 +142,34 @@ algorithms~\ref{alg:davidson_aa} and~\ref{alg:davidson_ab}.
 }
 \end{algorithm}
 
-\begin{algorithm}
-\label{alg:davidson_ab_parallel}
-\caption{Find internal determinants connected by $\alpha \beta$ double excitations, one in the range $[\text{first}, \text{last}]$ the other in the range $[\text{first}, \Ndet]$}
-\KwData{see algorithm \ref{alg:davidson_aa}}
-\KwData{$\text{first}$, $\text{last}$ : the boundaries of the range of determinants (in $D$) the current task should process}
-
-\For{$a1 \gets 1, N_a$}{
-\If{$A(a1+1) -1 < \text{first}$}{
-	cycle $a1$ loop\;
-}
-\If{$A(a1) > \text{last}$)}{
-	return \;
-}
-$f \gets max(\text{first}, A(a1))$ \;
-$t \gets min(\text{last}, A(a1+1)-1)$ \;
-\For{$a2 \gets 1, N_a$}{
-\If{$\text{EXC\_DEGREE}(D[A(a1)]_\alpha, D[A(a2)]_\alpha) \neq 1$}{
-	cycle $a2$ loop\;
-}
-\For{$b1 \gets f,t$}{
-\For{$b2 \gets A(a2), A(a2+1)-1$}{
-	\If{$\text{EXC\_DEGREE}(D[b1]_\beta, D[b2]_\beta) = 1$}{
-		$\ket {D[b1]}$ connected to $\ket {D[b2]}$ by $\alpha \beta$ excitation.	
-	}
-}
-}
-}
-}
-\end{algorithm}
-
+We define $\Nalphadet$ and $\Nbetadet$ as the number of different $\uparrow$ and $\downarrow$
+spin parts present in the expression of the wavefunction.
 Computing the contributions the same-spin single and double excitations
-(algorithm~\ref{alg:davidson_aa}) scales as $\order{N_a^2}$, which is equal to
-$\order{\Ndet}$ when the FCI is reached since $\NFCI = N_a^{\text{FCI}} \times
-N_b^{\text{FCI}}$.
+(algorithm~\ref{alg:davidson_aa}) scales as $\order{\Nalphadet^2}$, which is equal to
+$\order{\Ndet}$. Indeed, when the FCI is reached $\Ndet = \Nalphadet \times \Nbetadet$.
 
-The $\alpha \beta$ double excitations are the most expensive (algorithm~\ref{alg:davidson_ab})
-as they scale as~$\order{N_a  N_b^2} = \order{N_a^3}$. Indeed, the \texttt{cycle} instruction at line~4 makes the
+The $\uparrow\downarrow$ double excitations are the most expensive (algorithm~\ref{alg:davidson_ab})
+as they scale as~$\order{\Nalphadet \Nbetadet^2} = \order{\Nalphadet^3}$. Indeed, the \texttt{cycle} instruction at line~4 makes the
 iterations over $b1$ and $b2$ do the computation only a number of times bounded by the number of 
-possible single excitations ($\Na \times \qty(\Norb - \Na)$). So at the FCI level, this step scales as
+possible single excitations ($\Nalpha \times \qty(\Norb - \Nalpha)$). So at the FCI level, this step scales as
 $\order{\Ndet^{3/2}}$.
 
 One can remark that during the computation of the contributions of the single
 excitations, one can store the lists of all singly-excited determinants
-for all $\alpha$ and $\beta$ spin parts.
-These lists can be reused in the computation of the contributions of the $\alpha \beta$
+for all $\uparrow$ and $\downarrow$ spin parts.
+These lists can be reused in the computation of the contributions of the $\uparrow\downarrow$
 double excitations, so as to loop only over the single excitations on
-$D_\alpha$, and on the single excitations on $D_\beta$. As the lengths of the
-lists of single excitations are bounded by $\Na \times \qty(\Norb - \Na)$, the
+$D_\uparrow$, and on the single excitations on $D_\downarrow$. As the lengths of the
+lists of single excitations are bounded by $\Nalpha \times \qty(\Norb - \Nalpha)$, the
 algorithm then scales linearly with $\Ndet$.  However, in practice the CIPSI
-selection produces wave functions where $N_a$ and $N_b$ are much larger
+selection produces wave functions where $\Nalphadet$ and $\Nbetadet$ are much larger
 that $\Ndet^{1/2}$, and the storage of the single excitations can become a
 memory bottleneck that we want to avoid at the cost of more computation.
 
 \section{Sorting}
 
-The presented algorithm requires to sort the determinants by $\alpha$-major order~: all determinants
-sharing the same $\alpha$ spin part next to each other. To perform this sort, we simply consider the
+The presented algorithm requires to sort the determinants by $\uparrow$-major order~: all determinants
+sharing the same $\uparrow$ spin part next to each other. To perform this sort, we simply consider the
 bitstring representation of the determinants as tuples of integers and sort the list of tuples.
 
 Surprisingly, the sort can be done in $\order{\Ndet}$ instead of $\order{\Ndet \log(\Ndet)}$ with the
@@ -273,12 +244,43 @@ calculation. This broadcast if performed via an MPI library call for optimal
 performance,\cite{MPI} and we use one MPI process per node such that the amount of
 communication scales with the number of nodes and not with the number of cores.
 
+\begin{algorithm}
+\caption{Find internal determinants connected by $\uparrow\downarrow$ double excitations, one in the range $[\text{first}, \text{last}]$ the other in the range $[\text{first}, \Ndet]$}
+\label{alg:davidson_ab_parallel}
+\KwData{see algorithm \ref{alg:davidson_aa}}
+\KwData{$\text{first}$, $\text{last}$ : the boundaries of the range of determinants (in $D$) processed by the current OpenMP thread.}
+\For{$a1 \gets 1, \Nalphadet$}{
+\If{$A(a1+1) -1 < \text{first}$}{
+	cycle $a1$ loop\;
+}
+\If{$A(a1) > \text{last}$)}{
+	return \;
+}
+$f \gets \max(\text{first}, A(a1))$ \;
+$t \gets \min(\text{last}, A(a1+1)-1)$ \;
+\For{$a2 \gets 1, \Nalphadet$}{
+\If{$\text{EXC\_DEGREE}(D[A(a1)]_\uparrow, D[A(a2)]_\uparrow) \neq 1$}{
+	cycle $a2$ loop\;
+}
+\For{$b1 \gets f,t$}{
+\For{$b2 \gets A(a2), A(a2+1)-1$}{
+	\If{$\text{EXC\_DEGREE}(D[b1]_\downarrow, D[b2]_\downarrow) = 1$}{
+		$\ket {D[b1]}$ connected to $\ket {D[b2]}$ by $\uparrow\downarrow$ excitation.	
+	}
+}
+}
+}
+}
+\end{algorithm}
+
 When idle, an MPI process requests a task to the server, and computes the
 corresponding result in parallel with OpenMP.\cite{openmp} This allows
 the sharing of the $\mU$ matrix, as well as the result array for $\mW$,
 but also of all the large constant data needed for the calculation, such as
 the two-electron integrals.
-The OpenMP parallelization is made on the outermost loop, so the write
+The OpenMP parallelization is made on the outermost loop, so each OpenMP thread
+loops over a smaller range of $I$ (algorithm~\ref{alg:davidson_ab_parallel}).
+The write
 access to the result is guaranteed to be safe, without requiring a lock.
 As the OpenMP tasks are not guaranteed to be balanced, we have used a
 dynamic scheduling, with a chunk size of 64 elements. The reason for this
@@ -291,6 +293,7 @@ a new task is requested, until the task queue is empty.
 
 
 \section{Symmetry of $\mH$}
+
 
 Taking into account the symmetry of $\widehat H$, each pair should be found only once, and the associated update would be
 \begin{align}
@@ -313,8 +316,8 @@ Such memory access patterns are terribly inefficient, especially when writing.
 In addition, a global memory lock should be acquired since there is no
 guarantee than another thread is not writing in that memory location at the
 same time. To avoid the lock, another solution is to use an output vector which
-is private to the thread, but it would make he memory grow as $N_\text{CPU}
-\times \Nstate \times \Ndet$, which is what
+is private to the thread, but it would make the memory grow as $N_\text{CPU}
+\times \Nst \times \Ndet$, which is what
 we wanted to avoid using shared memory parallelism.
 
 For a large number of nodes it is indisputably preferable not to use the
@@ -338,15 +341,15 @@ When working in a truncated space of determinants, there is no guarantee that th
 
 To help find solutions of the desired spin state, we use a penalty method in the diagonalization.\cite{Fales2017Sep} We modify the Hamiltonian as 
 \begin{equation}
-\tilde{\mH} = \mH + \alpha \qty( \mS^2 - \mathbf{I} \langle S^2 \rangle_\text{target} )^2
+\tilde{\mH} = \mH + \gamma \qty( \mS^2 - \mathbf{I} \langle S^2 \rangle_\text{target} )^2
 \end{equation}
-where $\alpha$ is a fixed parameter.
+where $\gamma$ is a fixed parameter.
 In the Davidson algorithm, this requires the additional computation of $\mS\, \mU$, for which the
 cost is expected to be the same as the cost of $\mH \, \mU$ as the expensive part is the search for the
 connections.
 
 We have modified the function computing $\mH \, \mU$ so that it also computes $\mS\, \mU$ on the fly.
-Indeed, once a pair of connected determinants has been found, if they correspond to an $\alpha \beta$ double excitation or to a diagonal term, the $\hat S^2$ contribution is added to an extra output vector,
+Indeed, once a pair of connected determinants has been found, if they correspond to an $\uparrow \downarrow$ double excitation or to a diagonal term, the $\hat S^2$ contribution is added to an extra output vector,
 with almost no extra computational cost.
 
 \section{Summary}

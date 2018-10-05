@@ -13,8 +13,8 @@ Shrödinger's equation for electrons~:
 \begin{equation}
  \widehat{H} \Psi({\bf x}_1,\dots,{\bf x}_\Nelec) = E \Psi({\bf x}_1,\dots,{\bf x}_\Nelec)
 \end{equation}
-where $\Psi$ is the electronic wave function, $E$ the associated energy, and $\mathbf{x}_i = (\textbf{r},m_s)$
-contains the spatial coordinates of the electrons $\textbf{r}$, as well as a spin variable $m_s$.
+where $\Psi$ is the electronic wavefunction, $E$ the associated energy, and $\mathbf{x}_i = (\textbf{r},m_s)$
+contains the spatial coordinates of the electron $\textbf{r}$, as well as a spin variable $m_s$.
 $\widehat H$ is the non-relativistic electronic Hamiltonian operator
 \begin{equation}
 \widehat{H} = \sum_{i=1}^{\Nelec} \Big ( -\frac{1}{2} \Delta_i - \sum_{j=1}^M \frac{Z_j}{|{\bf r}_i - {\bf R}_j|} \Big ) + \sum_{i=1}^{\Nelec} \sum_{k>i}^{\Nelec} \frac{1}{|{\bf r}_i - {\bf r}_k|}
@@ -23,14 +23,14 @@ where ${\bf R}_j$ and $Z_j$ are respectively the spatial coordinate and charge o
 
 \section{Slater determinants}
 
-The simplest description of the wave function is the Hartree product. This consists in 
+The simplest description of the wavefunction is the Hartree product. This consists in 
 building the product of orthonormal one-electron functions, each function describing the state of
 one electron:
 \begin{equation}
 \Psi_{\text{Hartree}}({\bf x}_1,\dots,{\bf x}_{\Nelec})  = \prod_{i=1}^\Nelec \phi_i(\textbf{x}_i).
 \end{equation}
 Because of the fermionic nature of electrons, $\Psi$ must satisfy the condition of being antisymmetric with respect to the permutation of electrons coordinates, which is not verified by the Hartree product.
-Antisymmetrizing the Hartree product yields the so-called Slater determinant:
+Antisymmetrizing the Hartree product yields the so-called \emph{Slater determinant}:
 \begin{equation}
 \begin{array}{c}
  \Psi({\bf x}_1,\dots,{\bf x}_{\Nelec}) = 
@@ -44,7 +44,7 @@ Antisymmetrizing the Hartree product yields the so-called Slater determinant:
 \end{array} 
 \label{eq:slater1}
 \end{equation}
-which is the simplest possible antisymmetric wave function.
+which is the simplest possible antisymmetric wavefunction.
 The functions $\phi_i$ are called \emph{spinorbitals}:
 \begin{equation}
 \phi_i(\textbf{x}) = \varphi_i(\textbf{r}) \, \sigma_i(m_s)
@@ -58,11 +58,11 @@ function can be either $\alpha(m_s)$ or $\beta(m_s)$ defined as
 \end{align}
 and for convenience, one will rewrite
 \begin{align}
-\phi_i(\textbf{x}) & = \varphi_i(\mathbf{r}) \alpha(m_s) \\ \nonumber
-\overline{\phi}_i(\textbf{x}) & = \varphi_i(\mathbf{r}) \beta(m_s).
+\phi_i(\textbf{x}) & = \varphi_i(\mathbf{r}) \alpha(m_s) & \text{$\uparrow$ spinorbitals} \\ \nonumber
+\overline{\phi}_i(\textbf{x}) & = \varphi_i(\mathbf{r}) \beta(m_s) & {$\downarrow$ spinorbitals}
 \end{align}
 
-Packing together the $\alpha$ spinorbitals, and then the $\beta$ spinorbitals in the representation of
+Packing together the $\uparrow$ spinorbitals, and then the $\downarrow$ spinorbitals in the representation of
 the determinant, one can express the Slater determinant as
 \begin{equation}
 \frac{1}{\sqrt{\Nelec}!} \left|
@@ -76,7 +76,7 @@ the determinant, one can express the Slater determinant as
  \end{array}
 \right| 
 \end{equation}
-where $\Nalpha$ is the number of $\alpha$ electrons, i.e. the number of electrons with $m_s=1/2$.
+where $\Nalpha$ is the number of $\uparrow$ electrons, i.e. the number of electrons with $m_s=1/2$. By convention, we choose $\Nalpha \ge \Nbeta$.
 If one chooses the permutation in which the first $\Nalpha$ electrons have $m_s=1/2$, and the other electrons have $m_s=-1/2$, one always has
 \begin{align}
 \phi_i(\mathbf{x}_j) & = 0 \; \text{ for } 1 \le i \le \Nalpha \text{ and } \Nalpha < j \le \Nelec \\ \nonumber
@@ -97,25 +97,25 @@ and the Slater determinant is the determinant of a block-diagonal matrix:
 \end{equation}
 This allows us to rewrite the Slater determinant in a spin-free formalism as
 the \emph{Waller-Hartree double determinant},\cite{Pauncz_1989} namely the
-product of two determinants associated with $\alpha$ and $\beta$ electrons
+product of two determinants associated with $\uparrow$ and $\downarrow$ electrons
 respectively.
 \begin{equation}
 \begin{array}{c}
- \Psi({\bf r}_1,\dots,{\bf r}_{\Na},{\bf r}_{\Na+1},\dots,{\bf r}_\Nelec;
-      \alpha_1,\dots,\alpha_{\Na},\beta_{\Na+1},\dots,\beta_N) = \\
-\frac{1}{\sqrt{\Nelec!}} D_\alpha({\bf r}_1,\dots,{\bf r}_{\Na}) \times D_\beta({\bf r}_{\Na+1},\dots,{\bf r}_\Nelec) = \\
+\left[ \Psi_\textrm{HF}({\bf r}_1,\dots,{\bf r}_{\Nalpha},{\bf r}_{\Nalpha+1},\dots,{\bf r}_\Nelec \; ; \;
+      \tfrac{1}{2},\dots,\tfrac{1}{2},-\tfrac{1}{2},\dots,-\tfrac{1}{2}) \right]^2 = \\
+\frac{1}{\sqrt{\Nelec!}} \Psi_\uparrow({\bf r}_1,\dots,{\bf r}_{\Nalpha}) \times \Psi_\downarrow({\bf r}_{\Nalpha+1},\dots,{\bf r}_\Nelec) = \\
 \frac{1}{\sqrt{\Nelec!}} \left|
  \begin{array}{ccc}
- \varphi_1({\bf r}_1) & \dots & \varphi_1({\bf r}_{\Na}) \\
+ \varphi_1({\bf r}_1) & \dots & \varphi_1({\bf r}_{\Nalpha}) \\
  \vdots               & \ddots &   \vdots             \\
- \varphi_{\Na}({\bf r}_1) & \dots & \varphi_{\Na}({\bf r}_{\Na}) \\
+ \varphi_{\Nalpha}({\bf r}_1) & \dots & \varphi_{\Nalpha}({\bf r}_{\Nalpha}) \\
  \end{array}
 \right|
 \left|
  \begin{array}{ccc}
- \varphi_1({\bf r}_{\Na+1}) & \dots & \varphi_1({\bf r}_{\Nelec}) \\
+ \varphi_1({\bf r}_{\Nalpha+1}) & \dots & \varphi_1({\bf r}_{\Nelec}) \\
  \vdots               & \ddots &   \vdots             \\
- \varphi_{N_\beta}({\bf r}_{\Na+1}) & \dots & \varphi_{N_\beta}({\bf r}_{\Nelec}) \\
+ \varphi_{N_\beta}({\bf r}_{\Nalpha+1}) & \dots & \varphi_{N_\beta}({\bf r}_{\Nelec}) \\
  \end{array}
 \right| \\ 
 \end{array} \\
@@ -127,15 +127,15 @@ Molecular orbitals are typically defined as linear combinations of \emph{atomic 
  \varphi_i({\bf r}) = \sum_k C_{ik} \chi_k({\bf r}).
 \label{eq:def_mo}
 \end{equation}
-These functions qualify the used \emph{basis set}, and are usually themselves pre-defined linear combinations of Gaussian functions. This is a restriction put on the form of the wavefunction, therefore it is known as the \emph{finite basis set approximation}.
-In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ki}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy.
+These functions qualify the used one-electron \emph{basis set}, and are usually themselves pre-defined linear combinations of Gaussian functions. This is a restriction put on the form of the wavefunction, therefore it is known as the \emph{finite basis set approximation}.
+In the Hartree-Fock method, the wavefunction is a single Slater determinant, where the $C_{ik}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy.
 This method, however is missing some important physical effects. For instance, using Eq.~\eqref{eq:slater} one can see that in this model opposite-spin electrons are statistically independent (or \emph{uncorrelated}):
 \begin{equation}
 \begin{split}
-\left[ \Psi_\textrm{HF}({\bf r}_1,\dots,{\bf r}_{\Na},{\bf r}_{\Na+1},\dots,{\bf r}_\Nelec;
-      \alpha_1,\dots,\alpha_{\Na},\beta_{\Na+1},\dots,\beta_N) \right]^2 = \\
-\left[ D_\alpha({\bf r}_1,\dots,{\bf r}_{\Na}) \times D_\beta({\bf r}_{\Na+1},\dots,{\bf r}_\Nelec) \right]^2 = \\
-\left[ D_\alpha({\bf r}_1,\dots,{\bf r}_{\Na}) \right]^2 \times \left[ D_\beta({\bf r}_{\Na+1},\dots,{\bf r}_\Nelec) \right]^2.
+\left[ \Psi_\textrm{HF}({\bf r}_1,\dots,{\bf r}_{\Nalpha},{\bf r}_{\Nalpha+1},\dots,{\bf r}_\Nelec \; ; \;
+      \tfrac{1}{2},\dots,\tfrac{1}{2},-\tfrac{1}{2},\dots,-\tfrac{1}{2}) \right]^2 = \\
+\left[ \Psi_\uparrow({\bf r}_1,\dots,{\bf r}_{\Nalpha}) \times \Psi_\downarrow({\bf r}_{\Nalpha+1},\dots,{\bf r}_\Nelec) \right]^2 = \\
+\left[ \Psi_\uparrow({\bf r}_1,\dots,{\bf r}_{\Nalpha}) \right]^2 \times \left[ \Psi_\downarrow({\bf r}_{\Nalpha+1},\dots,{\bf r}_\Nelec) \right]^2.
 \end{split}
 \end{equation}
 
@@ -148,10 +148,10 @@ Electron correlation is defined as\cite{Lowdin_1959}
 where $E_\text{HF}$ is the \emph{Hartree-Fock limit}, i.e. the limit to which the Hartree-Fock energy converges when the size of the one-electron basis set increases.
 
 To include electron correlation effects, $\Psi$ may be expanded in
-$\{\ket D_i \}$, the set of all the possible Slater determinants that can be built by putting $N_\alpha$ electrons in $\Norb$ orbitals and $N_\beta$ electrons in $\Norb$ orbitals.
+$\{\ket{D_I} \}$, the set of all the possible Slater determinants that can be built by putting $\Nalpha$ electrons in $\Norb$ orbitals and $\Nbeta$ electrons in $\Norb$ orbitals.
 The eigenvectors of $\widehat{H}$ are consequently expressed as linear combinations of Slater determinants 
 \begin{equation}
-\ket{\Psi_n} = \sum_{i} c_i^n \ket{D_i}.
+\ket{\Psi_n} = \sum_{I} c_I^n \ket{D_I}.
 \end{equation}
 Solving the eigenvalue equations in this basis is referred to as \emph{Full Configurations Interaction (FCI)} and yields solutions for Schrödinger's equation that are exact for the given atomic basis set.
 But the FCI is usually computationally intractable because of its scaling with the size of the basis set. Indeed, the size of the FCI space is
@@ -168,8 +168,8 @@ In the $N$-electron basis of Slater determinants, one expects the matrix element
 However, given the two-electron nature of the Hamiltonian, and because the set of molecular orbitals is orthogonal, Slater determinants that differ by more than two electrons yield a zero matrix element, and the other elements can be expressed as sums of integrals over 3 or 6 spatial dimensions, which can be computed for a reasonable cost. These simplifications are known as \emph{Slater-Condon's rules}:
 
 \begin{align}
-\Hij{D}{D} & = \sum_{i\in D} \mel{i}{\hat{h}}{i} + \frac{1}{2} \sum_{i\in D} \sum_{j\in D} \Big [ (ii|jj) - (ij|ij) \Big ]      \\
-\Hij{D}{D_p^r} & = \mel{p}{\hat{h}}{r} + \sum_{i\in D} \Big [ (pr|ii) - (pi|ri) \Big ]        \\
+\Hij{D}{D} & = \sum_{i\in \ket{D}} \mel{i}{\hat{h}}{i} + \frac{1}{2} \sum_{i\in \ket{D}} \sum_{j\in \ket{D}} \Big [ (ii|jj) - (ij|ij) \Big ]      \\
+\Hij{D}{D_p^r} & = \mel{p}{\hat{h}}{r} + \sum_{i\in \ket{D}} \Big [ (pr|ii) - (pi|ri) \Big ]        \\
 \Hij{D}{D_{pq}^{rs}} & = (pr|qs) - (ps|qr)
 \end{align}
 where $\hat{h}$ is the one-electron part of the Hamiltonian (kinetic energy and
@@ -177,8 +177,8 @@ electron-nucleus potential),
 \begin{equation}
 \mel{p}{\hat{h}}{r} = \int d{\bf x}\; \phi^*_p(\mathbf{x}) \qty( -\frac{1}{2}\nabla + V_1(\mathbf{x})) \phi_h(\mathbf{x}),
 \end{equation}
-$i \in D$ means that $\phi_i$ belongs to the
-Slater determinant $D$, $\ket {D_{pq}^{rs}}$ is a determinant obtained from $\ket
+$i \in \ket{D}$ means that $\phi_i$ belongs to the
+Slater determinant $\ket{D}$, $\ket {D_{pq}^{rs}}$ is a determinant obtained from $\ket
 D$ by substituting orbitals $\phi_p$ and $\phi_q$ by $\phi_r$ and
 $\phi_s$, and
 \begin{equation}
@@ -224,7 +224,7 @@ In variational methods, one tries to minimize the \emph{variational energy}
 \Evar = \frac{\mel{\Psi}{\hat{H}}{\Psi}}{\braket{\Psi}{\Psi}} \ge \EFCI
 \label{eq:evar}
 \end{equation}
-by optimizing the parameters of the wave function.
+by optimizing the parameters of the wavefunction.
 Generally speaking, solving Schrö\-dinger's equation in a basis of Slater determinants is called \emph{Configuration Interaction (CI)}.
 In these methods, the molecular orbitals are kept fixed and the variational parameters are the coefficients associated with the Slater determinants.
 The general idea of CI methods is to select \textit{a priori} a relevant subset
@@ -276,31 +276,31 @@ and equation at order $n$ is obtained by isolating all terms that are multiplied
 \begin{equation}
 \lambda \qty[ \hat{H}^{(0)} \ket {\psi^{(1)}} + V \ket {\psi^{(0)}} ] = \lambda \qty[ e^{(0)} \ket {\psi^{(1)}} + e^{(1)} \ket {\psi^{(0)}} ]
 \end{equation}
-etc\dots
+and so on\dots
 
-The equation of order $n$ requires knowledge of all $e^{(m \leq n)}$ and $\ket {\psi^{(m \leq n)}}$. It is possible to iteratively solve the equations up a given value of $n$, each iteration $i$ yielding $e^{(i)}$ and $\ket {\psi^{(i)}}$. Then the wavefunction and energy at order $n$ can be written
+The equation of order $n$ involves all $e^{(m \leq n)}$ and $\ket {\psi^{(m \leq n)}}$. It is possible to iteratively solve the equations up a given value of $n$, each iteration $i$ yielding $e^{(i)}$ and $\ket {\psi^{(i)}}$. Then the wavefunction and energy corrected at order $n$ can be written
 \begin{align}
 E^{(n)} &=\sum_{i=0}^n e^{(i)} \\
 \ket {\Psi^{(n)}} &= \sum_{i=0}^n \ket {\psi^{(i)}}
 \end{align}
 
 The perturbation theory that is used is characterized by the choice of $\hat{H}^{(0)}$.
-If the zeroth-order (symmetric) Hamiltonian is chosen as the exact Hamiltonian on a subset of determinants ($1 \le i \le j \le \Ndet$), and diagonal on the rest ($\alpha > \Ndet$), 
+If the zeroth-order (symmetric) Hamiltonian is chosen as the exact Hamiltonian on a subset of determinants ($1 \le I \le J \le \Ndet$), and diagonal on the rest ($\kalpha = D_{K > \Ndet}$), 
 \begin{align}
-\mel{i}{\hat{H}^{(0)}}{j} & = \mel{i}{\hat{H}}{j} \\
-\mel{i}{\hat{H}^{(0)}}{\alpha} & = 0 \\
+\mel{D_I}{\hat{H}^{(0)}}{D_J} & = \mel{D_I}{\hat{H}}{D_J} \\
+\mel{D_I}{\hat{H}^{(0)}}{\alpha} & = 0 \\
 \mel{\alpha}{\hat{H}^{(0)}}{\alpha} & = \mel{\alpha}{\hat{H}}{\alpha}, \\
 \end{align}
 the zeroth-order Hamiltonian is the so-called \emph{Epstein-Nesbet} Hamiltonian. In that case,
 \begin{align}
-\mel{i}{\hat{V}}{\alpha} & = \mel{i}{\hat{H}}{\alpha} \\
-\mel{i}{\hat{V}}{j} & = 0 \\
+\mel{D_I}{\hat{V}}{\alpha} & = \mel{D_I}{\hat{H}}{\alpha} \\
+\mel{D_I}{\hat{V}}{D_J} & = 0 \\
 \end{align}
 In Epstein-Nesbet perturbation theory, $e^{(0)}$ is the variational energy of
 the zeroth-order wavefunction, $e^{(1)} = 0$, and one needs to go to the second
 order to get an improvement on the energy:
 \begin{equation}
-\EPT = e^{(2)} = \sum_{\alpha \notin \Psi^{(0)}} \frac{\Hij{\alpha}{\Psi^{(0)}}^2}{E^{(0)} - \Hij{\alpha}{\alpha}}
+\EPT = e^{(2)} = \sum_{\alpha} \frac{\Hij{\alpha}{\Psi^{(0)}}^2}{E^{(0)} - \Hij{\alpha}{\alpha}}
 \end{equation}
 
 
@@ -312,14 +312,14 @@ These methods rely on the same principle as the usual CI approaches, except that
 The main advantages of these methods compared to the more conventional \textit{a priori} selected ones, are that since the most relevant determinants are considered, they will typically yield a more accurate description of physical phenomena, and a much lower energy for an equivalent number of determinants.
 It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction.\cite{Bytautas_2009,Anderson_2018} Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been proposed from the late 60's by Bender and Davidson\cite{Bender_1969} as well as Whitten and Hackmeyer\cite{Whitten_1969} and is still very much under investigation, we can cite its stochastic variant the MC3I method\cite{Ohtsuka_2017} or the very recent \emph{Machine Learning Configuration Interaction (MLCI)}.\cite{1808.05787}
 
-The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developed by Huron, Rancurel and Malrieu,\cite{Huron_1973} that iteratively selects \emph{external} determinants $\kalpha$ (determinants which are not present in the wavefunction $\Psi$) using a perturbative criterion
+The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developed by Huron, Rancurel and Malrieu,\cite{Huron_1973} that iteratively selects \emph{external} determinants $\kalpha$ (determinants which are not present in the wavefunction $\ket \Psi$) using a perturbative criterion
 \begin{equation}
-e_\alpha = \frac{\Hij{\Psi}{\alpha}^2}{\Evar - H_{\alpha \alpha}}
+e_\alpha = \frac{\Hij{\Psi}{\alpha}^2}{\Evar - \Hij{\alpha}{\alpha}}
 \end{equation}
 with $\ket \alpha$ the external determinant being considered, and $e_\alpha$ the estimated gain in correlation energy that would be brought by the inclusion of $\ket \alpha$ in the wavefunction. $\EPT$ is an estimation of the total missing correlation energy:
 \begin{align}
 \EPT & = \sum_{\alpha} e_\alpha \\
-E_{FCI} & \approx E + \EPT
+\EFCI & \approx \Evar + \EPT
 \end{align}
 
 There is however a computational downside. In \textit{a priori} selected methods, the rule by which determinants are selected is known \textit{a priori}, and therefore, one can map a particular determinant to some row or column index.\cite{Knowles_1984} As a consequence, it can be systematically determined to which matrix element of $\widehat{H}$ a two-electron integral contributes. This allows for the implementation of so-called \emph{integral-driven} methods, that work essentially by iterating over integrals.
@@ -328,9 +328,9 @@ Furthermore, determinant-driven methods require an effective way to compare dete
 
 Because of this high computational cost, approximations have been proposed.\cite{Evangelisti_1983} And recently, the \emph{Heat-Bath Configuration Interaction (HCI)} algorithm has taken farther the idea of a more approximate but extremely cheap selection.\cite{Holmes_2016, Sharma_2017} Compared to CIPSI, the selection criterion is simplified to
 \begin{equation}
-e^{HCI}_\alpha = \max \qty( \qty| c_i \Hij{D_i}{\alpha} | )
+e^{\text{HCI}}_\alpha = \max \qty( \qty| c_I \Hij{D_I}{\alpha} | )
 \end{equation}
-with $D_i$ a determinant from the variational wavefunction and $c_i$ its associated coefficient. This algorithmically allows for an extremely fast selection of doubly
+This algorithmically allows for an extremely fast selection of doubly
 excited determinants by an integral-driven approach.
 
 Full Configuration Interaction Quantum Monte Carlo (FCI-QMC) is an alternate approach to selection recently proposed in 2009 by Alavi \textit{et al.},\cite{Booth_2009,Booth_2010,Cleland_2010} where signed walkers spawn from one determinant to connected ones, with a probability that is a function of the associated matrix element. The average proportion of walkers on a determinant converges to its coefficient in the FCI wavefunction.

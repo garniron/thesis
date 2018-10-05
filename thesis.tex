@@ -117,6 +117,42 @@ citation "Sutter\_2005" dans l'intro ne passe pas...
 \tableofcontents
 \newpage
 
+\section*{Notations}
+
+\begin{itemize}
+
+\item [$\Norb$] Number of molecular orbitals
+
+\item [$\Nst$] Number of considered eigenstates
+
+\item [$\Ndet$] Number of determinants in the internal space
+
+\item [$\Ngen$] Number of generator determinants 
+
+\item [$\Nsel$] Number of selector determinants
+
+\item [$\Nelec$] Number of electrons
+
+\item [$\Nalpha$] Number of $\alpha$-spin electrons
+
+\item [$\Nbeta$] Number of $\beta$-spin electrons
+
+\item [$\Nint$] : Number of 64-bit integers required to store $\Norb$ bits : 
+${\Nint = \lfloor \frac{\Norb-1}{64} \rfloor + 1}$
+
+%\item [$\Ndav$] : Number of vectors in the Davidson diagonalization
+%
+%\item [$\Nperm$] : Number of permutations
+
+\item [$\NFCI$] : Number of determinants in the FCI space
+
+
+\end{itemize}
+
+
+%centering in tables
+
+
 
 \chapter{Introduction}
 
@@ -160,7 +196,7 @@ Of course, the technical considerations were not the focus of the different arti
 \minitoc
 \subfile{methods}
 
-\chapter{Determinant-driven approach}
+\chapter{Determinant-driven computation of the matrix elements}
 \minitoc
 \subfile{det_driven}
 
@@ -196,7 +232,7 @@ Of course, the technical considerations were not the focus of the different arti
 
 As a conclusion, significant improvements were brought to the \QP in both sequential and parallel aspect.
 
-The Davidson diagonalization, which is at the center of many methods, suffers from the impossibility to fully store the Hamiltionian, forcing it to be recomputed on the fly at each iteration. While an extremely fast method was already available to detect zero matrix element,\cite{Scemama_2013} the former implementation still had to iterate over the $~\Ndet^2$ matrix elements. Now, determinants are split in disjoint sets, which are often identifiable as entierly disconnected from one another. Thus only a small fraction of the matrix elements need to be explored.
+The Davidson diagonalization, which is at the center of many methods, suffers from the impossibility to fully store the Hamiltionian, forcing it to be recomputed on the fly at each iteration. While an extremely fast method was already available to detect zero matrix element,\cite{Scemama_2013} the former implementation still had to iterate over the $~\Ndet^2$ matrix elements. Now, determinants are split in disjoint sets, which are often identifiable as entirely disconnected from one another. Thus only a small fraction of the matrix elements need to be explored.
 While the parallelization of this method was somewhat challenging, due to the elementary tasks being extremely unbalanced, a distributed implementation was realized with rather satisfying results.
 
 The CIPSI selection algorithm, whose previous implementation was somewhat naive, was enormously improved, allowing for some applications that were not feasible so far\cite{Scemama_2018,1806.05115}. Several different accelerations were used, reducing the cost of finding connections between external and internal determinant (``batch'' approach, filtering), as well as the cost of computing the corresponding matrix element in the Hamiltonian (phasemask, systematic determination of excitaions). Again, in spite of unbalanced elementary tasks, a distributed implementation could be realized.
