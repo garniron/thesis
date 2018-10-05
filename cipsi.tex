@@ -675,7 +675,6 @@ $X$ and $Y$ are ``wildcard'' indices referring to any spinorbital unoccupied in 
 \end{figure}
 
 \clearpage
-%TODO J'en suis la
 \section{Parallel computation}
 
 Arguably the simplest way to make an algorithm parallel is, whenever possible, to create independent tasks corresponding to one iteration of the outermost loop.
@@ -762,11 +761,11 @@ We have chosen a more practical solution.\cite{Bytautas_2009} After the selectio
 The newer CIPSI algorithm runs orders of magnitude faster than the former one thanks to several key improvements.
 \begin{itemize}
 \item
-Excitations do not need to be computed explicitly using algorithms such as those presented in chapter \ref{chap:DET_DRIVEN}. However the associated phase factors still has to be computed.
+Excitations do not need to be computed explicitly using algorithms such as those presented in chapter \ref{chap:DET_DRIVEN}. However the associated phase factors still have to be computed.
 \item
-Although not directly related to the CIPSI algorithm, the computation of the phase factors has been made much cheaper thanks to the use of phase masks (see section~\ref{chap:PHASEMASK})
+Although not directly related to the CIPSI algorithm, the computation of the phase factors has been made much cheaper thanks to the use of phase masks (see section~\ref{chap:PHASEMASK}).
 \item
-Selector determinants are simultaneously compared to $(\Norb-\Nalpha)^2$ external determinants $\kalpha$ thanks to the batch system.
+Selector determinants are simultaneously compared to $\qty(\Norb-\Nalpha)^2$ external determinants $\kalpha$ thanks to the batch system.
 \item
 Selector determinants go through a filtering mechanism that narrows down the number of selector determinants to be considered against a particular $\kalpha$ (a particular batch of $\kalpha$).
 \end{itemize}
