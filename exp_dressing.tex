@@ -312,7 +312,7 @@ Clearly a set of $\hat f$ operators does not univocaly correspond to an excitati
 \label{eq:diamond_flip}
 \end{equation}
 
-It is easy to understand from equation \ref{eq:excitation_diamond} how this is a necessary condition, it is less obvious that it is also a sufficient one, i.e. that this can only happen if there is a diamond. In fact, it is not generally true. It is demonstrable in this particular case thanks to the known excitation degrees. It is known $\ket {D_i}$ and $\ket {D_j}$ are connected by at most a double excitation to $\kalpha$, therefore at most 4 orbitals have their occupation status flipping, two of them occupied and two unoccupied in $\kalpha$. For later clarity we use the dot ($\dot a$) notation to denote indices of spinorbitals that are occupied in $\kalpha$.
+It is easy to understand from Eq.~\eqref{eq:excitation_diamond} how this is a necessary condition, it is less obvious that it is also a sufficient one, i.e. that this can only happen if there is a diamond. In fact, it is not generally true. It is demonstrable in this particular case thanks to the known excitation degrees. It is known $\ket {D_i}$ and $\ket {D_j}$ are connected by at most a double excitation to $\kalpha$, therefore at most 4 orbitals have their occupation status flipping, two of them occupied and two unoccupied in $\kalpha$. For later clarity we use the dot ($\dot a$) notation to denote indices of spinorbitals that are occupied in $\kalpha$.
 
 \begin{equation}
 \hat F_{D_i \rightarrow \alpha} = \hat F_{R_r \rightarrow D_j} = \hat f_{\dot a \dot bcd} \; ; \; \hat F_{D_j \rightarrow \alpha} = \hat F_{R_r \rightarrow D_i} = \hat f_{\dot e \dot fgh}
@@ -340,13 +340,13 @@ so only 2 among the 8 indices can refer to the same spinorbital $x$ (which we ar
 
 As can be seen, applying $(\hat f_{\dot a \dot bc})(\hat f_{\dot e \dot fg})$ to $\kalpha$ will flip four occupied spinorbitals versus only two unoccupied one ; this implies $\kalpha$ has two extra electrons compared to $\ket {R_r}$. Because we know this not to be the case, we know such a situation cannot happen.
 
-Now that we know equation \ref{eq:diamond_flip} is sufficient to identify a diamond, we have to write its implementational expression, which is straightforward. The set of spinorbitals whose occupation status differ between $\ket A$ and $\ket B$ can be computed as a bitstring as
+Now that we know Eq.~\eqref{eq:diamond_flip} is sufficient to identify a diamond, we have to write its implementational expression, which is straightforward. The set of spinorbitals whose occupation status differ between $\ket A$ and $\ket B$ can be computed as a bitstring as
 
 \begin{equation}
 A \oplus B
 \end{equation}
 
-therefore equation \ref{eq:diamond_flip} is verified iff
+therefore Eq.~\eqref{eq:diamond_flip} is verified iff
 
 \begin{equation}
 R_r \oplus D_i = D_j \oplus \alpha
@@ -360,7 +360,7 @@ R_r \oplus D_i \oplus D_j \oplus \alpha = 0
 \end{equation}
 
 \paragraph{Locating diamonds by binary search}
-Now that we expressed the identification of a diamond in a simple way, we must figure a strategy to find them fast. Equation \ref{eq:diamond_xor} can be rewritten as
+Now that we expressed the identification of a diamond in a simple way, we must figure a strategy to find them fast. Eq.~\eqref{eq:diamond_xor} can be rewritten as
 
 \begin{equation}
 D_j = R_r \oplus D_i \oplus \alpha
@@ -386,10 +386,10 @@ binary search for $R_r = (D_i \oplus D_j \oplus \alpha)$ in $\{\mathcal{R}\}$.
 Those are desirable if one of $\{\mathcal{D}\}$ or $\{\mathcal{R}\}$ is relatively small, in particular, in case of single-reference computation, i.e. $|R|=1$, the former variant is ideal. For larger sets, however, a more complex variant with a complexity $\mathcal{O}(N \times (N+N_{ref}))$ is introduced next.
 
 
-\paragraph{Locating diamonds by rewritting excitations as additions}
+\paragraph{Locating diamonds by rewriting excitations as additions}
 Although the method could be chosen on a ``by-$\alpha$'' basis depending on $|\mathcal{R}|$ and $|\mathcal{D}|$, only this one is currently used in the \QP as it works for larger sets.
-Unlike the previous one, this method may yield false positives, thus it uses equation \ref{eq:diamond_xor} for confirmation.
-The idea is to express an excitation as an addition. As was said, bitstrings are essentially integers, so they can be added, substracted and compared as such. As in the case of the $\hat f$ operator, this approach entierly ignores phase factors. We can easily associate $T_{A \rightarrow B}$ and $T_p^q$ integer values with  excitations $\pm \hat T_{A \rightarrow B}$ and $\pm \hat T_p^q$ respectively
+Unlike the previous one, this method may yield false positives, thus it uses Eq.~\eqref{eq:diamond_xor} for confirmation.
+The idea is to express an excitation as an addition. As was said, bitstrings are essentially integers, so they can be added, subtracted and compared as such. As in the case of the $\hat f$ operator, this approach entierely ignores phase factors. We can easily associate $T_{A \rightarrow B}$ and $T_p^q$ integer values with  excitations $\pm \hat T_{A \rightarrow B}$ and $\pm \hat T_p^q$ respectively
 
 \begin{align}
 T_p^q = 2^{q-1} - 2^{p-1} \\
@@ -412,7 +412,7 @@ T + A = B \centernot \implies \pm \hat T \ket A = \ket B
 
 with $T$ the integer associated with excitation $\pm \hat T$. If $\pm \hat T \ket A = 0$, in most cases $T + A$ will yield a bitstring with a wrong number of bits/electrons, but this is not guaranteed, hence the presence of rare false positives.
 
-Equation \ref{eq:excitation_diamond} implies
+Eq.~\eqref{eq:excitation_diamond} implies
 
 \begin{align}
 D_i - R_r = \alpha - D_j 
@@ -432,7 +432,7 @@ if $D_i - R_r < \alpha - D_j$, increment $i$ and loop
 \item
 if $D_i - R_r > \alpha - D_j$, increment $r$ and loop
 \item
-if $D_i - R_r = \alpha - D_j$, a $(D_i, R_r)$ pair has been found. Check diamond using equation \ref{eq:diamond_xor}. Increment $i$ and $r$, and loop
+if $D_i - R_r = \alpha - D_j$, a $(D_i, R_r)$ pair has been found. Check diamond using Eq.~\eqref{eq:diamond_xor}. Increment $i$ and $r$, and loop
 \end{enumerate}
 
 The complexity is $\mathcal{O}(N \times (N+N_{ref}))$.

@@ -4,9 +4,9 @@
 \begin{document}
 \label{chap:DET_DRIVEN}
 
-Generally speaking, implementing a wavefunction method requires iteration over either two-electron integrals, or determinants. Those approaches are refererd to as \emph{integral-driven} and \emph{determinant-driven}. Because the number of determinants grows much faster than the number of double excitations, an efficient implementations would likely prioritize an integral driven approach. However, in most cases, the determinant-driven approach is more intuitive, as it stays closer to base equations. The \QP is intended for developpers, and thus prioritizes the approach that is easier for designing new methods.
+Generally speaking, implementing a wavefunction method requires iteration over either two-electron integrals, or determinants. Those approaches are referred to as \emph{integral-driven} and \emph{determinant-driven}. Because the number of determinants grows much faster than the number of double excitations, an efficient implementations would likely prioritize an integral driven approach. However, in most cases, the determinant-driven approach is more intuitive, as it stays closer to the base equations. The \QP is intended for developers, and thus prioritizes the approach that is easier for designing new methods.
 
-For performances, it is vital that some base operations are done efficiently. Notably, the computaion of matrix elements of $\hat H$.
+For performances, it is vital that some base operations are done efficiently. Notably, the computation of matrix elements of $\hat H$.
 
 \begin{equation}
 \Hij{I}{J}
@@ -517,7 +517,7 @@ The total number of permutations needed is $\Nperm = 2n+x$. The parity of the nu
 
 \subsection{Treating spin parts separately}
 
-It is not immediately obvious that $\alpha$ and $\beta$ spin parts can be treated independently. It is possible because our ordering packs together operators of same spin in the expression of both determinants (Eq.\eqref{eq:spinpack}) and excitations (Eq.\eqref{eq:spinpackexc}), and 
+It is not immediately obvious that $\alpha$ and $\beta$ spin parts can be treated independently. It is possible because our ordering packs together operators of same spin in the expression of both determinants (Eq.~\eqref{eq:spinpack}) and excitations (Eq.~\eqref{eq:spinpackexc}), and 
 also because we never consider excitations where the spin is changed (spin-flips).
 % redondant avec l'eq 11
 %Under these constraints, any excitation operator $\hat{T}$ can be expressed as 
@@ -533,7 +533,7 @@ also because we never consider excitations where the spin is changed (spin-flips
               = \hat{J}_\alpha \hat{J}_\beta  \vac = \kJ.
 \end{align}
 
-The number of creation and annihilation operators in an excitation operator is always even. Hence, going from Eq.\eqref{eq:spin1} to Eq.\eqref{eq:spin2} by permuting $\hat{T}_\beta$ with $\hat{I}_\alpha$ always requires an even number of permutations.
+The number of creation and annihilation operators in an excitation operator is always even. Hence, going from Eq.~\eqref{eq:spin1} to Eq.~\eqref{eq:spin2} by permuting $\hat{T}_\beta$ with $\hat{I}_\alpha$ always requires an even number of permutations.
 So the phase factors can be easily computed by reordering separately $\hat{T}_\alpha \hat{I}_\alpha$ and $\hat{T}_\beta  \hat{I}_\beta$.
 
 
@@ -716,7 +716,9 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 
 
 \begin{algorithm}
-	\caption{PHASEMASK\_bit}	
+	\caption{PHASEMASK\_bit 
+\alert{QUESTION CON : TU N'AS PAS UN PROBLEME AVEC LA 64eme ORBITALE?}
+}
 	\label{alg:PHASEMASK_bit}	
 	\SetKwFunction{FMain}{PHASEMASK\_bit}
 	\SetKwProg{Fn}{Function}{:}{}
@@ -730,7 +732,7 @@ This translates to $\tilde N^{S}_{j' i'}$ and $\tilde N^{S}_{i'j'}$ being of dif
 		\For{$i \gets 0, N_{int}-1$}{
 				$\bitPsigma[i] \gets \texttt{IEOR}(\bitIsigma[i], \text{ISHFT}(\bitIsigma[i], 1)$ \;
 				$d \gets 2$ \;
-				\While{$d < \texttt{bit\_kind\_size}$}{
+				\While{$d < 64$}{
 					$\bitPsigma[i] \gets \text{IEOR}(\bitPsigma[i], \text{ISHFT}(P_\sigma[i], d)$ \;
 					$d \gets 2 \times d$ \;
 				}
@@ -861,7 +863,7 @@ So we add an extra permutation (flip the phase factor) if
 %\end{equation}
 
 \begin{equation}
- \big ( \max(p,r) > \min(q,s) \big ) \wedge \big ( \max(q,s) > \min(p,r) \big )
+ \qty( \max(p,r) > \min(q,s) ) \wedge \qty( \max(q,s) > \min(p,r) )
 \end{equation}
 
 
@@ -871,4 +873,9 @@ So we add an extra permutation (flip the phase factor) if
 %\end{equation}
 
 
+\section{Summary}
+\alert{
+Indeed, a partir de 2 determinants I et J, on peut trouver rapidement T tel que T I = J, ce qui donne acces aux indices ijkl des integrales impliquees. A cause de la structure de donnees qu'on utilise pour stocker les determinants, il faut egalement calculer un facteur de phase, ce qui peut aussi etre fait de facon efficace grace aux phase masks. Une fois les indices ijkl obtenus, il faut aller chercher les integrales, ce qui peut aussi etre fait rapidement grace a notre table de hash efficace.
+Donc grace aux algos presentes dans cette section, on est capable de calculer de facon tres efficace les elements de matrice de H. C'est l'ingredient de de base de toute methode determinant-driven.
+}
 \end{document}
