@@ -75,6 +75,7 @@ Ensuring each $e_\alpha$ is considered only once is done by checking that all th
 If a connection $\hat T$ is found, it means that $\kalpha$ is generated from $\kJ$ as $\ordering \hat T \kI$, and should not be considered by the current generator.
 
 \section{Approximations}
+\label{sec:cipsi_approx}
 
 Given the qualitative nature of this procedure ---~each $\kalpha$ is either selected or not~--- it is possible to save a vast amount of computational time with minimal approximations. These were present in the original implementation and retained in the new one.
 
@@ -501,7 +502,7 @@ The first loop discards some internal determinants and separates the others in t
 
 \begin{itemize}
 \item
-Right branch : determinants that may contribute to $P(G_{pq})$ matrix or tag previously generated $\ket \alpha$. In other words, selectors that may connect to some $\ket {G_{pq}^{rs}}$. 
+Right branch : determinants that may contribute to the $P(G_{pq})$ matrix or tag previously generated $\ket \alpha$. In other words, selectors that may connect to some $\ket {G_{pq}^{rs}}$. 
 
 \item
 Left branch : Determinants that aren't selectors, but are equal to some $\ket {G_{pq}^{rs}}$. Being non-selectors, those will not be checked for connection to any $\ket {G_{pq}^{rs}}$, but they still must be checked for equality in order to ensure $\ket {G_{pq}^{rs}} \notin \left \{ \kI \right \}$
@@ -681,7 +682,7 @@ $X$ and $Y$ are ``wildcard'' indices referring to any spinorbital unoccupied in 
 \section{Parallel computation}
 
 Arguably the simplest way to make an algorithm parallel is, whenever possible, to create independent tasks corresponding to one iteration of the outermost loop.
-As figure \ref{fig:selection} suggests, iterations for the outermost loop --- over generators --- are independent. This is due to our choice to perform the initial filtering on a ``generator by generator'' basis (algorithm \ref{alg:generators_filtering}). The cost for this initial filtering could be reduced with a ``spin part by spin part'' basis as in our Davidson algorithm, but since CIPSI is more expensive than Davidson, the filtering steps only account for a few percent of the total CPU time, so for simplicity and load balancing we stuck to 1 task = 1 generator. Even so, the cost for different tasks is still very much unbalanced, the first few generators with large coefficients being very expensive, and the cost quickly decreasing.
+As figure \ref{fig:selection} suggests, iterations for the outermost loop --- over generators --- are independent. This is due to our choice to perform the initial filtering on a ``generator by generator'' basis (algorithm \ref{alg:generators_filtering}). The cost for this initial filtering could be reduced with a ``spin part by spin part'' basis as in our Davidson algorithm, but since the CIPSI selection is more expensive than the Davidson diagonalization, the filtering steps only account for a few percent of the total CPU time, so for simplicity and load balancing we stuck to 1 task = 1 generator. Even so, the cost for different tasks is still very much unbalanced, the first few generators with large coefficients being very expensive, and the cost quickly decreasing.
 
 For a better load balancing, we split the first, expensive tasks into smaller \emph{fragments}, using a fairly simple approach. Essentially, some tasks will require computing just a subset of the ${G_{pq}}$ batches associated with a generator $\ket G$, as opposed to all of them. This implies some overhead, since some filtering steps will be duplicated. Fortunately, only a relatively small number of expensive tasks need to be split.
 

@@ -139,7 +139,7 @@ $E_H$ is the variational energy computed deterministically, and $E_{\kappa}$ is 
 \item
 In both cases we have $\Ngen$ samples, however in the case of $\EPT$ each sample is a scalar, here each sample is a vector of size $\Ndet$. It is easy to store $\Ngen$ scalars, not to store $\Ngen$ vectors of size $\Ndet$. In addition, these vectors must be transmitted from slave nodes to a master node, creating a potential network bottleneck, scaling with $\Ndet$.
 \item
-In the case of PT2 (at least in its Epstein-Nesbet version), each connection found only requires an increment of some elements of $P(G_{pq})$. At no point 2 connections need to be known at the same time. This is different for methods implemented with matrix dressing. It is possible that one needs to know the detail of which variational determinants an $\ket \alpha$ connects to, in order to be able to compute $\delta_\alpha$.
+In the case of PT2 (at least in its Epstein-Nesbet version), each connection found only requires an increment of some elements of $P(G_{pq})$. At no point 2 connections need to be known at the same time. This is different for methods implemented with matrix dressing. It is possible that one needs to know the detail of which internal determinants an $\ket \alpha$ connects to, in order to be able to compute $\delta_\alpha$.
 \end{itemize}
 
 
