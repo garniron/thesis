@@ -205,14 +205,6 @@ The number of contributions is small enough to make all the $e_I$'s fit in memor
 
 In our case, this optimization also leads to a drastic improvement in the computational time: it takes an infinite time for a Monte Carlo calculation to reach a zero statistical error, but using the memoization technique the exact result will eventually be known in finite time, once every contribution has been computed. The cost for the exact computation will essentially be the same as that of the purely deterministic full computation, with a negligible additional cost due to the Monte-Carlo related computations (drawing random numbers, finding the associated generators\dots).
 
-Using memoization adds difficulties for the parallel implementation.
-In a standard Monte Carlo parallel implementation,
-all the CPU cores would repeatedly do the following independently: 
-draw a random number, compute the associated $e_I$ and send the result to the master process.
-The naive implementation of memoization would allocate a local memo array on each compute node, with shared memory. This would require to have locks in the write access to the memo array, and multiple contributions would be computed independently on different nodes, as the memo array would be local.
-
-\alert{TODO : Monte Carlo precomputed ici}
-
 
 
 \section{Deterministic and stochastic ranges}
@@ -232,7 +224,7 @@ $\mathcal{T}_0$ is always computed before any stochastic estimation can take pla
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.7\columnwidth]{figures/pt2/P_i}
+		\includegraphics[width=0.7\columnwidth]{figures/pt2/eici2comb}
 	\end{center}
 	\caption{Contribution $e_I$ associated with each generator, where the generators are sorted in decreasing order of $c_I^2$. The determinant space is divided into equal probability domains, according do $c_I^2$.}
 	\label{fig:p_i}
@@ -294,7 +286,7 @@ The number or generators in the deterministic range, therefore, is function of a
 \end{figure}
 
 
-\paragraph{comb values}
+\paragraph{Comb values}
 
 We can write the expression of $B_t(u)$ the sample value associated with a comb. It is function of a random number $u \in [0,1)_\mathbb{R}$ and $t$ the index of the first non-deterministic tooth.
 
@@ -317,7 +309,7 @@ An illustrative example is given as figure \ref{fig:toothindet}.
 		\label{fig:toothindet}
 \end{figure}
 
-\paragraph{estimation of $\EPT$}
+\paragraph{Estimation of $\EPT$}
 
 After drawing $n$ random numbers forming the set $\{\mathcal{U}\}$, and given $\mathcal{T}_t$ the first non-deterministic tooth, $\EPT$ can be estimated as 
 
@@ -399,11 +391,9 @@ It can happen that a comb becomes computable as its $e_I$ are already computed, 
 
 \section{Implementation}
 
-
-\subsection{Drawing}
+\subsection{Inverse Transform Sampling}
 
 The algorithm to find a generator index associated with drawing $u$ in with a distribution function $w$ is shown as algorithm~\ref{alg:FIND_SAMPLE}.
-\alert{DIRE QUE LE TIRAGE EST SUR LE MASTER}
 
 \begin{algorithm}
 \caption[FIND\_SAMPLE]{Finds generator index associated with drawing random value $u$ in a cumulative probability distribution $W$}
@@ -418,7 +408,7 @@ The algorithm to find a generator index associated with drawing $u$ in with a di
 		\KwData{$W$ float array of size $N$ with $W[0]=0$, $W[N]=1$, $W[n+1] > W[n]$}
 		\KwResult{Returns $i$ so that $W[i-1] \leq u < W[i]$}
 		
-		\tcc {The result must be in the range $[l,r]_\mathbb{Z}$. We set them for the most general case}
+		\tcc {The result must be in the range $[l,r]_\mathbb{Z}$. We set them for the most general case.}
 		$l \gets 0$ \;
 		$r \gets N$ \;
 		
@@ -434,13 +424,9 @@ The algorithm to find a generator index associated with drawing $u$ in with a di
 		\KwRet $r$ \;
 	}
 \end{algorithm}
-
-
-
+\begin{description}
 
 \subsection{Building teeth}
-
-\begin{description}
 
 \item[Input] 
 \begin{itemize}
@@ -494,15 +480,15 @@ Teeth building is show as algorithms \ref{alg:build_teeth} and \ref{alg:build_w}
 		
 		$n_0(1) \gets n_0(1) + 1$ \;
 		\If{$\Ngen - n_0(1) < (\minDetInT-1) \times \Nteeth$}{
-			\tcc{cannot compute with those parameters}
-			try with fewer teeth. \;
+			\tcc{Cannot compute with those parameters}
+			Try with fewer teeth. \;
 		}
 	}
 	\For{$t \gets 2,N_{teeth}$}{
 		$r \gets u_0 + W_T \times (t-1)$ \;
 		$n_0(t) \gets FIND\_SAMPLE(r, P)$ \;
 	}
-	\tcc{for convenience}
+	\tcc{For convenience}
 	$n_0(\Nteeth+1) \gets \Ngen$ \;
 \end{algorithm}
 
@@ -529,9 +515,25 @@ Teeth building is show as algorithms \ref{alg:build_teeth} and \ref{alg:build_w}
 
 \subsection{Building the task queue}
 \label{sub:task_queue}
-\alert{TODO : REVOIR APRES TASK MONTE CARLO}
 
-For a massively parallel implementation, we need to create a task queue. Because values for $e_I$ are stored, quite clearly, we need one task per generator determinant. Because of the tooth filling mechanism, we know we will need at most $\Ngen$ combs.
+Using memoization adds difficulties for the parallel implementation.
+In a standard Monte Carlo parallel implementation,
+all the CPU cores would repeatedly do the following independently: 
+draw a random number, compute the associated $e_I$ and send the result to the master process.
+The naive implementation of memoization would allocate a local memo array on each compute node, with shared memory. This would require to have locks in the write access to the memo array, and multiple contributions would be computed independently on different nodes, as the memo array would be local.
+
+To avoid these issues while still conserving the benefits of memoization, we have
+chosen that only the master process performs the Monte Carlo sampling. The
+slave processes help by computing the contributions $e_I$. This is realized as
+follows. The master process draws combs, and each time a 
+generator is drawn for the first time, it is appended to the task queue as a new
+task to be computed. When the results of the tasks are transmitted back, the
+master process is able to compute the running average and the error bar
+by identifying which combs were computed.
+With this scheme, each contribution $e_I$ is computed at most once and all
+the CPU cores can work independently.
+
+Because of the tooth filling mechanism, we know we will need at most $\Ngen$ combs.
 \begin{itemize}
 \item $Q$: is the task queue, $Q[I]$ the index of the $I^{th}$ sample $e_I$ that must be computed.
 \item $d$: keeps track of the computed samples. $d[I] = \TRUE$ iff $e_I$ has already been computed.
@@ -629,7 +631,7 @@ The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. 
 			\While{$d[U+1]$}{
 				$U \gets U + 1$ \;
 			}
-			\tcc{short-circuit boolean evaluation required to prevent out of bound access to $n_0$}
+			\tcc{Short-circuit boolean evaluation is required to prevent out of bound access to $n_0$}
 			\While{$t \leq \Nteeth \wedge U \geq n_0(t+1)$}{
 				$t \gets t+1$ \;
 				$E_0 \gets \sum_{I<n_0(t)} e_I$ \;
@@ -653,14 +655,14 @@ The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. 
 			$f[I] \gets f[I]-1$ \;
 		}
 	}
-	\tcc{estimated energy $E \pm \text{error}$}
+	\tcc{Estimated energy $E \pm \text{error}$}
 \end{algorithm}
 
 
 \begin{algorithm}
 	\caption{Update $S$ and $S^{(2)}$ from algorithm \ref{alg:PT2_MASTER}.}
 	\label{alg:UPDATE_S}
-	\tcc{Done naively, updating $S_* \gets S_* + B_*(u)$ and $S^{(2)}_* \gets S^{(2)}_* + B_*(u)^2$ scales as $\mathcal{O}({\Nteeth}^2 \log{\Ngen})$}
+	\tcc{Done naively, updating $S_* \gets S_* + B_*(u)$ and $S^{(2)}_* \gets S^{(2)}_* + B_*(u)^2$ scales as $\mathcal{O}({\Nteeth}^2 \log{\Ngen})$.}
 	
 					
 	$x \gets 0$ \;

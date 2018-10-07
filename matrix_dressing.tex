@@ -440,7 +440,7 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 	$m $ so that $I \in \mathcal{P}_m$ \;
 	$t$ so that $I \in \mathcal{T}_t$ \;
 	
-	Compute $\deltabold_{I,s}$ (\alert{fragment $s$ of $\deltabold_{I}$})\;
+	Compute $\deltabold_{I,s}$ (fragment $s$ of $\deltabold_{I}$)\;
 	\tcc{Lock global arrays before update}
 	$\deltabold^{D,t} \gets \deltabold^{D,t} + \deltabold_{I,s}$ \;
 	\For{$p\gets m,\Ncp$}{
@@ -530,9 +530,12 @@ The additional difficulties of estimating a vector rather than a scalar were sol
 
 The fact that we implemented the shifted-\Bk method boils down to our choice to build the external space using Epstein-Nesbet perturbative estimation for $c_\alpha$. However, the proposed algorithm does not put any particular restriction on $c_\alpha$. From this stemmed the idea of a more general framework to allow easy experimentation of the effect of different external spaces, which was used to design an MR-CCSD method as shown in chapter \ref{chap:exp_dressing}.
 
+\alert{IL FAUT FAIRE REFERENCES AUX ALGORITHMES DANS LE TEXTE}
+
+
 \clearpage
 \section{Selected configuration interaction dressed by perturbation}
-\label{sec:matrix_article}).
+\label{sec:matrix_article}
 \includepdf[page=2-]{article_sbk}
 
 \includepdf[page=-]{article_sbk_sup}
