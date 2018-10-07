@@ -265,7 +265,7 @@ End of other loops. All $e_\alpha$ have been computed a single time.
 \subsection{Tagging}
 
 Tagged cells are simply tracked using a boolean matrix $B(G_{pq})$ with $B_{rs}(G_{pq})$ keeping the tag status of $\Gpqrs$, defaulting to $\FALSE$.
-In some cases, full columns/rows are to be tagged. Keeping track of fully tagged rows or columns is useful for performance purpose, as it allows to bypass some loop iterations. A simple way to do it, is to add an extra column and an extra row of index $0$ to $B$ ; $B_{0s}(G_{pq}) = \TRUE\,$ means the whole $s$ column is tagged, $B_{r0}(G_{pq}) = \TRUE\,$ means the whole $s$ line is tagged. The actual tag status of $\Gpqrs$ becomes
+In some cases, full columns/rows are to be tagged. Keeping track of fully tagged rows or columns is useful for performance purpose, as it allows to bypass some loop iterations. A simple way to do it, is to add an extra column and an extra row of index $0$ to $B$ ; $B_{0s}(G_{pq}) = \TRUE\,$ means the whole $s$ column is tagged, $B_{r0}(G_{pq}) = \TRUE\,$ means the whole $r$ line is tagged. The actual tag status of $\Gpqrs$ becomes
 \begin{equation}
 B_{r0}(G_{pq}) \vee B_{0s}(G_{pq}) \vee B_{rs}(G_{pq}).
 \end{equation}
@@ -305,7 +305,7 @@ Pick $Q$ any ``non-frozen'' $\uparrow$ spinorbital occupied in $\ket G$. Again w
         \begin{center}
                 \includegraphics[width=0.70\columnwidth]{figures/cipsi/systematic_determination}
         \end{center}
-        \caption{Illustrative example of systematic determination of the connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ have the same spin. \alert{IL FAUT METTRE UN CHAPEAU SUR H DANS LA FIGURE!}}
+        \caption{Illustrative example of systematic determination of the connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ have the same spin. $c_S$ is the coefficient of $\ket S$ in $\ket \Psi$. \alert{IL FAUT METTRE UN CHAPEAU SUR H DANS LA FIGURE!}}
         \label{fig:systematic_determination}
         
 \end{figure}
@@ -315,12 +315,12 @@ Pick $Q$ any ``non-frozen'' $\uparrow$ spinorbital occupied in $\ket G$. Again w
         \begin{center}
                 \includegraphics[width=0.90\columnwidth]{figures/cipsi/systematic_determination2}       
         \end{center}
-        \caption{Illustrative example of systematic determination of the connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ are of different spins. \alert{IL FAUT METTRE UN CHAPEAU SUR H DANS LA FIGURE!}}
+        \caption{Illustrative example of systematic determination of the connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ are of different spins. $c_S$ is the coefficient of $\ket S$ in $\ket \Psi$.\alert{IL FAUT METTRE UN CHAPEAU SUR H DANS LA FIGURE!}}
         \label{fig:systematic_determination2}
 \end{figure}
 
 
-The systematic determination of connections between $\ket S$ and determinants from the $\ket {G_{pq}}$ batch is done by comparing $\ket S$ to the doubly ionized determinant $\ket {G_{pq}}$. This yields a set of spinorbitals with different occupation status. Remembering $\ket S$ has two extra electrons compared to $\ket {G_{pq}}$, there are 4 cases of interest:
+The systematic determination of connections between $\ket S$ and determinants from the ${G_{pq}}$ batch is done by comparing $\ket S$ to the doubly ionized determinant $\ket {G_{pq}}$. This yields a set of spinorbitals whose occupation status differ. Remembering $\ket S$ has two extra electrons compared to $\ket {G_{pq}}$, there are 4 cases of interest:
 \begin{itemize}
 
 \item
@@ -345,7 +345,7 @@ It is noticeable that, because of the ``wildcard'' indices $X$ and $Y$ :
 \item
 Cases of the form $a,ijk$ cause full rows/columns of $P(G_{pq})$ to be tagged or incremented.
 \item
-Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or incremented. Obviously, tagging the whole matrix means stopping the computation for $\ket {G_{pq}}$.
+Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or incremented. Obviously, tagging the whole matrix means stopping the computation for ${G_{pq}}$.
 \end{itemize}
 
 
@@ -360,7 +360,8 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
                 
         \For{$g \gets 1, \Ngen$}{
         \ForAll{$(p,q) \; ; \; a_p a_q \ket {D_g} \neq 0$}{
-                %$\ket {G_{pq}} \gets \ordering a_p a_q \ket {D_g}$\;
+        	
+                $\ket {G_{pq}} \gets \ordering a_p a_q \ket {D_g}$\;
                 \tcc{$B$ and $P$ are indexed by spinrobitals}
                 $B$ a $\FALSE$-initialized boolean matrix of size $2\Norb \times 2\Norb$ \;
                 $P$ a zero-initialized real matrix size $2\Norb \times 2\Norb$ \;
@@ -372,7 +373,7 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
                         $C_\sigma \gets S_\sigma \wedge \neg [G_{pq}]_\sigma$ \; %c \gets \IAND{S}{\NOT{G_{pq}}}$ \; 
                         \If{$||C_\sigma|| = 2$}{
                                 $e \gets \texttt{LIST\_FROM\_BITSTRING}(C_\sigma)$\; 
-                                $B_{e[1]\, e[2]} \gets \TRUE$\;                     
+                                $B_{e[0]\, e[1]} \gets \TRUE$\;                     
                         }                       
                         \tcc{see table \ref{tab:systematic_determination} for $(r,s)$ pairs}
                         \uIf{$t < g$}{
@@ -381,9 +382,9 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
                                   $B_{rs} \gets \TRUE$ \;
                                 } 
                         }
-                        \uElseIf{$t \leq \Nsel$}{
+                        \ElseIf{$t \leq \Nsel$}{
                                 \ForAll{$(r, s) \; ; \; \neg B_{rs} \wedge \Hij{S}{G_{pq}^{r s}}\neq 0 $ }{
-                                  $P_{rs} \gets P_{rs} + c_s \Hij{S}{G_{pq}^{rs}}$ \;
+                                  $P_{rs} \gets P_{rs} + c_t \Hij{S}{G_{pq}^{rs}}$ \;
                                 }
                         }
                 }
@@ -404,17 +405,20 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
         \KwResult{Updates $B$ so as to tag EPVs, and determinants that are generated by a generator of lower index from a single excitation on $\ket G$}
 
         \tcc{tag EPV}
+        \ForAll{$r$}{
+        	$B_{rr} \gets \TRUE$ \;
+        }
                 \ForAll{$r \; ; \; (a_r \ket {G_{pq}} \neq 0) \vee (r=p) \vee (r=q)$}{
                         $B_{*r} \gets \TRUE$ \;
                         $B_{r*} \gets \TRUE$ \;
                 }
         \tcc{tag duplicate single excitations}
-                \If{($q$ is of spin $\uparrow$) $\wedge$ ($p$ is the lowest ``non-frozen'' $\downarrow$ spinorbital)}{
+                \If{($q$ is $\uparrow$) $\wedge$ ($p$ is the lowest ``non-frozen'' occupied $\downarrow$ spinorbital in $\ket G$)}{
                                 $B_{*p} \gets \FALSE$ \;  
                                 $B_{p*} \gets \FALSE$ \;          
                         }
                         
-                        \If{($p$ is of spin $\downarrow$) $\wedge$ ($q$ is the lowest ``non-frozen'' $\uparrow$ spinorbital)}{
+                        \If{($p$ is $\downarrow$) $\wedge$ ($q$ is the lowest ``non-frozen'' occupied $\uparrow$ spinorbital in $\ket G$)}{
                                 $B_{*q} \gets \FALSE$ \; 
                                 $B_{q*} \gets \FALSE$ \;         
                         }
@@ -426,14 +430,14 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
 
 A large amount of CPU time is wasted because every doubly ionized generator $\ket {G_{pq}}$ is compared to all internal determinants. In the vast majority of cases, it will show no connection can be made and the internal determinant will be ignored. Thus, it is interesting to filter internal determinants in the outermost loops (loop over generators, and loop over first ionization).
 
-This can be done using the distance $f_A^B = f_B^A$, defined as the minimal number of operations ---~moving, annihilating or creating an electron~--- that must be done to go from a determinant $\ket A$ to a determinant $\pm \ket B$ (i.e. ignoring the phase factor) with respectively $n_\uparrow$ and $n_\downarrow$ electrons.
+This can be done using the distance $f_A^B = f_B^A$, defined as the minimal number of operations ---~moving, annihilating or creating an electron~--- that must be done to go from a determinant $\ket A$ to a determinant $\pm \ket B$ (i.e. ignoring the phase factor) with respectively $n_A$ and $n_B$ electrons.
 Alternatively, it can be defined as the maximum between the number of annihilations and the number of creations required to go from $\ket A$ to $\pm \ket B$.
 
 
 
 
 \begin{equation}
-f_A^B = \frac{\norm{A_\uparrow \oplus B_\uparrow} + \norm{A_\downarrow \oplus B_\downarrow} + |n_\uparrow-n_\downarrow|}{2}
+f_A^B = \frac{\norm{A_\uparrow \oplus B_\uparrow} + \norm{A_\downarrow \oplus B_\downarrow} + |n_A-n_B|}{2}
 \end{equation}
 
 
@@ -467,7 +471,7 @@ over $p$ a first ionization $\ket{G_p}$
 over $q$ a second ionization $\ket{G_{pq}}$, i.e. over batches.
 \end{enumerate}
 
-In each one some filtering takes place. The determinants of the internal space ``flow'' from the top $\{ \kI \}$ into intermediate lists, that are fully constructed before proceeding to the inner loop, as they will be the sources of determinants for that inner loop.
+In each one some filtering takes place. The internal determinants ``flow'' from the top $\{ \kI \}$ into intermediate lists, that are fully constructed before proceeding to the inner loop, as they will be the sources of determinants for that inner loop.
 A selector can only be duplicated at the node denoted by a black circle. Otherwise, it follows a single path, always going for the horizontal path if it satisfies the associated condition.
 If it doesn't satisfy the condition of a horizontal path, and there is no further vertical path, it is discarded.
 
@@ -479,7 +483,7 @@ If it doesn't satisfy the condition of a horizontal path, and there is no furthe
 \emph{drop} $G_{pq}$ is reached in the case where the whole $P(G_{pq})$ matrix is to be tagged, i.e. the possible values for $(r,s)$ given by table \ref{tab:systematic_determination} are two wildcards ($X,Y$ and $X,\bar Y$).
 This corresponds to the case where $\ket {G_{pq}}$ has already been created from a previous generator $\ket K$, i.e. $\ket {G_{pq}} = \ket {K_{p'q'}}$, therefore for any pair $(r,s)$ we have $\ket {K_{p'q'}^{rs}} = \ket {G_{pq}^{rs}}$.\\
 \item
-\emph{drop} $G_{p}$, in the same fashion, is reached when $\ket {G_{p}}$ has already been created from a previous generator $\ket K$, i.e. $\ket {G_{p}} = \ket{K_{p'}}$. For any triplet $(q,r,s)$ there will be $\ket {K_{p'q}^{rs}} = \ket {G_{pq}^{rs}}$, so no new $\kalpha$ will be created.
+\emph{drop} $G_{p}$, in the same fashion, is reached when $a_p \ket G = \ket {G_{p}}$ has already been created from a previous generator $\ket K$, i.e. $\ket {G_{p}} = \ket{K_{p'}}$. For any $(q,r,s)$ triplet there will be $\ket {K_{p'q}^{rs}} = \ket {G_{pq}^{rs}}$, so no new $\kalpha$ will be created.
 \end{itemize}
 
 
@@ -497,7 +501,7 @@ The first loop discards some internal determinants and separates the others in t
 
 \begin{itemize}
 \item
-Right branch : determinants that may contribute to some $P(G_{pq})$ matrix or tag previously generated $\ket \alpha$. In other words, selectors that may connect to some $\ket {G_{pq}^{rs}}$. 
+Right branch : determinants that may contribute to $P(G_{pq})$ matrix or tag previously generated $\ket \alpha$. In other words, selectors that may connect to some $\ket {G_{pq}^{rs}}$. 
 
 \item
 Left branch : Determinants that aren't selectors, but are equal to some $\ket {G_{pq}^{rs}}$. Being non-selectors, those will not be checked for connection to any $\ket {G_{pq}^{rs}}$, but they still must be checked for equality in order to ensure $\ket {G_{pq}^{rs}} \notin \left \{ \kI \right \}$
@@ -523,8 +527,7 @@ $b \gets \text{EXC\_DEGREE}(S_\downarrow, G_\downarrow)$ \;
 }
 }
 \end{algorithm}
-Our current implementation quickly discards $f_G^S > 4$ by using a method similar to what we used in the Davidson diagonalization, adapted to seek excitation degrees $\leq 4$ rather than $\leq 2$. The key difference is that, for parallelism reasons, the research has to be done individually for each generator~; that is, we are not computing all $f_G^S$ at the same time, but all $f_G^S$ for a given $G$ separately. The procedure is shown as algorithm \ref{alg:generators_filtering}. The complexity is reduced from $\order{\Ndet^2}$ to $\order{\Ndet^{3/2}}$~: each generator has its $\sigma \in \{\uparrow, \downarrow\}$ part compared to all elements of $\{U_\sigma\}$,
-the set of unique $\sigma$-spin strings which scales as $\order{\Ndet^{1/2}}$.
+Our current implementation quickly discards $f_G^S > 4$ by using a method similar to what we used in the Davidson diagonalization, adapted to seek excitation degrees $\leq 4$ rather than $\leq 2$. The key difference is that, for parallelism reasons, the research has to be done individually for each generator~; that is, we are not computing all $f_G^S$ at the same time, but all $f_G^S$ for a given $\ket G$ separately. The procedure is shown as algorithm \ref{alg:generators_filtering}. The complexity is reduced from $\order{\Ndet^2}$ to $\order{\Ndet^{3/2}}$.
 
 
 
@@ -540,12 +543,12 @@ The second loop discards some internal determinants and separates the other in t
 
 \begin{itemize}
 \item
-Right branch : Determinants that may contribute to some $\Hij{\Psi}{\alpha}$, i.e. selectors that may connect to some $\ket {G_{pq}^{rs}}$
+Right branch : Selectors that may connect to some $\Hij{\Psi}{\alpha}$.
 \item
-Left branch : Determinants that may cause tagging or reach \emph{drop}, i.e. any determinant that may be equal to some $\ket {G_{pq}^{rs}}$, and previous generators that may connect to some $\ket {G_{pq}^{rs}}$. Those can be found in both lists built in the first loop.
+Left branch : Determinants that may be equal to some $\ket {G_{pq}^{rs}}$. Those can be found in both lists built in the first loop.
 \end{itemize}
 
-As explained above, if there is a previous generator $\ket K$ so that $a_{p'} \ket K = a_p \ket G$, it will result in $P(G_{pq})$ being fully tagged for any $q$, hence a need to reach \emph{drop} $G_p$ to avoid unnecessary computations.
+As previously discussed, if there is a previous generator $\ket K$ so that $a_{p'} \ket K = a_p \ket G$, it will result in $P(G_{pq})$ being fully tagged for any $q$, hence a need to reach \emph{drop} $G_p$ to avoid unnecessary computations.
 The reach for \emph{drop} $G_p$ can be put on the path between the right list of the first loop and the left list of the second loop.
 
 Indeed, $a_{p'} \ket K = a_p \ket G$ with $\ket K$ a previous generator translates to
@@ -567,7 +570,7 @@ f^K_{G_{p}} = 1 \implies f^K_G \leq 1 \implies f^K_G \leq 4
 \qty(f^K_{G_{p}} = 1) \wedge \text{past} \implies\qty (f^K_G \leq 4) \wedge \text{selector}
 \end{equation}
 
-Therefore any internal determinant able to reach \emph{drop} $G_P$ will be present in that list. Trivially, from there it will always take the left path because $f^K_{G_{p}} = 1 \implies f^K_{G_{p}} \leq 2$.
+Therefore any internal determinant able to reach \emph{drop} $G_p$ will be present in that list. Trivially, from there it will always take the left path because $f^K_{G_{p}} = 1 \implies f^K_{G_{p}} \leq 2$.
 
 
 \item
@@ -578,7 +581,7 @@ Third loop :
 Right branch :
 Final filtering to keep only selectors that do connect to some $\Gpqrs$
 \item
-Left branch : $f_{G_{pq}}^S = 2$ implies there exists $(r,s)$ so that $\ket S=\Gpqrs$. If it is the case:
+Left branch : $f_{G_{pq}}^S = 2$ implies there exists $(r,s)$ so that $\ket S=\Gpqrs$. When one is found :
 \begin{itemize}
 \item
 If $\text{past}$
@@ -603,7 +606,7 @@ If $\neg \text{past}$, $\ket {G_{pq}^{rs}}$ must be tagged for referring to a de
 
 \begin{table}
 
-\caption{Systematic ``case by case'' determination of connections between a selector $\ket S$ and determinants of a batch $\Gpq$} 
+\caption{Systematic ``case by case'' determination of connections between a selector $\ket S$ and determinants of a batch $G_{pq}$} 
 \label{tab:systematic_determination}
 \begin{center}
 \begin{minipage}[l]{0.6\textwidth}
@@ -678,12 +681,12 @@ $X$ and $Y$ are ``wildcard'' indices referring to any spinorbital unoccupied in 
 \section{Parallel computation}
 
 Arguably the simplest way to make an algorithm parallel is, whenever possible, to create independent tasks corresponding to one iteration of the outermost loop.
-As figure \ref{fig:selection} suggests, iterations for the outermost loop --- over generators --- are independent. This is due to our choice to perform the initial filtering on a ``generator by generator'' basis, giving a total complexity of $\mathcal{O}(\Ndet^{3/2})$ (algorithm \ref{alg:generators_filtering}) ; to achieve $\mathcal{O}(\Ndet)$ the outermost loop would need to be over $\{U_\uparrow\}$ and $\{U_\downarrow\}$. This would give a smaller number of iterations/tasks with extremely unbalanced costs, which does not suit well a parallel scheme. Since in practice the filtering steps only account for a few percent of the total CPU time, we stuck to 1 task = 1 generator. Even so, the cost for different tasks is still very much unbalanced, the first few generators with large coefficients being very expensive, and the cost quickly decreasing.
+As figure \ref{fig:selection} suggests, iterations for the outermost loop --- over generators --- are independent. This is due to our choice to perform the initial filtering on a ``generator by generator'' basis (algorithm \ref{alg:generators_filtering}). The cost for this initial filtering could be reduced with a ``spin part by spin part'' basis as in our Davidson algorithm, but since CIPSI is more expensive than Davidson, the filtering steps only account for a few percent of the total CPU time, so for simplicity and load balancing we stuck to 1 task = 1 generator. Even so, the cost for different tasks is still very much unbalanced, the first few generators with large coefficients being very expensive, and the cost quickly decreasing.
 
-For a better load balancing, we split the first, expensive tasks into smaller \emph{fragments}, using a fairly simple approach. Essentially, some tasks will require computing just a subset of the $\ket {G_{pq}}$ batches associated with a generator $\ket G$, as opposed to all of them. This implies some overhead, since some filtering steps will be duplicated. Fortunately, only a relatively small number of expensive tasks need to be split.
+For a better load balancing, we split the first, expensive tasks into smaller \emph{fragments}, using a fairly simple approach. Essentially, some tasks will require computing just a subset of the ${G_{pq}}$ batches associated with a generator $\ket G$, as opposed to all of them. This implies some overhead, since some filtering steps will be duplicated. Fortunately, only a relatively small number of expensive tasks need to be split.
 
 
-Each generator $\ket {G_i}$ defines as a ``logical'' task $i$, and for each one we define $F_i$ a fragmentation level, defining the number of independent ``actual'' tasks it should be decomposed in.
+Each generator $\ket {D_i}$ defines as a ``logical'' task $i$, and for each one we define $F_i$ a fragmentation level, defining the number of independent ``actual'' tasks it should be decomposed in.
 We have empirically chosen the following expression for the fragmentation of the tasks:
 \begin{align}
 F_{\max} & = 1 + \min \qty( \Nelec (\Nelec-1)/2, \lfloor \sqrt{\Nsel} \rfloor/10 ) \\
@@ -691,14 +694,14 @@ F_i & = 1 + F_{\max} \qty( \max_{k=1}^{\Nst} |c_{ik}|^{1/2} )
 \end{align}
 where $F_i$ is an estimated cost of task $i$. In practice $F_i = 1$ for the majority.
 
-Task $i$ is put in the job queue $F_i$ times, each time associated with an index $s$ ranging from $0$ to $F_i-1$, which together with $F_i$ defines the subset of batches this task corresponds to.
+Task $i$ is put in the job queue $F_i$ times, each time associated with a `fragment'' index $s$ ranging from $0$ to $F_i-1$, which together with $F_i$ defines the subset of batches this task corresponds to.
 %Disjoint subsets are created using modulus, so that subsets are interleaved and thus more balanced.
 % Cette phrase n'etait pas facile a comprendre. Le plus simple, c'etait de la virer...
  
 \begin{algorithm}
         \caption{Task splitting, pseudocode for master}
         \label{alg:tasksplit_master}
-        \tcc{A logical task is the computation of $e[i]$, the sum of $e_\alpha$ over all unique $\kalpha$ generated from generator $\ket {G_i}$}
+        \tcc{A logical task is the computation of $e[i]$, the sum of $e_\alpha$ over all unique $\kalpha$ generated from generator $\ket {D_i}$}
         choose $F_i$ for all $i$\;
         \For{$i=1,\Ngen$}{
         \For{$s=0,F_i-1$}{
@@ -723,7 +726,7 @@ Task $i$ is put in the job queue $F_i$ times, each time associated with an index
                 get task $(i, s \in [0,F_i-1])$ from the queue \;
                 $E \gets 0$ \;
                 $c \gets 0$ \;
-                $G \gets D_I$ \;
+                $G \gets D_i$ \;
                 \tcc{duplicated computation if $F_i > 1$}
                 filtering for $G$ (see figure \ref{fig:selection}) \;
                 \ForEach{$G_p$}{
@@ -740,7 +743,7 @@ Task $i$ is put in the job queue $F_i$ times, each time associated with an index
         }
 \end{algorithm}
 
-This fragmentation scheme is shown in a simpler and more general way when used to compute $\EPT$ in chapter \ref{chap:PT2}. In a nutshell, we can see it as a toy problem where we want to print for each generator the sum of $e_\alpha$ over all unique $\kalpha$ it has generated. The algorithm for this on the master and slave side is shown as algorithms \ref{alg:tasksplit_master} and \ref{alg:tasksplit_slave} respectively.
+This fragmentation scheme can be shown in a simpler and more general way when used to compute $\EPT$ in chapter \ref{chap:PT2}. In a nutshell, we can see it as a toy problem where we want to print for each generator the sum of $e_\alpha$ over all unique $\kalpha$ it has generated. The algorithms for this on the master side and slave side are shown as algorithms \ref{alg:tasksplit_master} and \ref{alg:tasksplit_slave} respectively.
 
 
 For the determinant selection, we still use the mixed MPI/OpenMP paradigm, where one MPI process per node is used for efficient broadcasting of the replicated data. But, as opposed the Davidson implementation where each task was parallelized with OpenMP, here each OpenMP thread handles independently a task, computed with a single core. The first reason is that the number of tasks is larger than $\Ndet$, which is usually orders of magnitude larger than the number of CPU cores. Moreover, the computation of a task in parallel would require a synchronization barrier at the beginning and the end of the OpenMP section. Here, all the OpenMP threads are completely independent during the whole calculation of the selection, and this explains the very good scaling properties of the implementation, as shown in chapter~\ref{chap:PERF}.

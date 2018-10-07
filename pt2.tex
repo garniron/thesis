@@ -13,17 +13,17 @@ In some of the literature, computation of $\EPT$ is considered part of CIPSI. Th
 \begin{equation}
 \EPT = \sum_\alpha \frac{\Hij{\Psi}{\alpha}^2}{\Delta E_\alpha}
 \end{equation}
-It is essentially the sum all $\epsilon(\alpha)$ that are computed during a CIPSI selection.
+It is essentially the sum all $e_\alpha$ that are computed during a CIPSI selection.
 \begin{equation}
-\EPT = \sum_\alpha \epsilon(\alpha)
+\EPT = \sum_\alpha e_\alpha
 \end{equation}
-We will however see that practically, the computation of $\EPT$ is in practice more expensive than a CIPSI selection, so we designed a hybrid stochastic-deterministic scheme to get an accurate estimation of $\EPT$ for a reasonable cost. 
+We will however see that practically, the computation of $\EPT$ is in practice more expensive than a CIPSI selection, so we designed a hybrid stochastic-deterministic scheme to get an accurate estimation of $\EPT$ for a more reasonable cost. 
 
 \section{$\EPT$ \textit{vs} selection}
 
-The selection of determinants and the calculation of $\EPT$, all approximations aside, both imply the computation of $\epsilon(\alpha)$ for all $\ket \alpha$, so both can be computed at the same time. The selection is about identifying the set of the most important contributions, $\EPT$ is about computing the sum over all of them. There are two main consequences to this:
+The selection of determinants and the calculation of $\EPT$, all approximations aside, both imply the computation of $e_\alpha$ for all $\ket \alpha$, so both can be computed at the same time. The selection is about identifying the set of the most important contributions, $\EPT$ is about computing the sum over all of them. There are two main consequences to this:
 \paragraph{$\EPT$ is one iteration behind the selection}
-At iteration $n$, identifying the most significant $\ket \alpha$ is about building $\Psi^{n+1}$ while summing the contributions is about estimating the cost of truncation for $\Psi^{n}$. Computing $\EPT$ for a "final" wavefunction therefore requires an extra iteration, which applies to a larger number of determinants and thus is more expensive. Note that if only $\EPT$ is required, a more efficient algorithm can be used.\cite{Cimiraglia_1996}
+At iteration $n$, identifying the most significant $\ket \alpha$ is about building $\Psi^{(n+1)}$ while summing the contributions is about estimating the distance to full-CI for $\Psi^{(n)}$. Computing $\EPT$ for a "final" wavefunction therefore requires an extra iteration, which applies to a larger number of determinants and thus is more expensive. Note that if only $\EPT$ is required, a more efficient algorithm can be used.\cite{Cimiraglia_1996}
 
 \paragraph{The selection can take more approximations}
 The computation of the sum has to be more costly than just identifying the largest terms. As was said in chapter~\ref{chap:CIPSI}, the CIPSI algorithm can take pretty drastic approximations for the selection.\cite{Evangelisti_1983}
@@ -31,21 +31,21 @@ The computation of the sum has to be more costly than just identifying the large
 		\item{$\Ngen$}
 		allows to explore a reduced subset of $\ket \alpha$ in which we are almost sure to find those of interest.
 		\item{$\Nsel$}
-		allows for a less accurate and less expensive computation of $\epsilon(\alpha)$, which is unlikely to significantly change the identified set.
+		allows for a less accurate and less expensive computation of $e_\alpha$, which is unlikely to significantly change the identified set.
 	\end{itemize}
 	These approximations do not apply when computing $\EPT$. The very large number of smaller contributions makes them impossible to neglect without introducing a bias, and increasing the $n_g$ and $n_s$ thresholds dramatically increases the computational cost.
 
 
-Unfortunately, a partial computation of $\EPT$ always results in a biased result. Since $\epsilon(\alpha)$ is an energy contribution, it is necessarily negative, and $\EPT$ is a sum of same-sign contributions. Therefore, when $\EPT$ is truncated some correlation energy is missing but there is little clue how much exactly. The $n_g$ and $n_s$ thresholds used in CIPSI can be seen as ways of adjusting this truncation for a given computational cost.
+Unfortunately, a truncated computation of $\EPT$ always yields in a biased result. Since $e_\alpha$ is an energy contribution, it is necessarily negative, and $\EPT$ is a sum of same-sign contributions. Therefore, when $\EPT$ is truncated some correlation energy is missing but there is little clue how much exactly. The $\Ngen$ and $\Nsel$ thresholds used in CIPSI can be seen as ways of adjusting this truncation for a given computational cost.
 
 Before the stochastic computation of $\EPT$ was implemented, our best choice was to set low values of $n_g$ and $n_s$ while performing the selection, and accept very approximate values for $\EPT$ for intermediate wavefunctions. Then, once the selection was completed, we would raise them just for a final, very expensive ``$\EPT$ only'' iteration. In fact, an exact computation with $\Ngen=\Nsel=\Ndet$ was often prohibitively long, so the final $\EPT$ was still biased, and the biases were not well controlled. The effect was particularly important when computing atomization energies, where the $\EPT$ values were much more approximate on the molecule than on the atoms.
 A practical way to circumvent this problem was already proposed 20 years ago, by giving an extrapolation of $\EPT$ when $n_g$ goes to one.\cite{Angeli_1997} However, the algorithm we propose here has the advantage of giving an unbiased result within a statistical confidence interval.
 
 \section{Stochastic estimation of $\EPT$}
 
-We eventually solved the previously discussed problem by turning the bias into an error bar. The basic idea is that, instead of trying to get the largest possible chunk of contribution, we can randomly pick $\epsilon(\alpha)$ contributions and make a Monte-Carlo estimate for the sum over all $\ket \alpha$. In this case, to avoid any bias we must set
+We eventually solved the previously discussed problem by turning the bias into an error bar. The basic idea is that, instead of trying to get the largest possible chunk of contribution, we can randomly pick $e_\alpha$ contributions and make a Monte-Carlo estimate for the sum over all $\ket \alpha$. In this case, to avoid any bias we must set
 \begin{equation}
-n_g = \Ndet \; ; \; n_s = \Ndet.
+\Ngen = \Ndet \; ; \; \Nsel = \Ndet.
 \end{equation}
 Not only the estimate will be unbiased and much closer to the actual $\EPT$, but we will have an estimate for the error. Because $\EPT$ is itself used as an approximation
 \begin{equation}
@@ -55,25 +55,26 @@ An error significantly smaller than the typical accuracy of $\Evar + \EPT$ \text
 
 The actual Monte-Carlo computation is significantly more convoluted than simply drawing random $\kalpha$.
 
-\paragraph{$\epsilon(\alpha)$ are packed into elementary contributions $e_I$}
-Individual $\epsilon(\alpha)$ are expensive to compute. In the CIPSI algorithm, each generator determinant creates a number of unique $\kalpha$, and computes $\epsilon(\alpha)$ for each one of them.
-Essentially, the set of $\kalpha$ can be grouped in $\Ngen$ disjoint sets, each associated with a generator determinant, as shown in figure \ref{fig:a_sample}.
+\paragraph{$e_\alpha$ are packed into elementary contributions $e_I$}
+Individual $e_\alpha$ are expensive to compute. In the CIPSI algorithm, each generator determinant creates a number of unique $\kalpha$, and computes $e_\alpha$ for each one of them.
+Essentially, the set of $\kalpha$ is split in $\Ngen$ disjoint sets, each associated with a generator determinant, as shown in figure \ref{fig:a_sample}.
 \begin{equation}
-\epsilon(\alpha) \in \mathcal{A}_I \; ; \; \Hij{\alpha}{I} \neq 0 \; ; \;   \forall J < I, \Hij{\alpha}{J} = 0.
+e_\alpha \in \mathcal{A}_I \; ; \; \Hij{\alpha}{I} \neq 0 \; ; \;   \forall J < I, \Hij{\alpha}{J} = 0.
 \end{equation}
-Because of the numerous tricks described in chapter~\ref{chap:CIPSI}, we are able to compute all the $\epsilon(\alpha)$ of a set considerably faster than if we had to compute each contribution separately. Therefore, in order to access a larger chunk of data, the stochastic PT2 algorithm will not consider individual $\epsilon(\alpha)$, but instead sums of all $\epsilon(\alpha)$ from the same set:
+Because of the numerous tricks described in chapter~\ref{chap:CIPSI}, we are able to compute all the $e_\alpha$ of a set considerably faster than if we had to compute each contribution separately. Therefore, in order to access a larger chunk of data, the stochastic PT2 algorithm will not consider individual $e_\alpha$, but instead sums of all $e_\alpha$ from the same set:
 \begin{equation}
-e_I = \sum_{\alpha \in \mathcal{A}_I} \epsilon(\alpha)
+e_I = \sum_{\alpha \in \mathcal{A}_I} e_\alpha
 \end{equation}
 Indeed
 \begin{equation}
 \EPT = \sum_{I} e_I.
 \end{equation}
 
-The $e_I$'s are already explicitly computed by our CIPSI implementation, which returns the aggregated values of $\epsilon(\alpha)$ for one task, one task being essentially associated with a generator determinant.
+The $e_I$'s are already explicitly computed by our CIPSI implementation, which returns the aggregated values of $e_\alpha$ for one task, one task being essentially associated with a generator determinant.
 
 \paragraph{The $e_I$'s can be stored to avoid re-computation}
 Each elementary contribution is associated with a generator determinant, so there are only $\Ngen$ elementary contributions. This number is small enough to make all the $e_I$'s fit in memory, so when a $e_I$ contribution is computed, its value is stored and simply re-used if the same sample is drawn again. This, in turn, means the exact result will eventually be known in finite time, once every sample has been computed. The cost for this will essentially be the same as that of the purely deterministic, full computation, with a negligible additional cost due to the Monte-Carlo related computations (drawing random numbers, finding the associated samples\dots).
+\alert{PRECOMPUTED MONTE CARLO}
 
 \subsection{Monte-Carlo sampling}
 
@@ -109,36 +110,36 @@ and the 68.2\% confidence interval (statistical error) is $\bar{F} \pm \sqrt{\fr
 The simplest way to compute $\EPT$ with a Monte Carlo algorithm is to express $\EPT$ as
 \begin{equation}
 \EPT % = \sum_{\alpha = 1}^{N_\alpha} \frac{ \Hij{\alpha}{\Psi}^2 }{\Evar - H_{\alpha \alpha} } 
-= \sum_{\alpha = 1}^{N_\alpha} \epsilon(\alpha)
-= \frac{1}{N_\alpha} \sum_{\alpha = 1}^{N_\alpha} N_\alpha \epsilon(\alpha)
-= \langle N_\alpha\, \epsilon(\alpha) \rangle
-= \sum_{\alpha = 1}^{N_\alpha} p(\alpha) N_\alpha \epsilon(\alpha) 
+= \sum_{\alpha = 1}^{N_\alpha} e_\alpha
+= \frac{1}{N_\alpha} \sum_{\alpha = 1}^{N_\alpha} N_\alpha e_\alpha
+= \langle N_\alpha\, e_\alpha \rangle
+= \sum_{\alpha = 1}^{N_\alpha} p(\alpha) N_\alpha e_\alpha 
 \end{equation}
 with $p(\alpha) = 1 / N_\alpha$. This corresponds to a uniform sampling of the $\kalpha$ determinants.
 
-The largest the variance of $\epsilon_\alpha$, the slowest the convergence. Changing the sampling can reduce the variance, and one can make the sampling optimal by choosing the probability density
+The largest the variance of $e_\alpha$, the slowest the convergence. Changing the sampling can reduce the variance, and one can make the sampling optimal by choosing the probability density
 \begin{equation}
-p(\alpha) = \frac{\epsilon(\alpha)}{\mathcal{N}}
+p(\alpha) = \frac{e_\alpha}{\mathcal{N}}
 \end{equation}
 and computing
 \begin{equation}
 \EPT = \sum_{\alpha = 1}^{N_\alpha} p(\alpha) \times \mathcal{N}
 \end{equation}
 Unfortunately in this case, the normalization constant $\mathcal{N} =
-\sum_\alpha \epsilon_\alpha = \EPT$, and this would require to know already
+\sum_\alpha e_\alpha = \EPT$, and this would require to know already
 $\EPT$ before doing the calculation.
 
 Choosing a probability density which can be computed very fast and which
-approximates $\epsilon_\alpha / \EPT$ is expected to improve the convergence.
+approximates $e_\alpha / \EPT$ is expected to improve the convergence.
 If one takes the expression of 
 \begin{equation}
 \EPT = \sum_\alpha \sum_I \sum_J c_I c_J \frac{\Hij{I}{\alpha} \Hij{\alpha}{J}}{\Delta E_\alpha}, 
 \end{equation}
 one can remark that
 \begin{enumerate}
-\item As the determinants were selected with a CIPSI criterion, all the $\epsilon_\alpha$ are expected to be small. Hence, the $\Delta E_\alpha$ are all expected to be large enough to consider that $1/\Delta E_\alpha$ is almost constant.
+\item As the determinants were selected with a CIPSI criterion, all the $e_\alpha$ are expected to be small. Hence, the $\Delta E_\alpha$ are all expected to be large enough to consider that $1/\Delta E_\alpha$ is almost constant.
 \item 
-when $I=J$, each contribution to $\epsilon_\alpha$ has a negative sign. But when $I \ne J$, the sum is a sum of terms with alternating signs, almost cancelling each other. Hence, the dominant term of the sum is the diagonal term, proportional to $c_I^2$.
+when $I=J$, each contribution to $e_\alpha$ has a negative sign. But when $I \ne J$, the sum is a sum of terms with alternating signs, almost cancelling each other. Hence, the dominant term of the sum is the diagonal term, proportional to $c_I^2$.
 \item $\sum_\alpha \Hij{I}{\alpha} / \Delta E_\alpha$ can be seen as the correlation
 energy of determinant $\kI$, and this quantity is expected to be of the same order of magnitude among all the determinants.
 \end{enumerate}
@@ -158,7 +159,8 @@ fluctuations in the samples.
 		\label{fig:ei}
 \end{figure}
 
-The representation we are going to use is an horizontal series of $\Ndet$ boxes of width $w_i = c_i^2$, containing the sample index $i$.
+For algorithmic reasons the actual distribution $w_i$ we use isn't exactly $c_i^2$. This will be detailed later.
+The representation we are going to use is an horizontal series of $\Ndet$ boxes of width $w_i$, containing the sample index $i$.
 The sample index $i$ associated with drawing a random number $u \in [0,1)_\mathbb{R}$ is noted $w[u]$. It is determined using the cumulative probability distribution function $W$
 \begin{equation}
 W_i = \sum_{k \leq i} w_k
@@ -173,9 +175,9 @@ w[u] = i \; ; \; W_{i-1} \leq u < W_i
 	\begin{center}
 		\includegraphics[width=0.7\columnwidth]{figures/pt2/mc_representation}
 	\end{center}
-	\caption{Schematic representation of a Monte-Carlo computation
+	\caption{Schematic representation of our Monte-Carlo computation
 Values inside the boxes are sample indices. Values outside are probabilities and drawn random numbers.
-Drawing the random number $u$ using the cumulative probability density $W$ yields sample index $i=w[u]$.}
+Drawing the random number $u$ using the probability density $w$ yields sample index $i=w[u]$.}
 	\label{fig:mc_representation}
 \end{figure}
 
@@ -194,11 +196,11 @@ Drawing the random number $u$ using the cumulative probability density $W$ yield
 	\label{fig:p_i}
 \end{figure}
 
-Generator determinants are sorted with decreasing values of $|c_I|$.
+Generator determinants are sorted with decreasing values of $c_I^2$.
 As can be seen in figure \ref{fig:ei}, the values of $e_I$ span many orders of magnitude and decrease rapidly with $I$, in an exponential-looking way. Smoothed values for $e_I$ are shown in figure \ref{fig:p_i}. There are a few reasons for that.
 \begin{itemize}
 	\item
-	The values for the denominator $\Delta E_\alpha$ used in the computation of $\epsilon(\alpha)$ tend to increase, as variational determinants tend to be more and more excited and to populate higher orbitals 
+	The values for the denominator $\Delta E_\alpha$ used in the computation of $e_\alpha$ tend to increase, as variational determinants tend to be more and more excited and to populate higher orbitals 
 	\item
 	The number of unique $\ket \alpha$ per generator decreases. Indeed, the more ``previous generators'' there is, the likelier it is that a generated $\ket \alpha$ was generated before.
 	\item
@@ -217,7 +219,7 @@ Because of its original nature, this algorithm casts some ambiguity on what shou
 \end{figure}
 In a comb, the space of generators is split into domains of equal probability (see
 domains $P_1, \dots P_4$ in figure~\ref{fig:p_i}), and
-one sample is drawn in each domain independently. Then, all those $e_I$ are added together to make the contribution of the comb. Because the function $e_I$ decreases smoothly, the contributions of the combs fluctuate less than the individual contributions, and the variance can be further reduced, as shown in figure~\ref{fig:ei_comb}.
+one sample is drawn in each domain. Then, all those $e_I$ are added together to make the contribution of the comb. Because the function $e_I$ decreases smoothly, the contributions of the combs fluctuate less than the individual contributions, and the variance can be further reduced, as shown in figure~\ref{fig:ei_comb}.
 
 
 
@@ -236,7 +238,7 @@ $\mathcal{T}_0$ is always computed before any stochastic estimation can take pla
 
 \subsection{Division of the stochastic domain in $\Nteeth$ \emph{teeth}}
 
-As seen in section~\ref{sec:partition}, because $\frac{e_I}{w_I}$ mainly decreases, a range has a lower variance than the whole domain. The stochastic domain is split in $\Nteeth$ ranges referred to as \emph{teeth}, noted $\mathcal{T}_1,\ldots,\mathcal{T}_{\Nteeth}$ and sharing the same total weight $W_T$
+As seen in section~\ref{sec:partition}, because $\frac{e_I}{w_I}$ \alert{mainly} decreases, a range has a lower variance than the whole domain. The stochastic domain is split in $\Nteeth$ ranges referred to as \emph{teeth}, noted $\mathcal{T}_1,\ldots,\mathcal{T}_{\Nteeth}$ (called $\mathcal{D}_t$ in the presented article) and sharing the same total weight $W_T$
 \begin{equation}
 \sum_{I \in \mathcal{T}_{t \geq 1}} w_I=W_T.
 \end{equation}
@@ -320,7 +322,7 @@ perturbative contribution of multireference perturbation theory}
 \subsection{Why an initial deterministic part?}
 
 The initial deterministic range $\mathcal{T}_0$ is a technical constraint.
-Because samples are sorted with decreasing $\tilde w_i$, it is guaranteed that $|\mathcal{T}_{t>t'}| \geq |\mathcal{T}_{t' \neq 0}|-1$. \alert{ Ca veut dire quoi $|\mathcal{T}_t|$ le nombre de dets dans la dent? C'est deja defini quelquepart? }
+Because samples are sorted with decreasing $\tilde w_i$, it is guaranteed that $|\mathcal{T}_{t>t'}| \geq |\mathcal{T}_{t' \neq 0}|-1$ with $|\mathcal{T}_t|$ the cardinality of $\mathcal{T}_t$.
 For each comb, we draw a sample in each tooth, and when a tooth is entirely computed, it is moved to $\mathcal{D}$. Thus, it is immediately obvious that a tooth containing a single sample makes no sense, as it will be instantly moved to $\mathcal{D}$ ; it can as well be considered part of it. Because it is common practice to require at least 30 samples for the distribution of the average to become close enough to a Gaussian distribution, we can go further and consider that a tooth with fewer than 5-10 samples will be moved to $\mathcal{D}$ too fast to be of real interest. Because the first $c_I^2$ are usually disproportionately large, it is not possible to fit that many in a tooth. Therefore they are immediately considered part of $\mathcal{D}$.
 
 \subsection{Desired \textit{vs} effective distribution function}
@@ -331,7 +333,7 @@ We are sampling comb values, but we have defined $\tilde w_I$ a distribution fun
 \begin{equation}
 W_T=\frac{1-u_0}{\Nteeth}
 \end{equation}
-in the Monte-Carlo scheme. Therefore, the effective weight given to $e_I \in \mathcal{T}_t$ is
+in the Monte-Carlo scheme. Therefore, the effective weight given to $I \in \mathcal{T}_t$ is
 \begin{equation}
 w_{I \in \mathcal{T}_t} = W_T \times \frac{\tilde w_I}{\sum_{J \in \mathcal{T}_t} \tilde w_J}
 \end{equation}
@@ -343,7 +345,7 @@ To leave the distribution function unaltered, we need all teeth to actually weig
 
 Clearly this is not going to be the case for any distribution function $\tilde w$. Schematically, as seen in figure \ref{fig:toothbuilding}, it would require the threshold between two teeth to exactly match the threshold between two samples. It is possible to artificially split a sample to get a matching threshold, but this adds some complexity in the implementation.
 
-We have enforced that all teeth contain at least 5-10 samples - and they usualy contain a lot more, up to hundreds of thousands. Therefore, a simpler solution is to ``round'' the teeth thresholds to the $e_I$ threshold directly above, which will result in teeth with weights close to $W_T$, and thus the effective distribution function will be little different from the desired one. Since our distribution function is an extremely rough estimation of $e_I$, this is unlikely to cause any significant change in convergence rate.
+We have enforced that all teeth contain at least 5-10 samples - and they usualy contain a lot more, up to hundreds of thousands. Therefore, a simpler solution is to ``round'' the teeth thresholds to the $e_I$ thresholds directly above, which will result in teeth with weights close to $W_T$, and thus the effective distribution function will be little different from the desired one. Since our distribution function is an extremely rough estimation of $e_I$, this is unlikely to cause any significant change in convergence rate.
 
 Essentially, we will use $\tilde w$ only to define the $\mathcal{T}_t$ sets, then use $w$ as the actual distribution function. This gives us, by definition, teeth weighing exactly $W_T$.
 This is illustrated in figure \ref{fig:toothbuilding}.
@@ -352,7 +354,7 @@ This is illustrated in figure \ref{fig:toothbuilding}.
 	\begin{center}
 		\includegraphics[width=0.9\columnwidth]{figures/pt2/toothbuilding}
 	\end{center}
-	\caption{Adjusting sample weights. Desired weights $\tilde w_i$ are adjusted to effective weights $w_i$ so as to satisfy $\sum_{I \in \mathcal{T}_{n \neq 0}} w_I = W_T$.}
+	\caption{Adjusting sample weights. Desired weights $\tilde w_i$ are adjusted to effective weights $w_i$ so as to satisfy $\sum_{i \in \mathcal{T}_{n \neq 0}} w_i = W_T$.}
         \label{fig:toothbuilding}
 \end{figure}
 
@@ -392,9 +394,9 @@ The algorithm to find a sample index associated with drawing $u$ in with a distr
 	
 	
 	\Fn{\FFind{$v$,$p$}}{
-		\tcc{Finds sample index associated with drawing random value $v$ in a cumulative probability distribution $p$}
+		\tcc{Finds sample index associated with drawing random value $v$ using a cumulative probability distribution $p$}
 		\KwData{$0 \leq v < 1$}
-		\KwData{$p$ float array of size $N$ with $p[0]=0$, $p[N]=1$, $p[n+1] \geq p[n]$}
+		\KwData{$p$ float array of size $N$ with $p[0]=0$, $p[N]=1$, $p[n+1] > p[n]$}
 		\KwResult{Returns $i$ so that $p[i-1] \leq v < p[i]$}
 		
 		\tcc {The result must be in the range $[l,r]_\mathbb{Z}$. We set them for the most general case}
@@ -426,7 +428,7 @@ The algorithm to find a sample index associated with drawing $u$ in with a distr
 \begin{description}
 \item[$\tilde w_I$]
 The desired distribution function, which we chose to be $c_I^2$.
-\item[$\Nteeth$]
+\item[$N_{teeth}$]
 A desired number of teeth
 \item[$\minDetInT > 1$]
 A desired minimal number of samples in first teeth. All subsequent teeth are guaranteed to contain $\minDetInT-1$ samples.
@@ -446,13 +448,17 @@ An array of size $\Nteeth+1$ so that $n_0(t)$ is the number of samples in $\math
 There is no trivial way to ensure teeth building will succeed with a given set of parameters. 
 With $n_0(1)$ the size of the initial deterministic set $\mathcal{T}_0$, teeth building is sure to fail if 
 \begin{equation}
-\Ngen - n_0(1) < \minDetInT \times \Nteeth
+\Ngen - n_0(1) < (\minDetInT - 1) \times \Nteeth + 1
 \end{equation}
-However, it may not succeed as there is no guarantee the first tooth will contain $\minDetInT$ samples. Because samples are sorted with decreasing $\tilde w_I$, each tooth is guaranteed to contain as many or more samples than the previous one, so we only need to ensure $|\mathcal{T}_1| \geq \minDetInT$.
-Relying on the fact that relative values of $\tilde w_I$ get closer and closer, we increment $n_0(1)$ until either the first tooth contains enough samples, or the impossibility condition is reached.
+However, the opposite doesn't guarantee success. Because samples are sorted with decreasing $\tilde w_I$, each tooth is guaranteed to contain at least $\minDetInT -1$ samples, so building will success if $|\mathcal{T}_1| \geq \minDetInT$.
+Relying on the fact that relative values of $\tilde w_I$ get closer and closer, we increment $n_0(1)$ until either the first tooth contains $\minDetInT$ samples, or the impossibility condition is reached.
+If teeth building fails, we retry will $N_{teeth} - 1$ teeth (build always succeeds with $N_{teeth} = 1$).
+Then, $n_0(t)$ and the effective distribution function $w_I$ can be fully computed.
+Teeth building is show as algorithms \ref{alg:build_teeth} and \ref{alg:build_w}.
 
 \begin{algorithm}
 	\caption{Compute teeth weights and boundaries}
+	\label{alg:build_teeth}
 	\KwData{$\tilde w_i$, $\Nteeth$, $\minDetInT$ as previously described}
 	\KwResult{$n_0(1),u_0,W_T$}
 	
@@ -481,11 +487,12 @@ Relying on the fact that relative values of $\tilde w_I$ get closer and closer, 
 	$n_0(\Nteeth+1) = \Ngen$ \;
 \end{algorithm}
 
-Then, $n_0(t)$ and the effective distribution function $w_I$ can be fully computed.
+
 
 
 \begin{algorithm}
 	\caption{Compute effective distribution function}
+	\label{alg:build_w}
 	\KwData{$\tilde{w}_i, n_0, W_T$}
 	\KwResult{$w_i$}
 	$\tilde W_I = \sum_{i \leq I} {\tilde w_i}$ \;
@@ -503,7 +510,7 @@ Then, $n_0(t)$ and the effective distribution function $w_I$ can be fully comput
 
 %J'en suis la
 \subsection{Building the task queue}
-
+\label{sub:task_queue}
 For a massively parallel implementation, we need to create a task queue. Because values for $e_I$ are stored, quite clearly, we need one task per generator determinant. Because of the tooth filling mechanism, we know we will need at most $\Ngen$ combs.
 \begin{description}
 \item{$J$} is the task queue, $J[i]$ the index of the $i^{th}$ sample $e_I$ that must be computed.
@@ -516,8 +523,9 @@ For a massively parallel implementation, we need to create a task queue. Because
 
 
 \begin{algorithm}
-	\caption{Building "unfragmented" task queue}
+	\caption{Building task queue}
 	\label{alg:TASK_QUEUE}
+	\tcc{See section \ref{sub:task_queue} for variables description}
 	$R \gets $ array size $\Ngen$ initialized to 0 \;
 	$N_c \gets 0$ \;
 	$N_j \gets n_0(1)$ \;
@@ -582,9 +590,10 @@ For a massively parallel implementation, we need to create a task queue. Because
 
 \subsection{computing estimation and error}
 
+The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. The slave threads take a generator and a "fragment" index, and return the result to the master thread;
 
 \begin{algorithm}
-	\caption{PT2 master}
+	\caption{Master node in $\EPT$ computation}
 	\label{alg:PT2_MASTER}
 	$n \gets 1$ \;
 	$t \gets 0$ \;
@@ -639,19 +648,6 @@ For a massively parallel implementation, we need to create a task queue. Because
 		$S^{(2)}_t \gets S^{(2)}_t + x^{2}$ \;
 	}
 \end{algorithm}
-
-
-
-
-\begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=0.9\columnwidth]{figures/pt2/eici2comb}
-		\caption{A REFAIRE NOTATION.............}
-		\label{fig:eici2comb}
-		$e_I$
-	\end{center}
-\end{figure}
-
 
 
 
