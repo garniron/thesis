@@ -20,19 +20,19 @@ closed  shell  fragments  were  established.
 By  strict  separability  (which
 is  less ambiguous than the terms size-extensivity and size consistency) we
 mean that at the non-interacting limit of an $A\cdots B$ problem the energies are
-additive, $E_{A\cdots B} = E_A+E_B$, and that the amplitudes associated with the single
+additive, $E_{AB} = E_A+E_B$, and that the amplitudes associated with the single
 and  double excitation operators  are  the  same  as  those  obtained  for  the  isolated  $A$
 and  $B$  problems.
 
 Why this is not the case in CI methods can be easily understood as the absence of some excitations simulatenously on all subsystems.
 
-Considering a supersystem $C$ made of two non-interacting subsystems $A$ and $B$, and write its CID wavefunction (Hartree-Fock determinant and all its double excitations).
+Considering a supersystem $AB$ made of two non-interacting subsystems $A$ and $B$, and write its CID wavefunction (Hartree-Fock determinant and all its double excitations).
 
 \begin{equation}
-\Psi^C = \Psi_{HF}^C + \Psi_{D}^C
+\Psi^{AB} = \Psi_{HF}^{AB} + \Psi_{D}^{AB}
 \end{equation}
 
-with $\Psi_{HF}^C$ the Hartree-Fock determinant for system $C$, and $\Psi_{D}^C$ the sum of all double excitation with respect to $\Psi_{HF}^C$.
+with $\Psi_{HF}^{AB}$ the Hartree-Fock determinant for system $C$, and $\Psi_{D}^{AB}$ the sum of all double excitation with respect to $\Psi_{HF}^{AB}$.
 
 If we now write $\Psi^{A+B}$ the product of the two separate CID wavefunctions of $A$ and $B$
 
@@ -40,13 +40,13 @@ If we now write $\Psi^{A+B}$ the product of the two separate CID wavefunctions o
 \begin{align}
 \Psi^{A+B} = & \Psi^A  \Psi^B \\
  = & \Psi_{HF}^A\Psi_{HF}^B  + \Psi_{HF}^A\Psi_{D}^B + \Psi_{D}^A\Psi_{HF}^B + \Psi_{D}^A \Psi_{D}^B \\
- = & \Psi^C_{HF} + \Psi^C_D + \Psi_{D}^A \Psi_{D}^B
+ = & \Psi^{AB}_{HF} + \Psi^{AB}_D + \Psi_{D}^A \Psi_{D}^B
 \end{align}
 
-As can be seen, $C$ isn't described as the product of $A+B$ as it should, since simultaneous double excitations on $A$ and $B$ cannot be accounted for
+As can be seen, $\Psi^{AB}$ isn't described as the product of $\Psi^A$ and $\Psi^B$ as it should, since simultaneous double excitations on $A$ and $B$ cannot be accounted for
 
 \begin{equation}
-\Psi^{A+B} - \Psi^C  = \Psi_{D}^A \Psi_{D}^B
+\Psi^{A+B} - \Psi^{AB}  = \Psi_{D}^A \Psi_{D}^B
 \end{equation}
 
 Some methods aim at partially or fully correct this size-consistency error by eliminating the unlinked effects of the CISD. The so-called \emph{Davidson corrections}, that are essentially correction to the energy\cite{Langhoff_1974}. \alert{citation a verif}, and the so-called \emph{Coulpled Electron Pair Approximations (CEPA)} that correct the CI equations\cite{Kelly_1963,Kelly_1964,Meyer_1971,Meyer_1973,Meyer_1974,Ahlrichs_1975}. Many different variations have been proposed, for a review see \cite{Koch_1981}.
@@ -71,8 +71,8 @@ with $\hat T_1$ and $\hat T_2$ the 1 and 2 orbitals cluster operators
 
 with $\hat T_{pq}^{rs}$ the usual excitation operator, and $t_{pq}^{rs}$ the so-called \emph{amplitude} associated with it.
 
-Again considering a system made of two infinitely distant sub-systems $A$ and $B$, thanks to the exponential expression, if one uses local orbitals - that is, the reference determinant $\ket {HF}$ is factorisable in $\ket{HF_A}$ and $\ket{HF_B}$ determinants isolated on $A$ and $B$ - the energy and wavefunction on the isolated fragments will be the same as on the $A+B$ supersystem.
-Indeed, amplitudes associated with excitations involving orbitals for both fragments will be null due to the infinite distance. Therefore $\hat T$ can be split in $\hat T_A$ and $\hat T_B$ the cluster operators involving one fragment.
+Again considering a system made of two infinitely non-interacting sub-systems $A$ and $B$, thanks to the exponential expression, if one uses local orbitals - that is, the reference determinant $\ket {HF}$ is factorisable in $\ket{HF_A}$ and $\ket{HF_B}$ determinants isolated on $A$ and $B$ - the energy and wavefunction on the isolated fragments will be the same as on the $A+B$ supersystem.
+Indeed, amplitudes associated with excitations involving orbitals for both fragments will be null due to the non-interaction. Therefore $\hat T$ can be split in $\hat T_A$ and $\hat T_B$ the cluster operators involving one fragment.
 
 \begin{equation}
 \ket \Psi = e^{\hat T} \ket {HF} = \ket \Psi = e^{\hat T_A + \hat T_B} \ket {HF} = e^{\hat T_A} \ket {HF_A} e^{\hat T_B} \ket {HF_B}
@@ -88,13 +88,13 @@ Whether the matrix dressing algorithm performs a shifted-Bk, an MR-CCSD or some 
 Looking at the expression of $c_\alpha$ for shifted-Bk, it looks like the computation required is the exact same as the one performed by our CIPSI
 
 \begin{equation}
-c_\alpha = \frac{\Hij{\alpha}{\Psi}}{\Delta E_\alpha} = \sum_{i=1}^{\Ndet} c_{D_i} \frac{\Hij{\alpha}{D_i}}{\Delta E_\alpha}
+c_\alpha = \frac{\Hij{\alpha}{\Psi}}{\Delta E_\alpha} = \sum_{I=1}^{\Ndet} c_I \frac{\Hij{\alpha}{D_I}}{\Delta E_\alpha}
 \end{equation}
 
 
 But the expression of $c_\alpha$ for shifted-Bk has a particularity that lifts a constraint compared to the general case: as can be seen, while for any $\kalpha$ we need to find all internal determinants it connects to, we do not need to know them \emph{at the same time}, i.e. $c_\alpha$ can be incrementally built from terms that only involve one internal determinant at a time. This is not generally the case, and isn't the case in MRCC.
 
-Thus, matrix dressing generally requires knowledge of all internal determiants a particular $\kalpha$ connects to, before $c_\alpha$ - and thus the associated increment to $\pmb \kappa$ - can be computed. For efficiency, as well as simplicity, this list must absolutely be computed upstream the call to $Z(\alpha, \ldots)$, making it in practice $Z^\star(\alpha, \Psi_{c}, \ldots)$ with $\Psi_{c}$ the variational wavefunction stripped of all determinants that do not connect to $\kalpha$ (thus not normalized). 
+Thus, matrix dressing generally requires knowledge of all internal determiants a particular $\kalpha$ connects to, before $c_\alpha$ - and thus the associated increment to $\pmb \delta$ - can be computed. For efficiency, as well as simplicity, this list must absolutely be computed upstream the computation of $Z(\alpha, \ldots)$, making it in practice $Z^\star(\alpha, \Psi_{c}, \ldots)$ with $\Psi_{c}$ the variational wavefunction stripped of all determinants that do not connect to $\kalpha$ (thus not normalized). 
 
 This is a lot like the former implementation of CIPSI : considering one $\kalpha$ at a time, enumerate its connections to selectors. The new, more efficient algorithm, however, considers a batch of up to ${N_{virt}}^2$ rather than a single one. The solution in conceptually simple. Neglecting connections to determinants that are not selectors :
 \begin{enumerate}
@@ -110,7 +110,7 @@ When computation for batch $G_{pq}$ is completed, $\mathcal{C}_{rs}$ is the set 
 \item
 $c_\alpha \gets Z^\star(\alpha, \mathcal{C}_{rs}, \ldots)$
 \item
-for each $\ket S \in \mathcal{C}_{rs}$ increment $\kappa_S$ with $c_\alpha \Hij{\alpha}{S}$
+for each $\ket {D_k} \in \mathcal{C}_{rs}$ increment $\delta_k$ with $c_\alpha \Hij{\alpha}{S}$
 \end{enumerate}
 
 
@@ -125,14 +125,14 @@ for each $\ket S \in \mathcal{C}_{rs}$ increment $\kappa_S$ with $c_\alpha \Hij{
 	\end{center}
 \end{figure}
 
-As can be seen, this is pretty much the CIPSI algorithm, except we are building sets instead of incrementing scalars. This, of course, adds implementation complexity. The sizes of the $\mathcal{C}_{rs}$ sets aren't known in advance. Resizable arrays can be used. While they are not very practical to use in Fortran, they are not too hard to set up. 
+As can be seen, this is pretty much the CIPSI algorithm, except we are building sets instead of incrementing scalars. This, of course, adds implementation complexity. The sizes of the $\mathcal{C}_{rs}$ sets aren't known in advance. Resizable arrays can be used, although they are not built-in in Fortran.
 
 More importantly, the storage space required may be concerningly high. Noticing that :
 \begin{itemize}
 \item
 all $\Gpqrs$ in a batch are connected to each other
 \item
-there is ${N_{virt}}^2$ non-null $\Gpqrs$ in a batch
+there are ${N_{virt}}^2$ non-zero $\Gpqrs$ in a batch (${N_{virt}} \approx \Norb - \Nalpha$).
 \end{itemize}
 and considering a particular case where
 \begin{itemize}
@@ -142,8 +142,8 @@ $G_{pq}$ is the first batch (all generated $\kalpha$ are unique)
 half of $\Gpqrs$ are internal determinants
 \end{itemize}
 
-We have ${N_{virt}}^2 / 2$ unique $\kalpha$ in the batch each one connecting to at least ${N_{virt}}^2 / 2$ internal determinants, for a total storage space of at least ${N_{virt}}^4 / 4$.
-This case isn't irrealistic, with $\ket {G_{pq}}$ the Hartree-Fock determinant and $(p,q)$ the HOMO spinorbitals.
+We have $\frac{1}{2}{N_{virt}}^2$ unique $\kalpha$ in the batch each one connecting to at least $\frac{1}{2}{N_{virt}}^2$ internal determinants, for a total storage space of at least $\frac{1}{4}{N_{virt}}^4$.
+This case isn't irrealistic, with $\ket {G}$ the Hartree-Fock determinant and $(p,q)$ the HOMO spinorbitals.
 
 Another issue is a high number of non-contiguous writes in memory, especially with those selectors that connect to all determinants of the batch ; they need to be added to ${N_{virt}}^2$ sets, which is ${N_{virt}}^2$ non-contiguous writes for a single selector.
 
@@ -174,19 +174,19 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
 		%\KwResult{$Z^\star(\Gpqrs, \mathcal{C}_{rs})$ is called for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$}
 		\KwResult{$\mathcal{C}_{rs}$ is computed for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$} 
 		\tcc{$\interC{rs}$ and $\finC{rs}$ are considered arrays, the syntax $\finC{rs}[i\ldots j]$ is used to denote a segment of array}
-		$T$ and array size $\Nsel$ initialized to TRUE \;
+		$T$ an array size $\Nsel$ initialized to $\TRUE$ \;
 		$L$ an array of determinants size $\Nsel$ \;
         $i_1 = |\interC{00}|$ \;   
         $L[1 \ldots i_1] \gets \interC{00}[1 \ldots {i_1}]$ \;
         
-		\tcc {$B_{r0} = FALSE$ if column entirely tagged}		
+		\tcc {$B_{r0} = \FALSE$ if column $r$ is entirely tagged}		
 		\ForAll{$r ; B_{r0}$}{
 		  $i_2 = i_1 + |\interC{r0}|$ \;
 		  $L[i_1+1 \ldots i_2] \gets \interC{r0}$ \;
 		  \For{$i=1,|\interC{r0}|$}{
-		    $T[\interC{r0}[i]] \gets FALSE$
+		    $T[\interC{r0}[i]] \gets \FALSE$
 		  }
-		  \ForAll{$s;B_{rs}=TRUE$}{
+		  \ForAll{$s;B_{rs}=\TRUE$}{
 		    $i_3 = i_2$ \;
 		    \For{$i=1,|\interC{s0}|$}{
 		      \If{$T[\interC{s0}[i]]$}{
@@ -200,7 +200,7 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
 		    assert $L = \finC{rs}$
 		  }
 		 \For{$i=1,|\interC{s0}|$}{
-		    $T[\interC{s0}[i]] \gets TRUE$
+		    $T[\interC{s0}[i]] \gets \TRUE$
 		  }
 		}
 \end{algorithm}
@@ -211,6 +211,7 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
 
 
 \begin{algorithm}
+\caption{Compute a $c_\alpha$ for MRCC}
 \KwData{$\kalpha$ the considered exernal determinant}
 \KwData{$\ket {D_i}$ the list of $N$ internal determinants connected to $\kalpha$, sorted by increasing integer value}
 \KwData{$\ket {R_i}$ the list of $N_{ref}$ reference determinants sorted by increasing integer value and $c_{R_i}$ their coefficient}
@@ -218,8 +219,8 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
 \KwResult{$c_\alpha$} 
 
 $c_\alpha \gets 0$ \;
-discard $R_i$ when $\text{EXC\_DEGREE} (R_i, \alpha) > 4$ \;
-if $R_i$ so that $\text{EXC\_DEGREE} (R_i, \alpha) \leq 2$ was found, discard $\kalpha$ \;
+discard $R_r$ when $\text{EXC\_DEGREE} (R_r, \alpha) > 4$ \;
+if $R_r$ so that $\text{EXC\_DEGREE} (R_r, \alpha) \leq 2$ was found, discard $\kalpha$ \;
 
 
 \ForAll{$D_j$}{
@@ -253,7 +254,7 @@ $r \gets 1$ \;
 %incomplet : c_\alpha = \sum_{(\hat p, \hat q, R);\hat p \hat q \ket R = \kalpha} \varphi \times c_R t_p t_q
 %\end{equation}
 
-The formula for $c_\alpha$ as well as the procedure for computing amplitudes is detailed in the presented article, in particular, equation 26 shows the formula to compute $c_\alpha$, as a sum of terms, each associated with what can be described as a ``diamond'' structure. 
+The formula for $c_\alpha$ as well as the procedure for computing amplitudes is detailed in the presented article, in particular, equation 26 shows the formula to compute $c_\alpha$, as a sum over what can be described as ``diamond'' structures. 
 
 %\begin{figure}[h!]
 	\begin{center}
@@ -263,9 +264,9 @@ The formula for $c_\alpha$ as well as the procedure for computing amplitudes is 
 	\end{center}
 %\end{figure}
 
-With $\kalpha$ the external determinant being considered, $\ket {D_i}$ and $\ket {D_j}$ internal determinants, and $\ket {R_r}$ a reference determinant.  Parallel arrows indicate connections (excitation degree at most 2) by the same excitation, the vertical arrow indicates $\ket {R_r}$ and $\kalpha$ aren't connected (excitation degree at least 3). All the determinants we are considering are ordered according to $\ordering$.
+With $\kalpha$ the external determinant being considered, $\ket {D_i}$ and $\ket {D_j}$ internal determinants, and $\ket {R_r}$ a reference determinant.  Parallel arrows indicate connections (excitation degree at most 2) by the same excitation, the vertical arrow indicates $\ket {R_r}$ and $\kalpha$ aren't connected (excitation degree at least 3). More generally, we only consider $\kalpha$ determinants that are not connected to any $\ket {R_r}$. All the determinants we are considering are ordered according to $\ordering$.
 
-The matrix dressing implementation supplies $\{\mathcal{D}\}$ the complete list of internal determinants that connect to $\kalpha$. We call $\{\mathcal{R}\}$ the list of reference determinants.
+The matrix dressing implementation supplies $\{\mathcal{D}\}$ the complete set of the $N$ internal determinants that connect to $\kalpha$. We call $\{\mathcal{R}\}$ the set of the $N_{ref}$ reference determinants.
 
 A naive way to find those diamonds, would be to loop over all unordered triplets 
 
@@ -276,31 +277,37 @@ A naive way to find those diamonds, would be to loop over all unordered triplets
 so that
 
 \begin{equation}
-\hat T_{R \rightarrow D_i} \hat T_{R \rightarrow D_j} \ket {R_r} = \pm \kalpha
+\hat T_{R_r \rightarrow D_i} \hat T_{R_r \rightarrow D_j} \ket {R_r} = \pm \kalpha
 \end{equation}
 
-with $\hat T_{R \rightarrow D}$ the excitation operator so that $\hat T_{R \rightarrow D} \ket R = \ket D$.
+with $\hat T_{R_r \rightarrow D}$ the excitation operator so that $\hat T_{R_r \rightarrow D} \ket R = \ket D$.
 
 
 
 Using excitation operators, a diamond can be identified by only verifying
 \begin{equation}
-\hat T_{R \rightarrow D_i} = \pm \hat T_{D_j \rightarrow \alpha}
+\hat T_{R_r \rightarrow D_i} = \pm \hat T_{D_j \rightarrow \alpha}
 \label{eq:excitation_diamond}
 \end{equation}
 
-In other words that $\hat T_{R \rightarrow D_i}$ and $\hat T_{D_j \rightarrow \alpha}$ involve the same holes and particles (the sign of $T_{D_j \rightarrow \alpha}$ sets the sign in of $\kalpha$ in a diamond).
+In other words that $\hat T_{R_r \rightarrow D_i}$ and $\hat T_{D_j \rightarrow \alpha}$ involve the same holes and particles (the sign of $T_{D_j \rightarrow \alpha}$ sets the sign in of $\kalpha$ in a diamond).
 We first set up a method to identify a diamond, then two methods to ``locate'' them.
 
 
 \paragraph{Identifying diamonds}
-For implementational efficiency, we are going to express excitations using $\hat f_a$ an operator that flips the occupation status of a spinorbital.
+For implementational efficiency, we are going to express excitations using $\hat f_p$ an operator that flips the occupation status of a spinorbital $p$.
 \begin{align}
   \begin{cases}
   \hat f_p \ket A = a_p \ket A & \text{if }  a_p \ket A \neq 0\\
   \hat f_p \ket A = a^\dagger_p \ket A & \text{if }  a^\dagger_p  \ket A \neq 0\\
   \end{cases}
 \end{align}
+
+Or in a less verbose formulation
+
+\begin{equation}
+f_p = a_p + a^\dagger_p
+\end{equation}
 This avoids the burden of making a distinction between anihilation and creation operator, and of checking whether they can be applied to a determinant. This also ignores phase factors.
 
 
@@ -346,7 +353,9 @@ Now that we know Eq.~\eqref{eq:diamond_flip} is sufficient to identify a diamond
 A \oplus B
 \end{equation}
 
-therefore Eq.~\eqref{eq:diamond_flip} is verified iff
+With $A$ a single bitstring associated with $\ket A$ - the association between a spinorbital and a bit is arbitrary.
+
+Eq.~\eqref{eq:diamond_flip} is verified iff
 
 \begin{equation}
 R_r \oplus D_i = D_j \oplus \alpha
@@ -387,7 +396,7 @@ Those are desirable if one of $\{\mathcal{D}\}$ or $\{\mathcal{R}\}$ is relative
 
 
 \paragraph{Locating diamonds by rewriting excitations as additions}
-Although the method could be chosen on a ``by-$\alpha$'' basis depending on $|\mathcal{R}|$ and $|\mathcal{D}|$, only this one is currently used in the \QP as it works for larger sets.
+Although the method could be chosen on a ``by-$\alpha$'' basis depending on $N$ and $N_{ref}$, only this one is currently used in the \QP as it works for larger sets.
 Unlike the previous one, this method may yield false positives, thus it uses Eq.~\eqref{eq:diamond_xor} for confirmation.
 The idea is to express an excitation as an addition. As was said, bitstrings are essentially integers, so they can be added, subtracted and compared as such. As in the case of the $\hat f$ operator, this approach entierely ignores phase factors. We can easily associate $T_{A \rightarrow B}$ and $T_p^q$ integer values with  excitations $\pm \hat T_{A \rightarrow B}$ and $\pm \hat T_p^q$ respectively
 
@@ -403,13 +412,11 @@ With $A$ the bitstring associated with $\ket A$ as a single integer - the associ
 T_{R \rightarrow D_i} = T_{D_j \rightarrow \alpha}
 \end{equation}
 
-indeed 
-
+Indeed 
 \begin{align}
 \pm \hat T \ket A = \ket B \implies  T + A = B\\
 T + A = B \centernot \implies \pm \hat T \ket A = \ket B
 \end{align}
-
 with $T$ the integer associated with excitation $\pm \hat T$. If $\pm \hat T \ket A = 0$, in most cases $T + A$ will yield a bitstring with a wrong number of bits/electrons, but this is not guaranteed, hence the presence of rare false positives.
 
 Eq.~\eqref{eq:excitation_diamond} implies
@@ -446,7 +453,7 @@ When it comes to comparison, since the 64 bit integers corresponding to the lowe
 
 
 
-So far we have ignored phase factors, but we need to know the sign of $\kalpha$ in each found diamond. This can be tricky, since confusion can easily arise from reference-dependent and reference-independent notations. To keep generality, we use reference-dependant notations, unlike in the formula for $c_\alpha$ presented in the article.
+So far we have ignored phase factors, but we need to know the sign of $\kalpha$ in each found diamond. This can be tricky, since confusion can easily arise from reference-dependent and reference-independent notations. To keep generality, we use reference-dependant notations, unlike equation 26 of the presented in the article.
 
 Assuming
 
@@ -475,12 +482,12 @@ In order to compute the contribution of a diamond to $c_\alpha$, we are required
 
 
 
-which is noted $(-1)^{n(I \rightarrow \alpha)}$ in equation 26 of the presented article, with $I$ a reference determinant. The article uses reference-independent notation for amplitudes. Here we re-write the formula with reference-dependent notations, the contribution for each diamond becomes
+which is noted $(-1)^{n(I \rightarrow \alpha)}$ in equation 26 of the presented article, with $I$ the reference determinant. The article uses reference-independent notation for amplitudes. If we re-write the formula with reference-dependent notations, the contribution for each diamond becomes
 
 \begin{equation}
-c_{R _r} \Phi(R _r \rightarrow \alpha) \frac{t_{R _r \rightarrow D_i}}{\Phi(R _r \rightarrow D_i)} \frac{t_{D_i \rightarrow \alpha}}{\Phi(D_i \rightarrow \alpha)} =c_{R _r} t_{R_r \rightarrow D_i} t_{D_i \rightarrow \alpha}
+c_r \Phi(R _r \rightarrow \alpha) \frac{t_{R _r \rightarrow D_i}}{\Phi(R _r \rightarrow D_i)} \frac{t_{D_i \rightarrow \alpha}}{\Phi(D_i \rightarrow \alpha)} =c_r t_{R_r \rightarrow D_i} t_{D_i \rightarrow \alpha}
 \end{equation}
-
+with $c_r$ the coefficient of $\ket {R_r}$.
 Amplitude for $t_{D_i \rightarrow \alpha}$ of course cannot be stored and would be too expensice to compute on the fly. Because $\hat T_{D_i \rightarrow \alpha}$ involves the same orbitals as $\hat T_{R _r \rightarrow D_j}$, their associated amplitudes are the same up to the phase factor
 
 \begin{equation}
@@ -490,7 +497,7 @@ t_{D_i \rightarrow \alpha} = t_{R _r \rightarrow D_j} \Phi(R _r \rightarrow D_j)
 So we can finally rewrite the contribution to $c_\alpha$ for each diamond
 
 \begin{equation}
-c_{R _r} t_{R _r \rightarrow D_i} t_{R _r \rightarrow D_j} \Phi(R _r \rightarrow D_j)\Phi(D_i \rightarrow \alpha)
+c_r t_{R _r \rightarrow D_i} t_{R _r \rightarrow D_j} \Phi(R _r \rightarrow D_j)\Phi(D_i \rightarrow \alpha)
 \end{equation}
 
 \end{document}
