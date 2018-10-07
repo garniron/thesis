@@ -133,7 +133,7 @@ Therefore, if $I_E - I_D = I_T$, additional checks are required to establish tha
 
 
 Implementing this in Fortran may not looks straightforward considering in this language, integers are always signed, thus the leftmost bit has a special status. However, it is actually of no relevance except when it comes to sorting, and merely changing the sorting order won't cause any malfunction.
-If "signed" sorting is however desired, it can easily be emulated. Be $X$ and $Y$ two 64-bit integers, $u_comp$ the unsigned comparison operator (the one used by Fortran) and $s_comp$ the signed comparison operator.
+If ``signed'' sorting is however desired, it can easily be emulated. Be $X$ and $Y$ two 64-bit integers, $u_comp$ the unsigned comparison operator (the one used by Fortran) and $s_comp$ the signed comparison operator.
 
 \begin{equation}
 s\_comp(X,Y) = u\_comp(IEOR(X,ISHFT(1,63)), IEOR(Y,ISHFT(1,63))
@@ -142,7 +142,7 @@ s\_comp(X,Y) = u\_comp(IEOR(X,ISHFT(1,63)), IEOR(Y,ISHFT(1,63))
 
 $IEOR(X,ISHFT(1,63)$ returns $X$ with bit at position 63 flipped. Bit are indexed from 0 so bit at position 63 is the leftmost one for 64-bit integers.
 
-The algorithm for "excitation driven" connection finding is detailed in algorithm XX.
+The algorithm for ``excitation driven'' connection finding is detailed in algorithm XX.
 
 
 \begin{comment}
@@ -158,11 +158,11 @@ The algorithm for "excitation driven" connection finding is detailed in algorith
 	
 	\Fn(\tcc*[h]{co}){\FMain{some args}}{
 		$overflow \gets 0$ \;
-		\For{$i=1,N_{int}$}{
+		\For{$i\gets 1,N_{int}$}{
 			$may \gets IOR(I[i], J[i])$ \;
 			$will \gets IAND(I[i], J[i])$ \;
-			$R[i] = I[i] + J[i] + overflow$ \;
-			$overflow = ISHFT(IOR(will, IAND(may, not(R[i]))), -63)$ \;
+			$R[i] \gets I[i] + J[i] + overflow$ \;
+			$overflow \gets ISHFT(IOR(will, IAND(may, not(R[i]))), -63)$ \;
 		}
 	}
 \end{algorithm}
@@ -178,9 +178,9 @@ The algorithm for "excitation driven" connection finding is detailed in algorith
 		$i \gets 1$ \;
 		$j \gets 1$ \;
 		\While{$i \leq N_i \& j \leq N_j$}{
-			\For{$\sigma = \{\alpha, \beta\}$}{
+			\For{$\sigma \gets \{\alpha, \beta\}$}{
 			$overflow \gets 0$ \;
-			\For{$k=1,N_{int}$}{
+			\For{$k\gets1,N_{int}$}{
 				$m \gets I_i[k,\sigma] + E[k, \sigma] + overflow$ \;
 				\uIf{$m > J_j[k, \sigma]$}{
 					$j \gets j+1$ \;
@@ -246,8 +246,8 @@ The algorithm for "excitation driven" connection finding is detailed in algorith
 	\SetKwProg{Fn}{Function}{:}{}
 	
 	\Fn(\tcc*[h]{co}){\FDetCmp{$I$, $J$}}{
-		\For{$\sigma = \{\alpha, \beta\}$}{
-		\For{$k=1,N_{int}$}{
+		\For{$\sigma \gets \{\alpha, \beta\}$}{
+		\For{$k\gets1,N_{int}$}{
 			\uIf{$I_\sigma[k] > J_\sigma[k]$}{
 				\KwRet{1} \;
 			}\uElseIf{$I_\sigma[k] < J_\sigma[k]$}{
@@ -298,8 +298,8 @@ The algorithm for "excitation driven" connection finding is detailed in algorith
 	\SetKwProg{Fn}{Function}{:}{}
 	
 	\Fn(\tcc*[h]{REPLACE WITH find\_first\_geq}){\FDetCmp{$I$, $J$}}{
-		\For{$\sigma = \{\alpha, \beta\}$}{
-		\For{$k=1,N_{int}$}{
+		\For{$\sigma \gets \{\alpha, \beta\}$}{
+		\For{$k\gets1,N_{int}$}{
 			\uIf{$I_\sigma[k] > J_\sigma[k]$}{
 				\KwRet{1} \;
 			}\uElseIf{$I_\sigma[k] < J_\sigma[k]$}{
@@ -342,7 +342,7 @@ phase(S,i\bar jk\bar l) = P^S_i \oplus P^S_{\bar j} \oplus P^S_{k+1} \oplus P^S_
 	\ForAll{$\ket {G_p}$ singly ionized generator}{
 		\tcc{indexed by 1 hole and 2 particles}
 		$c_\alpha[h,p1,p2]$ \;
-		\tcc{$\kalpha = a_h a^\dagger_{p1} a^\dagger_{p2} \ket {G_p}$}
+		\tcc{$\kalpha \gets a_h a^\dagger_{p1} a^\dagger_{p2} \ket {G_p}$}
 		\ForAll{$I,I[r],I[s]$}{
 			$\alpha \gets I \oplus I[r] \oplus I[s]$ \;
 			\tcc{check $||\alpha||$ ?}
@@ -368,9 +368,9 @@ phase(S,i\bar jk\bar l) = P^S_i \oplus P^S_{\bar j} \oplus P^S_{k+1} \oplus P^S_
         $N^{*,*} \gets 0$ \;    
         \ForAll{$I \in \{S - past\} ; f_{G_{pq}}^I \leq 4$}{
           $(P,H) \gets particles\_and\_holes(G_{pq}, I)$ \;
-          $p = list\_from\_bitstring(P)$ \;
+          $p \gets list\_from\_bitstring(P)$ \;
           
-          %$h = LIST_FROM_BITSTRING(H)$
+          %$h \gets LIST_FROM_BITSTRING(H)$
           \uIf{$f_{G_{pq}}^I = 4$ \& $B_{p_1,p_2}$}{
             $i \gets N^{p_1, p_2}+1$ \;
             $N^{p_1, p_2} \gets i$ \;
@@ -398,30 +398,30 @@ phase(S,i\bar jk\bar l) = P^S_i \oplus P^S_{\bar j} \oplus P^S_{k+1} \oplus P^S_
 		\KwData{$\tilde{\mathcal{C}}_{rs}$ the intermediate sets, $B_{rs}$ the tag matrix}
 		%\KwResult{$Z^\star(\Gpqrs, \mathcal{C}_{rs})$ is called for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$}
 		\KwResult{$\mathcal{C}_{rs}$ is computed for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$}
-        $i_1 = N$ \;   
+        $i_1 \gets N$ \;   
         $L_{1..i_1} \gets D_{1..{i_1}}$ \;
 		\tcc {$B_{r0} = FALSE$ if column entirely tagged}		
 		\ForAll{$r ; B_{r0}$}{
-		  $i_2 = i_1 + N^r$ \;
+		  $i_2 \gets i_1 + N^r$ \;
 		  $L_{i_1+1..i_2} \gets D^r_{1..N^r}$ \;
-		  \For{$i=1,N_r$}{
+		  \For{$i\gets1,N_r$}{
 		    $T_{D^r_i} \gets FALSE$
 		  }
 		  \alert{est-ce que $B_{rr}$ est tage?} \;
 		  \ForAll{$s \neq r ; B_{rs}$}{
-		    $i_3 = i_2$ \;
-		    \For{$i=1,N_s$}{
+		    $i_3 \gets i_2$ \;
+		    \For{$i\gets1,N_s$}{
 		      \If{$T_{D^s_i}$}{
 		        $i_3 \gets i_3+1$ \;
 		        $L_{i_3} \gets D^s_i$ \;
 		      }
 		    }
 		    
-		    $i_4 = i_3 + N^{rs}$ \;
+		    $i_4 \gets i_3 + N^{rs}$ \;
 		    $L_{i_3+1 .. i_4} \gets D^{rs}_{1..N^{rs}}$ \;
 		    \tcc{$L$ is the list of all $I \in \Psi ; EXC(I, a^\dagger_r a^\dagger_s G_{pq} ) \leq 2$}
 		  }
-		 \For{$i=1,N_s$}{
+		 \For{$i\gets1,N_s$}{
 		    $T_{D^r_i} \gets TRUE$
 		  }
 		}
@@ -675,7 +675,7 @@ Determinants are sorted according to this criterion. Using ClBr with 500k determ
 	\end{center}
 \end{figure}
     
-As expected, the farther away two determinants $\ket I$ and $\ket J$ are in the sorted determinant vector, the likelier it is that $|C(I)-C(J)| > 2$ which makes them disconnected by construction. The "staircase" aspect shows the boundaries of each class.
+As expected, the farther away two determinants $\ket I$ and $\ket J$ are in the sorted determinant vector, the likelier it is that $|C(I)-C(J)| > 2$ which makes them disconnected by construction. The ``staircase'' aspect shows the boundaries of each class.
 However, only a relatively small area of $H$ is null by construction. It is possible to further reduce the area to be explored by chosing several orbital subsets $S_1$ to $S_n$ instead of a single one. In this case, $C(D)$ returns $c$ a vector of size $n$ with $c_{i}$ the number of electron in subset $S_i$ for $D$
 
 \begin{itemize}
@@ -806,7 +806,7 @@ $p_\beta(x, y) = \frac{|x \oplus y|}{2} \leq 1$
 
 All types of double excitations are found by either sub-method. The resulting $M$ matrices are shown in figures \ref{fig:aabb_subspace} and \ref{fig:ab_subspace}.
 The point of this method compared to the previous one, is that the $p$ condition is drastically tightened, resulting in many more sets being by construction disconnected. For the simple spin part method, given a spin part $x$, the cardinality of the set of all $y$ spin parts so that $p(x, y) = TRUE$ is the number of possible double excitations. For composite spin part, it is respectively 1 ($p_\alpha$) and the number of single excitations ($p_\beta$).
-As can be seen, the first method, although it finds all purely $\beta$ excitations, and could as well be used to find purely $\alpha$ ones, explores a minuscule area of $H$. As a matter of fact, finding those is pretty much "free", the vast majority of computational time is spent finding $\alpha \beta$ excitations.
+As can be seen, the first method, although it finds all purely $\beta$ excitations, and could as well be used to find purely $\alpha$ ones, explores a minuscule area of $H$. As a matter of fact, finding those is pretty much ``free'', the vast majority of computational time is spent finding $\alpha \beta$ excitations.
 As previously seen, the most important of excitations, those of the form $\hat T_{a \bar b}^{b \bar a}$, happen to be $\alpha \beta$ ones and can also be obtained for a very small cost using the singly occupied orbitals method. ( et donc? )
 
     

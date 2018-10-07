@@ -131,7 +131,7 @@ Originally, the \QP generated the external space in a ``internal to external'' w
         \label{alg:cipsi_manu}
                 \KwData{ $\ket \Psi$ with $c_I^2$ sorted in decreasing order. }
                 \KwResult{Guarantees all $e_\alpha$ are computed only once.}
-                \For {$g \gets 1, \Ngen$}{
+                \For{$g \gets 1, \Ngen$}{
                 \tcc{apply all double excitations on $|D_g \rangle$}
                 \ForAll {$\ket \alpha$ ; $\langle D_g | H | \alpha \rangle \neq 0$}{
                 \For{$p \gets 1, g-1$}{
@@ -695,7 +695,7 @@ F_i & = 1 + F_{\max} \qty( \max_{k=1}^{\Nst} |c_{ik}|^{1/2} )
 \end{align}
 where $F_i$ is an estimated cost of task $i$. In practice $F_i = 1$ for the majority.
 
-Task $i$ is put in the job queue $F_i$ times, each time associated with a `fragment'' index $s$ ranging from $0$ to $F_i-1$, which together with $F_i$ defines the subset of batches this task corresponds to.
+Task $i$ is put in the task queue $F_i$ times, each time associated with a `fragment'' index $s$ ranging from $0$ to $F_i-1$, which together with $F_i$ defines the subset of batches this task corresponds to.
 %Disjoint subsets are created using modulus, so that subsets are interleaved and thus more balanced.
 % Cette phrase n'etait pas facile a comprendre. Le plus simple, c'etait de la virer...
  
@@ -704,8 +704,8 @@ Task $i$ is put in the job queue $F_i$ times, each time associated with a `fragm
         \label{alg:tasksplit_master}
         \tcc{A logical task is the computation of $e[i]$, the sum of $e_\alpha$ over all unique $\kalpha$ generated from generator $\ket {D_i}$}
         choose $F_i$ for all $i$\;
-        \For{$i=1,\Ngen$}{
-        \For{$s=0,F_i-1$}{
+        \For{$i\gets 1,\Ngen$}{
+        \For{$s\gets 0,F_i-1$}{
                 add task $(i,s)$ to the queue   
         }
         }

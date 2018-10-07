@@ -42,8 +42,8 @@ It is presented as algorithm~\ref{alg:davidson}.
   Diagonalize $\mh$ : eigenvalues $E$ and eigenvectors $\my$ \;
   $\mU' \gets \mU\, \my$ \;
   $\mW' \gets \mW\, \my$ \;
-  \For{$k=1,\Nst$}{
-    \For{$i=1,\Ndet$} {
+  \For{$k\gets 1,\Nst$}{
+    \For{$i\gets 1,\Ndet$} {
       $\mR_{ik}  \gets \frac{E_k \mU_{ik}' - \mW_{ik}'}{\mH_{ii} - E_k}$ \;
     }
   }

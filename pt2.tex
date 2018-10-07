@@ -22,7 +22,7 @@ We have seen in section~\ref{sec:cipsi_approx} that approximate calculations cou
 
 The selection of determinants and the calculation of $\EPT$, all approximations aside, both imply the computation of $e_\alpha$ for all $\ket \alpha$, so both can be computed at the same time. The selection is about identifying the set of the most important contributions, $\EPT$ is about computing the sum over all of them. There are two main consequences to this:
 \paragraph{$\EPT$ is one iteration behind the selection}
-At iteration $n$, identifying the most significant $\ket \alpha$ is about building $\Psi^{(n+1)}$ while summing the contributions is about estimating the distance to full-CI for $\Psi^{(n)}$. Computing $\EPT$ for a "final" wavefunction therefore requires an extra iteration, which applies to a larger number of determinants and thus is more expensive. Note that if only $\EPT$ is required, a more efficient algorithm can be used.\cite{Cimiraglia_1996}
+At iteration $n$, identifying the most significant $\ket \alpha$ is about building $\Psi^{(n+1)}$ while summing the contributions is about estimating the distance to full-CI for $\Psi^{(n)}$. Computing $\EPT$ for a ``final'' wavefunction therefore requires an extra iteration, which applies to a larger number of determinants and thus is more expensive. Note that if only $\EPT$ is required, a more efficient algorithm can be used.\cite{Cimiraglia_1996}
 
 \paragraph{The selection can take more approximations}
 The computation of the sum has to be more costly than just identifying the largest terms. As was said in chapter~\ref{chap:CIPSI}, the CIPSI algorithm can take pretty drastic approximations for the selection.\cite{Evangelisti_1983}
@@ -481,13 +481,13 @@ Teeth building is show as algorithms \ref{alg:build_teeth} and \ref{alg:build_w}
 	\KwData{$p(e_I)$, $\Nteeth$, $\minDetInT$ as previously described}
 	\KwResult{$n_0(1),u_0,W_T$}
 	
-	$P_I = \sum_{J \leq I} {p(e_J)}$ \;
+	$P_I \gets \sum_{J \leq I} {p(e_J)}$ \;
 	$n_0(1) \gets 0$ \;
 
 	\While{}{
 		$u_0 \gets P[n_0(1)]$\;
 		$r \gets P[n_0(1)+\minDetInT]$ \;
-		$W_T = \frac{1 - u_0}{N_{teeth}}$ \;
+		$W_T \gets \frac{1 - u_0}{N_{teeth}}$ \;
 		\If{$W_T \geq r - u_0$}{
 			break loop\;
 		}
@@ -499,11 +499,11 @@ Teeth building is show as algorithms \ref{alg:build_teeth} and \ref{alg:build_w}
 		}
 	}
 	\For{$t \gets 2,N_{teeth}$}{
-		$r = u_0 + W_T \times (t-1)$ \;
-		$n_0(t) = FIND\_SAMPLE(r, P)$ \;
+		$r \gets u_0 + W_T \times (t-1)$ \;
+		$n_0(t) \gets FIND\_SAMPLE(r, P)$ \;
 	}
 	\tcc{for convenience}
-	$n_0(\Nteeth+1) = \Ngen$ \;
+	$n_0(\Nteeth+1) \gets \Ngen$ \;
 \end{algorithm}
 
 
@@ -514,12 +514,12 @@ Teeth building is show as algorithms \ref{alg:build_teeth} and \ref{alg:build_w}
 	\label{alg:build_w}
 	\KwData{$p(e_I), n_0, W_T$}
 	\KwResult{$w_i$}
-	$P_I = \sum_{J \leq I} {p(e_J)}$ \;
+	$P_I \gets \sum_{J \leq I} {p(e_J)}$ \;
 	$w_{I \le n_0(1)} \gets p\qty(e_{I \le n_0(1)})$ \;
 	\For{$t \gets 1,\Nteeth$}{
-		$\text{tooth\_width} = P_{n_0(t+1)} - P_{n_0(t)}$ \;
+		$\text{tooth\_width} \gets P_{n_0(t+1)} - P_{n_0(t)}$ \;
 		\For{$I\gets n_0(t)+1, n_0(t+1)$}{
-		$w_{I} = p(e_I) \times \frac{W_T}{\text{tooth\_width}}$ \;
+		$w_{I} \gets p(e_I) \times \frac{W_T}{\text{tooth\_width}}$ \;
 		}
 	}
 	
@@ -535,7 +535,7 @@ For a massively parallel implementation, we need to create a task queue. Because
 \begin{itemize}
 \item $Q$: is the task queue, $Q[I]$ the index of the $I^{th}$ sample $e_I$ that must be computed.
 \item $d$: keeps track of the computed samples. $d[I] = \TRUE$ iff $e_I$ has already been computed.
-\item $N_j$: is the number of tasks currently created. When the task queue is fully computed $N_j = \Ngen$.
+\item $N_Q$: is the number of tasks currently created. When the task queue is fully computed $N_Q = \Ngen$.
 \item $N_c$: is the number of combs currently drawn.
 \item $R$: is an array of integer size $\Ngen$, keeping track of available combs at any point of the computation. The collector node checks $R[j]$ when the first $j$ tasks have been computed (for all $j$ with increasing order). If $R[j] = c \neq 0$, all samples for comb $c$ have just become available. 
 \end{itemize}
@@ -548,7 +548,7 @@ For a massively parallel implementation, we need to create a task queue. Because
 	\tcc{See section \ref{sub:task_queue} for variables description}
 	$R \gets $ array of size $\Ngen$ initialized to $0$ \;
 	$N_c \gets 0$ \;
-	$N_j \gets n_0(1)$ \;
+	$N_Q \gets n_0(1)$ \;
 	
 	\For{$I \gets 1,n_0(1)$}{
 		$d[I] \gets \TRUE$ \;
@@ -560,34 +560,34 @@ For a massively parallel implementation, we need to create a task queue. Because
 		$u[i] \gets $ random value in $[0,1)_\mathbb{R}$ \;	
 	}
 	$F \gets 0$ \;	
-	\While{$N_j < \Ngen$}{
+	\While{$N_Q < \Ngen$}{
   	ADD\_COMB  shown as algorithm \ref{alg:ADD_COMB}\;
-	$R[N_j] \gets N_c$ \;
+	$R[N_Q] \gets N_c$ \;
 	FILL\_TOOTH shown as algorithm \ref{alg:FILL_TOOTH} \;
 	}
 	\tcc{\alert{For convenience, makes sure the last task matches the last comb, rather than a tooth filling.}}
 	\If{$\Ngen > 1$}{
-		$R[N_j-1] \gets 0$ \;
-		$R[N_j] \gets N_c$ \;
+		$R[N_Q-1] \gets 0$ \;
+		$R[N_Q] \gets N_c$ \;
 	}
 \end{algorithm}
 
 \begin{algorithm}
 	\caption{ADD\_COMB, called by algorithm~\ref{alg:TASK_QUEUE}.}
 	\label{alg:ADD_COMB}
-		\KwData{$N_c,u[N_c],F,d,N_j,Q$ as in the scope of the calling function}
+		\KwData{$N_c,u[N_c],F,d,N_Q,Q$ as in the scope of the calling function}
 		\KwData{$\tilde M$ as in the scope of the calling function if defined, otherwise ignored}
 		$N_c \gets N_c + 1$ \;
-  		\For{$t=0,N_{teeth}-1$}{
+  		\For{$t\gets 0,N_{teeth}-1$}{
 		%$v \gets lTeeth[t] + rand \times toothSize[t]$ \;
 		$v \gets u_0 + W_T \times (t+u[N_c])$ \;
 		
 		%$i=FIND\_SAMPLE(rand, lTeethI[t], rTeethI[t])$ \;
-		$i=FIND\_SAMPLE(v, W)$ \;
+		$i\gets FIND\_SAMPLE(v, W)$ \;
 		$\tilde M_i \gets \tilde M_i + 1$ \;
 		\If{$not\ d[i]$}{
-			$N_j \gets N_j + 1$ \;
-			$Q[N_j] \gets i$ \;
+			$N_Q \gets N_Q + 1$ \;
+			$Q[N_Q] \gets i$ \;
 			$d[i] \gets \TRUE$ \;
 		}
 	}
@@ -596,13 +596,13 @@ For a massively parallel implementation, we need to create a task queue. Because
 \begin{algorithm}
 	\caption{FILL\_TOOTH, called in algorithm~\ref{alg:TASK_QUEUE}.}
 	\label{alg:FILL_TOOTH}
-	\KwData{$F$,$d$,$N_j$,$Q$ as in the scope of the calling function}
+	\KwData{$F$,$d$,$N_Q$,$Q$ as in the scope of the calling function}
 	
 	\While{$F < \Ngen$}{
    		$F \gets F + 1$ \;
        \If{$not\ d[F]$}{
-          $N_j \gets N_j+1$ \;
-          $Q[N_j] \gets F$ \;
+          $N_Q \gets N_Q+1$ \;
+          $Q[N_Q] \gets F$ \;
           $d[F] \gets \TRUE$ \;
           break \;
         }
@@ -611,7 +611,7 @@ For a massively parallel implementation, we need to create a task queue. Because
 
 \subsection{Computing the average and error}
 
-The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. The slave threads take a generator and a "fragment" index, and return the result to the master thread;
+The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. The slave threads take a generator and a ``fragment'' index, and return the result to the master thread;
 
 \begin{algorithm}
 	\caption{Master node in $\EPT$ computation}
@@ -625,7 +625,7 @@ The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. 
         error $\gets 0$ \;
 	\While{$n \leq \Ngen$}{
 		\uIf{$f[Q[n]] = 0$}{
-			$d[Q[n]] = \TRUE$ \;
+			$d[Q[n]] \gets \TRUE$ \;
 			\While{$d[U+1]$}{
 				$U \gets U + 1$ \;
 			}

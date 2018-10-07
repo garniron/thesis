@@ -9,7 +9,7 @@ It us mostly based on Fortran code, a low-level, high-efficiency language popula
 
 \section{IRPF90}
 It uses IRPF90, a metalanguage(?) build on top of Fortran, that allows a dataflow-like programming style.
-IRPF90 allows create so-called "providers", which are essentially nodes of dataflow strucutres that can be used in a nearly transparent way by the user. It is fully compatible(****) with normal fotran code. Code examples will be given later... I guess... in chapter something... when it will be written.
+IRPF90 allows create so-called ``providers'', which are essentially nodes of dataflow strucutres that can be used in a nearly transparent way by the user. It is fully compatible(****) with normal fotran code. Code examples will be given later... I guess... in chapter something... when it will be written.
 (...ou alors exemple ici)
 
 
@@ -25,7 +25,7 @@ exemple
 \section{Modular structure}
 
 It has a modular structure that allows to easily implement new methods and re-use pre-existing code.
-Users can create so-called "module" for their algorithms, effectively isolating them from pre-existing code. A module can import code from other modules, but is compiled into a stand-alone executable(****). This ensures easier sharing of developped algorithms.
+Users can create so-called ``module'' for their algorithms, effectively isolating them from pre-existing code. A module can import code from other modules, but is compiled into a stand-alone executable(****). This ensures easier sharing of developped algorithms.
 Typically a module is run on a specific 
 (ptet exemple avec generator\_CAS versus generator\_full, mais on a pas encore parler de determinant-driven )
 PSI is filtered with different function and supplied to the module using cas\_sd ( cas\_sd, mrcc ) or perturbation ( pt2 stoch )??
@@ -35,7 +35,7 @@ automatic creation of interdependent modules, with theirs own inputs and outputs
 
 \section{ZMQ}
 More recently, it allows for easy creation of massively parallel, task-based algorithms.
-Using the very flexible ZMQ library, a framework has been set up to allow users to define elementary tasks that are automatically distributed to remote nodes via TCP. Each task's result is sent back to a central, user-defined "collector". The main advantage of using TCP communication rather than the "usual" MPI implementation, is asynchronicity, flexibility in adding/removing slave nodes - and thus fault-tolerance, and the ability to use nodes through internet.
+Using the very flexible ZMQ library, a framework has been set up to allow users to define elementary tasks that are automatically distributed to remote nodes via TCP. Each task's result is sent back to a central, user-defined ``collector''. The main advantage of using TCP communication rather than the ``usual'' MPI implementation, is asynchronicity, flexibility in adding/removing slave nodes - and thus fault-tolerance, and the ability to use nodes through internet.
 
 
 standard choice would be MPI \\
@@ -45,10 +45,10 @@ flexibility in adding/removing nodes \\
 asynchronicity \\
 can act as a layer above MPI \\
 \section{High-level task distribution - OCaml}
-task "administration" is hard with low-level language such as Fortran \\
+task ``administration'' is hard with low-level language such as Fortran \\
 functional languages are more bug-proof \\
 
-task "administration" is hard with low-level language such as Fortran ; but it has to be moved away from the user \\
+task ``administration'' is hard with low-level language such as Fortran ; but it has to be moved away from the user \\
 ask him to only define a list of tasks ( as strings ), function(task) and collector(function(task)) \\
 transparently distribute these tasks to remote nodes \\
 template for boiler plate \\
