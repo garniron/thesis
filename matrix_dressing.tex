@@ -79,7 +79,7 @@ Because of \ref{eq:arbitrary_dressing}, we have by construction
 {\bf \Delta} {\bf c} = {\pmb \kappa}
 \end{equation}
 with ${\pmb \kappa}$ the vector $\qty(\kappa_1, \ldots, \kappa_{\Ndet})$.
-Algorithmically, it boils down to computing ${\pmb \kappa}$, which is more expensive to compute than the product ${\bf \tilde H}{\bf c}$ needed for Davidson's diagonalization. But unlike ${\bf \tilde H}{\bf c}$ which is too large to be stored, and needs to be re-computed on the fly at each Davidson iteration, ${\pmb \kappa}$ is fixed and can easily be stored.
+Algorithmically, it boils down to computing ${\pmb \kappa}$, which is more expensive to compute than the product \alert{${\bf \tilde H}{\bf U}$} needed for Davidson's diagonalization. But unlike \alert{${\bf \tilde H}{\bf U}$} which is too large to be stored, and needs to be re-computed on the fly at each Davidson iteration, ${\pmb \kappa}$ is fixed and can easily be stored.
 
 
 An improved version to this original idea was proposed by Davidson and co-workers under the name shifted-\Bk,\cite{Nitzsche_1978a, Nitzsche_1978b, Rawlings_1983, Kozlowski_1995, Kozlowski_1994a, Kozlowski_1994b, Kozlowski_1994c} which is the one we implemented. Details about this improvement and on how it can be generalized to a multi-state case are available in the presented article.
@@ -103,16 +103,16 @@ An improved version to this original idea was proposed by Davidson and co-worker
 %$t$ refers to teeth
 %\end{itemize}
 
-In some respect, computing the dressing matrix is akin to computing $\EPT$. The dressing matrix can be decomposed as a sum of elementary dressing matrices $\delta(\alpha)$, each one associated with a particular $\ket \alpha$, just like $\EPT$ is a sum of $\epsilon(\alpha)$. It is possible to pack those elementary matrices together like we packed $\ket \alpha$ together for $\EPT$.
+In some respect, computing the dressing matrix is akin to computing $\EPT$. The dressing matrix can be decomposed as a sum of elementary dressing matrices $\delta_\alpha$, each one associated with a particular $\ket \alpha$, just like $\EPT$ is a sum of $e_\alpha$. It is possible to pack those elementary matrices together like we packed $\ket \alpha$ together for $\EPT$.
 \begin{equation}
-\Delta_I = \sum_{\alpha \in \mathcal{A}_I} \delta(\alpha)
+\kappa_I = \sum_{\alpha \in \mathcal{A}_I} \delta_\alpha
 \end{equation}
 \begin{equation}
-\Delta = \sum_{I} \Delta_I
+\kappa = \sum_{I} \kappa_I
 \end{equation}
 So as we only need $\tilde{\bf H}{\bf c}$ for Davidson's algorithm, the quantity we sample is 
 \begin{equation}
-{\pmb \kappa}_I = \Delta_I\, {\bf c} = \sum_{\alpha \in \mathcal{A}_I} \delta(\alpha)\, {\bf c}
+{\pmb \kappa}_I = \Delta_I\, {\bf c} = \sum_{\alpha \in \mathcal{A}_I} \delta_\alpha\, {\bf c}
 \end{equation}
 
 Thus, ${\pmb \kappa}_I$ is a sum over all external determinants, and requires to find connections between those determinants and the wavefunction. Presumably, the norm of resulting elementary dressing vectors $\pmb \kappa_I$, will have a norm decreasing like $e_I$. Indeed, 
@@ -131,20 +131,21 @@ However there are a few significant differences.
 \begin{itemize}
 \item
 We were estimating a scalar, now we are estimating a vector. How can we quickly estimate the running error?
-To address this problem, we decided to compute the error bar associated with $E_{\Delta}$, the energy contribution of $\Delta$. Our dressed matrix being $H + \Delta$, the energy is
+To address this problem, we decided to compute the error bar associated with $E_{\kappa}$, the energy contribution of $\kappa$. Our dressed matrix being $H + \kappa$, the energy is
 \begin{equation}
-\frac{\langle \Psi |H + \Delta | \Psi\rangle}{\langle \Psi | \Psi \rangle} = \frac{\langle \Psi |H  | \Psi\rangle}{\langle \Psi | \Psi \rangle} + \frac{\langle \Psi |\Delta | \Psi\rangle}{\langle \Psi | \Psi \rangle} = E_H + E_{\Delta} 
+\frac{\langle \Psi |H + \kappa | \Psi\rangle}{\langle \Psi | \Psi \rangle} = \frac{\langle \Psi |H  | \Psi\rangle}{\langle \Psi | \Psi \rangle} + \frac{\langle \Psi |\kappa | \Psi\rangle}{\langle \Psi | \Psi \rangle} = E_H + E_{\kappa} 
 \end{equation}
-$E_H$ is the variational energy computed deterministically, and $E_{\Delta}$ is estimated the same way as $E_{PT2}$ was, based on individual contributions $e_I$ (see eq.~\eqref{eq:c_kappa_i}).
+$E_H$ is the variational energy computed deterministically, and $E_{\kappa}$ is estimated the same way as $E_{PT2}$ was, based on individual contributions $e_I$ (see eq.~\eqref{eq:c_kappa_i}).
 \item
 In both cases we have $\Ngen$ samples, however in the case of $\EPT$ each sample is a scalar, here each sample is a vector of size $\Ndet$. It is easy to store $\Ngen$ scalars, not to store $\Ngen$ vectors of size $\Ndet$. In addition, these vectors must be transmitted from slave nodes to a master node, creating a potential network bottleneck, scaling with $\Ndet$.
 \item
-In the case of PT2 (at least in its Epstein-Nesbet version), each connection found only requires an increment of some elements of $P(G_{pq})$. At no point 2 connections need to be known at the same time. This is different for methods implemented with matrix dressing. It is possible that one needs to know the detail of which variational determinants an $\ket \alpha$ connects to, in order to be able to compute $\delta(\alpha)$.
+In the case of PT2 (at least in its Epstein-Nesbet version), each connection found only requires an increment of some elements of $P(G_{pq})$. At no point 2 connections need to be known at the same time. This is different for methods implemented with matrix dressing. It is possible that one needs to know the detail of which variational determinants an $\ket \alpha$ connects to, in order to be able to compute $\delta_\alpha$.
 \end{itemize}
 
 
 
-Implementationally speaking, just like the state-specific version requires computing a single ${\pmb \kappa}$ vector, the multi-state version requires a ${\pmb \kappa}_k$ vector to be computed for each desired state $k$. This, in principle, should come with minimal cost, since the loop over states can be set as the innermost one.
+Implementationally speaking, just like the state-specific version requires computing a single ${\pmb \kappa}$ vector, the multi-state version requires a ${\pmb \kappa}^{(k)}$ vector to be computed for each desired state $k$. This, in principle, should come with minimal cost, since the loop over states can be set as the innermost one. 
+
 
 %\begin{algorithm}[h!]
 %\ForAll{generators}{
@@ -155,20 +156,22 @@ Implementationally speaking, just like the state-specific version requires compu
 %}
 %\end{algorithm}
 
-In practice, since the exact computation of ${\pmb \kappa}_k$ is as expensive than that of $\EPT$, we need to use the same hybrid stochastic-deterministic approach. Unfortunately, using state-average coefficients for the sampling did not yield satisfying results, so we have to stick to state-specific sampling and thus compute each ${\pmb \kappa}_k$ individually. The multi-state Davidson diagonalization, however, is done a single time per shifted-\Bk iteration.
+In practice, since the exact computation of ${\pmb \kappa}^{(k)}$ is as expensive than that of $\EPT$, we need to use the same hybrid stochastic-deterministic approach. Unfortunately, using state-average coefficients for the sampling did not yield satisfying results, so we have to stick to state-specific sampling and thus compute each ${\pmb \kappa}^{(k)}$ individually. Therefore we will ignore the state from now on.
+
+The multi-state Davidson diagonalization, however, is done a single time per shifted-\Bk iteration.
 
 
 \subsection{Storage}
 
-The core idea is that, in a Monte-Carlo scheme, even an "exotic" one like our own, the estimated result has to be a linear combination of all samples. At any point $m$ of the Monte-Carlo computation corresponding to $M_m$ combs having been drawn, we can write our estimated dressing vector $\Delta^m$ as :
+The core idea is that, in a Monte-Carlo scheme, even an "exotic" one like our hybrid approach, the estimated result has to be a linear combination of all samples. At any point $m$ of the Monte-Carlo computation corresponding to $M_m$ combs having been drawn, we can write our estimated dressing vector $\kappa^m$ as :
 
 
 \begin{equation}
-\Delta^m = \sum_{I} \epsilon^m_{I} \Delta_I
+\kappa^m = \sum_{I} \epsilon^m_{I} \kappa_I
 \end{equation}
 
 
-The values for $\epsilon^m_I$ have no dependence on those of $\Delta_I$. They only depend on what samples have been drawn so far. Since we decide beforehand which combs are going to be drawn, we can compute $\epsilon$ vector for any point of the Monte-Carlo before any sample has been computed. The values we chose for $M_m$ act as predetermined "checkpoints".
+The values for $\epsilon^m_I$ have no dependence on those of $\kappa_I$. They only depend on what samples have been drawn so far. Since we decide beforehand which combs are going to be drawn, we can compute $\epsilon$ vector for any point of the Monte-Carlo before any sample has been computed. The values we chose for $M_m$ act as predetermined "checkpoints".
 
 %This allows us to set up "checkpoints" for predetermined values of $n$. These value are referred to as $M_m$ with $M_0 = 0$ and $M_m < M_{m+1}$.
 \begin{comment}
@@ -182,18 +185,18 @@ The values for $\epsilon^m_I$ have no dependence on those of $\Delta_I$. They on
 \end{comment}
 
 
-Those checkpoints can be set at any arbitrary point, but they must be determined beforehand and cannot be changed during the computation ; we will only be able to get results at those points.
-For checkpoint $m$, we start with a null vector for $\Delta^m$. Each time an elementary vector $\Delta_I$ is computed
+They can be set at any arbitrary point, but they must be determined beforehand and cannot be changed during the computation ; we will only be able to get results at those points.
+For checkpoint $m$, we start with a null vector for $\kappa^m$. Each time an elementary vector $\kappa_I$ is computed
 we increment it 
 
 
 
 \begin{equation}
-\Delta^m \gets \Delta^m + \epsilon_I^{m} \Delta_I
+\kappa^m \gets \kappa^m + \epsilon_I^{m} \kappa_I
 \end{equation}
 
 
-Once this has been done, $\Delta_I$ can be discarded. Indeed, when checkpoint $m$ is reached, $\Delta^{m}$ has its final value, as obviously $\epsilon_I^{m} = 0$ for any $\Delta_I$ sample that hasn't yet been drawn at checkpoint ${m}$.
+Once this has been done, $\kappa_I$ can be discarded. Indeed, when checkpoint $m$ is reached, $\kappa^{m}$ has its final value, as obviously $\epsilon_I^{m} = 0$ for any $\kappa_I$ sample that hasn't yet been drawn at checkpoint ${m}$.
 For convenience, some parameters can be defined as functions of a checkpoint reached
 
 \begin{equation}
@@ -222,23 +225,23 @@ $\epsilon$ is defined as follow
 with $M_{m,i}$ the number of times sample $i$ has been drawn at checkpoint $m$.
 
 
-The memory cost for a checkpoint $m$ is $2 \times \Ndet$ floats, corresponding to the storage of $\epsilon^m$ and $\Delta^m$. This cost is small enough to allow setting up quite a few checkpoints. However, in addition to this memory cost, comes some computational cost. If we set up $N_{cp}$ checkpoints, it implies each time a sample is drawn, we will have, theoretically, to increment $N_{cp}$ vectors of size $\Ndet$. For quicker jobs, this price may not be negligible. It gets worse if, as was the case in our first implementations, a collector is in charge of updating checkpoints for multiple slaves. 
+The memory cost for a checkpoint $m$ is $2 \times \Ndet$ floats, corresponding to the storage of $\epsilon^m$ and $\kappa^m$. This cost is small enough to allow setting up quite a few checkpoints. However, in addition to this memory cost, comes some computational cost. If we set up $N_{cp}$ checkpoints, it implies each time a sample is drawn, we will have, theoretically, to increment $N_{cp}$ vectors of size $\Ndet$. For quicker jobs, this price may not be negligible. It gets worse if, as was the case in our first implementations, a collector is in charge of updating checkpoints for multiple slaves. 
 
 
-We can drastically reduce the amount of writing required for each sample by rewriting $\Delta^m$.
-Firstly, we define $\Delta^{D,t}$ as the total dressing for teeth $\mathcal{T}_t$
+We can drastically reduce the amount of writing required for each sample by rewriting $\kappa^m$.
+Firstly, we define $\kappa^{D,t}$ as the total dressing contribution for teeth $\mathcal{T}_t$
 \begin{equation}
-\Delta^{D,t} = \sum_{I \in \mathcal{T}_t} \Delta_I
+\kappa^{D,t} = \sum_{I \in \mathcal{T}_t} \kappa_I
 \end{equation}
 
-We rewrite $\Delta^m$ as
+We rewrite $\kappa^m$ as
 
 \begin{equation}
 \label{eq:rewrite1}
-\Delta^{m} = \sum_{t=0}^{\dot t_m - 1} \Delta^{D,t}+ \frac{1}{M_m} \sum_{I} \gamma^m_{I} \Delta_I
+\kappa^{m} = \sum_{t=0}^{\dot t_m - 1} \kappa^{D,t}+ \frac{1}{M_m} \sum_{I} \gamma^m_{I} \kappa_I
 \end{equation}
 
-The second term being $\Delta^m$ minus its deterministic contribution, we can trivially write (defining $\gamma^ 0_I=0$ for convenience)
+The second term being $\kappa^m$ without its deterministic contribution, we can trivially write (defining $\gamma^ 0_I=0$ for convenience)
 
 \begin{equation}
 \gamma^m_i = 
@@ -251,27 +254,27 @@ The second term being $\Delta^m$ minus its deterministic contribution, we can tr
 We define
 
 \begin{align}
-\Delta^{S,m} = \sum_I (\gamma^m_I - \gamma^{m-1}_I) \Delta_I
+\kappa^{S,m} = \sum_I (\gamma^m_I - \gamma^{m-1}_I) \kappa_I
 \end{align}
 
 
 We can rewrite the second term of Eq.~\eqref{eq:rewrite1}
 \begin{equation}
-\frac{1}{M_m}\sum_{I} \gamma^m_{I} \Delta_I = \frac{1}{M_m} \sum_{p=1}^m \Delta^{S,p}
+\frac{1}{M_m}\sum_{I} \gamma^m_{I} \kappa_I = \frac{1}{M_m} \sum_{p=1}^m \kappa^{S,p}
 \end{equation}
 
-And write the final form or $\Delta^m$ as
+And write the final form or $\kappa^m$ as
 \begin{equation}
-\Delta^m=\sum_{t=0}^{\dot t_{m}-1} \Delta^{D,t} + \frac{1}{M_m} \sum_{p=1}^m \Delta^{S,p}
+\kappa^m=\sum_{t=0}^{\dot t_{m}-1} \kappa^{D,t} + \frac{1}{M_m} \sum_{p=1}^m \kappa^{S,p}
 \end{equation}
 
-The vectors we need to store are $\Delta^{D,t}$ and $\Delta^{S,m}$. Each time we compute an elementary dressing vector $\Delta_I$, the need for update goes as follow
+The vectors we need to store are $\kappa^{D,t}$ and $\kappa^{S,m}$. Each time we compute an elementary dressing vector $\kappa_I$, the need for update goes as follow
 
 \begin{itemize}
 \item
-$\Delta^{D,t}$ with $I \in \mathcal{T}_t$. This is exactly one write.
+$\kappa^{D,t}$ with $I \in \mathcal{T}_t$. This is exactly one write.
 \item
-$\Delta^{S,m}$ where $\gamma^m_I - \gamma^{m-1}_I \neq 0$. This is
+$\kappa^{S,m}$ where $\gamma^m_I - \gamma^{m-1}_I \neq 0$. This is
  \begin{itemize}
  \item
  	No write if $I$ is moved to $\mathcal{D}$ in the same checkpoint it is first drawn or computed for tooth filling
@@ -305,21 +308,21 @@ with $j$ the task index associated with $I$, i.e. $J[j]=I$. These sets are track
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.7\columnwidth]{figures/matrix_dressing/taskqueue}
-		\caption{A REFAIRE NOTATION.............}
-		\label{fig:eici2}
-		$e_I$
+		\includegraphics[width=0.45\columnwidth]{figures/matrix_dressing/taskqueue}
+		\caption{Task queue divided in checkpoints $\mathcal{P}_m$. The task array $J$ contains the indices of samples to be computed. When all tasks in sets $\mathcal{P}_{p\leq m}$ have been computed, checkpoint $m$ is computatble.}
+		\label{fig:task_queue}
 	\end{center}
 \end{figure}
 
 \begin{algorithm}
-	\caption{PRECOMPUTE\_MONTECARLO}
+	\caption{Compute task queue and checkpoints.}
 	\label{PRECOMPUTE_MONTECARLO}
 	\tcc{Computes task queue}
 		\KwData{$M_m$ the desired number of combs for checkpoints $m$. $M_0 = 0$ for convenience. $M_{n+1} > M_n$, $\exists M_n > \Ngen$}
-		
+		\KwResult{$J$ the task array, $N_{cp}$ the number of checkpoints, $P$ the array so that $P[I] = m$ iff $I \in \mathcal{P}_m$, $R^{-1}$ the array so that checkpoint $m$ becomes available when the first $R^{-1}[m]$ jobs have been computed.}
 		$\tilde M$ array size $\Ndet$ initialized with $0$\;
 		$u$ array size $\Ngen$ initialized with random numbers $\in [0,1)_\mathbb{R}$ \;
+		$d$ a boolean array size $\Ngen$ initialized with $FALSE$.
 		
 		$R^{-1}[0] \gets 0$ \;
 		$N_c \gets 0$ \;
@@ -346,20 +349,20 @@ with $j$ the task index associated with $I$, i.e. $J[j]=I$. These sets are track
 			$N_{cp} \gets N_{cp}+1$ \;
 			$R^{-1}[N_{cp}] = N_j$ \;
 		}
+		optimize task queue with algorithm \ref{alg:OPTIMIZE_MONTECARLO} \;
+		\For{$m=1,N_{cp}$}{
+		\For{$i=R^{-1}[m-1]+1,R^{-1}[m]$}{
+			$P[J[i]] \gets m$ \;
+		}
+		}
 \end{algorithm}
 
 %An extra array $P[i]=m$ is built, mapping a sample index $i$ to the checkpoint $m$ in which it is first needed ; in other words, when sample $i$ needs to be evalutated, checkpoints up to $m-1$ have been fully built.
 
-\begin{algorithm}
-	\For{$m=1,N_{cp}$}{
-	\For{$i=R^{-1}[m-1]+1,R^{-1}[m]$}{
-		$P[J[i]] \gets m$ \;
-	}
-	}
-\end{algorithm}
 
 \begin{algorithm}
-	\caption{OPTIMIZE\_MONTECARLO}
+	\KwResult{Modifies $J$ the task array and $R^{-1}$ the array defining the boundaries of checkpoints in $J$.}
+	\caption{Optimize checkpoints so that they are available faster.}
 	\label{alg:OPTIMIZE_MONTECARLO}
 	
 	%\SetKwFunction{FMain}{OPTIMIZE\_MONTECARLO}
@@ -395,20 +398,22 @@ with $j$ the task index associated with $I$, i.e. $J[j]=I$. These sets are track
 %		$N_{cp} \gets k$ \;
 \end{algorithm}
 
-Algorithm \ref{alg:OPTIMIZE_MONTECARLO} is an optional reorganization of jobs order. It ensures results for a checkpoint are available as quickly as possible, without altering them. Some checkpoints may however be removed if no extra computation is required to reach the next one ; this situation can't happen in the unoptimized task queue, because of the tooth filling. Two things are taken into consideration:
+Algorithm \ref{alg:OPTIMIZE_MONTECARLO} is an optional reorganization of jobs order. It ensures results for a checkpoint are available as quickly as possible, without altering them.
+%Some checkpoints may however be removed if no extra computation is required to reach the next one ; this situation can't happen in the unoptimized task queue, because of the tooth filling. Two things are taken into consideration:
 \begin{itemize}
 \item
 Because no result is available between two checkpoints, the order in which jobs are processed between two checkpoints is irrelevant for the result. So, as is usually the case with parallel jobs, we would like to do the longest tasks first, so that we don't get an extra delay due to a massive task being done last. Therefore, jobs should always be in ascending order ( descending computational time) between two checkpoints.
 \item
-Because of the "tooth filling", sometimes samples computed inside a checkpoint aren't useful for the result. Since tooth filling picks the first non-computed jobs, they are of high computational cost. The algorithm iterates over checkpoints in ascending order, each time moving such sample to the next checkpoint. Thus, every sample is moved to the first checkpoint it is actually involved in, either deterministically or stochastically.
+Because of the "tooth filling", sometimes samples computed inside a checkpoint are not involved in its result. Since tooth filling picks the first non-computed jobs, they tend to be of high computational cost. The algorithm iterates over checkpoints in ascending order, each time moving such sample to the next checkpoint. Thus, every sample is moved to the first checkpoint it is actually involved in, either deterministically or stochastically.
 \end{itemize}
 
 
 
 \begin{algorithm}
+	\caption{Compute $\tilde \epsilon$, $\dot t$ and $\dot n_0$}
 	\label{COMPUTE_EPSILON}
-	\caption{COMPUTE\_EPSILON}
-		\KwResult{ $\tilde \epsilon$}
+		\KwData{$J$, $R^{-1}$, $n_0$, $N_{teeth}$}
+		\KwResult{ $\tilde \epsilon$, $\dot t$ and $\dot n_0$}
 		$\tilde \epsilon^*_* \gets 0$ \;
 		$F \gets n_0(1)+1$ \;		
 		\For{$m=1,N_{cp}$}{
@@ -429,57 +434,18 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 					break loop \;
 				}
 			}
-			
-			
-			%\For{$t=\dot t_m,N_{teeth}$}{
 				
-				\For{$i=\dot n_0(m)+1, \Ngen$}{
-					$\tilde \epsilon^m_i \gets \frac{W_T \times M_{m,i}}{w[i]}$ \;
-				}
-			%}
+			\For{$i=\dot n_0(m)+1, \Ngen$}{
+				$\tilde \gamma^m_i \gets \frac{W_T \times M_{m,i}}{w[i]}$ \;
+			}
 		}
-		\For{$m=N_{cp},2,step=-1$}{
-			$\tilde \epsilon^m_* \gets \tilde \epsilon^m_* - \tilde \epsilon^{m-1}_*$ \;
+		
+		\For{$m=N_{cp},2,-1$}{
+			$\tilde \epsilon^m_* \gets \tilde \gamma^m_* - \tilde \gamma^{m-1}_*$ \;
 		}
 \end{algorithm}
 
 
-\begin{algorithm}
-	\label{COMPUTE_EPSILON}
-	\caption{COMPUTE\_EPSILON}
-		\KwResult{ $\tilde \epsilon$}
-		$\tilde \epsilon^*_* \gets 0$ \;
-		$F \gets n_0(1)+1$ \;		
-		\For{$m=1,N_{cp}$}{
-			\While{$F \leq \Ngen$}{
-				\uIf{$M_{m,F} \neq 0$}{
-					$F \gets F+1$ \;
-				}\Else{
-					break \;
-				}
-		  	}
-		  	$\dot t_m \gets N_{teeth}+1$ \;
-			$\dot n_0(m) \gets \Ngen$ \;
-			\For{$t=2,N_{teeth}+1$}{
-				\If{$F \leq n_0(t)$}{% rTeethI[t]$}{
-					$\dot t_m \gets t-1$ \;
-					$\dot n_0(m) \gets n_0(t-1)$ \;
-					break loop \;
-				}
-			}
-			
-			
-			\For{$t=\dot t_m,N_{teeth}$}{
-				
-				\For{$i=n_0(t)+1,n_0(t+1)$}{
-					$\tilde \epsilon^m_i \gets \frac{W_T \times M_{m,i}}{w[i]}$ \;
-				}
-			}
-		}
-		\For{$m=N_{cp},2,step=-1$}{
-			$\tilde \epsilon^m_* \gets \tilde \epsilon^m_* - \tilde \epsilon^{m-1}_*$ \;
-		}
-\end{algorithm}
 
 \newcommand{\cpsent}{\text{cp\_sent}}
 \newcommand{\cpdone}{\text{cp\_done}}
@@ -511,33 +477,34 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 		}
 		--END OMP CRITICAL-- \;
 		\If{$\willsend \neq 0$}{
-			SEND $\Delta^{\willsend}$ shown in algo TBD
+			send $\kappa^{\willsend}$ (shown in algorithm \ref{alg:build_checkpoints})
 		}
 		\If{$m < N_{cp}+1$}{
-			UPDATE with I shown in algo TBD \;
+			perform task $(I,s)$ (shown in algo \ref{alg:update_checkpoints}) \;
 		}
 	}
 \end{algorithm}
 
 
 \begin{algorithm}
-	\tcc{UPDATE}
-	\KwData{global shared scope : $\Delta^{D,t}$ and $\tilde \Delta^{m}$ as described, initialized with $0$}
-	\KwData{global shared scope : $f$ an array size $\Ngen$ initialized with $0$. The fragmentation count}
+	\caption{Perform task $(I,s)$, that is, update \alert{`node-local''} partial values of $ \kappa^{D,t}$ and $ \kappa^{S,m}$.}
+	\label{alg:update_checkpoints}
+	\KwData{global shared scope (at node level): $\kappa^{D,t}$ and $\kappa^{S,m}$ initialized with $0$, $f$ an array size $\Ngen$ initialized with $0$. The fragmentation count}
 	
-	\KwData{from outer scope : $s, I \in \mathcal{P}_m$} 
+	\KwData{from outer scope : $s, I$} 
 	\BlankLine
+	$m $ so that $I \in \mathcal{P}_m$ \;
 	$t$ so that $I \in \mathcal{T}_t$ \;
 	
-	compute $\Delta_{I,s}$ \;
+	compute $\kappa_{I,s}$ (\alert{fragment $s$ of $\kappa_{I}$})\;
 	\tcc{lock global arrays before update}
-	$\Delta^{D,t} \gets \Delta^{D,t} + \Delta_{I,s}$ \;
+	$\kappa^{D,t} \gets \kappa^{D,t} + \kappa_{I,s}$ \;
 	\For{$p=m,N_{cp}$}{
-		\If{$\tilde e^p_I \neq 0$}{
-			$\Delta^{S,p} \gets \Delta^{S,p} + \tilde \epsilon^{p}_I \Delta_{I,s}$ \;
+		\If{$\tilde \epsilon^p_I \neq 0$}{
+			$\kappa^{S,p} \gets \kappa^{S,p} + \tilde \epsilon^{p}_I \kappa_{I,s}$ \;
 		}
 	}
-	$x \gets \Psi \cdot \Delta_{I,s}$ \;
+	$x \gets {\bf c} \cdot \kappa_{I,s}$ \;
 	--ATOMIC-- \;
 	$e_I \gets e_I + x$ \;
 	$f[I] \gets f[I] + 1$ \;
@@ -546,9 +513,9 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 
 
 \begin{algorithm}
-	\tcc{SEND}
-	
-	\tcc{compute partial value of $\Delta^m$ with partial values of $\Delta^{D,t}$ and $\Delta^{S,m}$}
+	\caption{Build $ \kappa^m$ and send it to master node.}
+	\label{alg:build_checkpoints}
+	\tcc{compute partial value of $\kappa^m$ with partial values of $\kappa^{D,t}$ and $\kappa^{S,m}$}
 	\tcc{sending information for checkpoint $m$}
 	
 	$\dot f \gets \sum_{I \in \mathcal{P}_{p\leq m}} f[I]$ \;
@@ -556,17 +523,17 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 		return \;
 	}
 	
-	$\Delta^m \gets 0$ \;
-	\For{$p=m,1$}{
-		$\Delta^m \gets \Delta^m + \Delta^{S,p}$
+	$\kappa^m \gets 0$ \;
+	\tcc{reverse loop for numerical precision}
+	\For{$p=m,1,-1$}{
+		$\kappa^m \gets \kappa^m + \kappa^{S,p}$
 	}
-	$\Delta^m \gets \frac{\Delta^m}{M_m}$ \; 
+	$\kappa^m \gets \frac{\kappa^m}{M_m}$ \; 
 	\For{$t=\dot t_m-1,0,-1$}{
-		$\Delta^m \gets \Delta^m + \Delta^{D,t}$ \;
+		$\kappa^m \gets \kappa^m + \kappa^{D,t}$ \;
 	}
 	%$\mathcal{I}$ the set of $I \in \mathcal{P}_m$ with $f[I] > 0$ \;
-	\tcc{$f$ from the slave algorithm can be used to send $e_{I \in \mathcal{P}_m}$ as a sparse \alert{vector/matrix}}
-	send ($m$, $\Delta^m$, $e_{I \in \mathcal{P}_m}$, $\dot f$) \;
+	send ($m$, $\kappa^m$, $e_{I \in \mathcal{P}_m}$, $\dot f$) \;
 \end{algorithm}
 
 
@@ -578,6 +545,7 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 	$\dot f$ integer array size $N_{cp}$ initialized with $\dot f[m] = \sum_{I \in \mathcal{P}_{p\leq m}} F_{I}$ \;
 	\While{}{
 		\uIf{$\dot f[m] = 0$}{
+			\tcc{see algorithm \ref{alg:UPDATE_S}}
 			\While{$c \leq M_m$}{
 				$S_* \gets S_* + B_*(u[c])$ \;
 				$S^{(2)}_* \gets S^{(2)}_* + B_*(u[c])^2$ \;
@@ -595,13 +563,14 @@ Because of the "tooth filling", sometimes samples computed inside a checkpoint a
 			$m \gets m+1$ \;
 		}
 		\Else{
-			retrieve $(l, \breve {\Delta}^l$, $\breve {e}_{I \in \mathcal{P}_l},\breve f)$  \;
+			
+			retrieve $(\breve l,  \breve {\kappa}^l$, $ \breve {e}_{I \in \mathcal{P}_l}, \breve f)$  \;
 			increment $e_{I \in \mathcal{P}_l}$ with $\breve e_{I \in \mathcal{P}_l}$\;
-			increment $\Delta^l$ with $\breve \Delta^l$ \;
-			decrement $\dot f[l]$ with $\breve f$\;
+			increment $\kappa^l$ with $\breve  \kappa^l$ \;
+			decrement $\dot f[l]$ with $\breve  f$\;
 		}
 	}
-	$\Delta^m$ is the estimated dressing vector \;
+	$\kappa^m$ is the estimated dressing vector \;
 	
 \end{algorithm}
 
