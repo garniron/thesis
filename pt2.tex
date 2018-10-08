@@ -226,7 +226,7 @@ $\mathcal{T}_0$ is always computed before any stochastic estimation can take pla
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.7\columnwidth]{figures/pt2/eici2comb}
+		\includegraphics[width=0.9\columnwidth]{figures/pt2/eici2_comb}
 	\end{center}
 	\caption{Contribution $e_I$ associated with each generator, where the generators are sorted in decreasing order of $c_I^2$. The determinant space is divided into equal probability domains, according do $c_I^2$.}
 	\label{fig:p_i}
@@ -253,8 +253,8 @@ Because of its original nature, this algorithm casts some ambiguity on what shou
 		\caption{Comb contributions as a function of the uniform random number $u$ drawn. The green horizontal line is $\EPT$.}
 		\label{fig:ei_comb}
 \end{figure}
-In a comb, the space of generators is split into domains of equal probability (see
-domains $P_1, \dots P_4$ in figure~\ref{fig:p_i}), and
+In a comb, the space of generators, minus the initial deterministic range $\mathcal{T}_0$, is split into domains of equal probability (see
+domains $\mathcal{T}_1, \dots \mathcal{T}_4$ in figure~\ref{fig:p_i}), and
 one sample is drawn in each range. Then, all those $e_I$ are added together to make the contribution of the comb. Because the function $e_I$ decreases smoothly, the contributions of the combs fluctuate less than the individual contributions, and the variance can be further reduced, as shown in figure~\ref{fig:ei_comb}.
 
 As seen in section~\ref{sec:partition}, because $\frac{e_I}{w_I}$ overall decreases, a range has a lower variance than the whole domain. The stochastic domain is split in $\Nteeth$ ranges referred to as \emph{teeth}, noted $\mathcal{T}_1,\ldots,\mathcal{T}_{\Nteeth}$ (called $\mathcal{D}_t$ in the presented article) and sharing the same total weight $W_T$
