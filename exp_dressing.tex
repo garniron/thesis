@@ -276,13 +276,13 @@ We first set up a method to identify a diamond, then two methods to ``locate'' t
 For implementational efficiency, we are going to express excitations using $\hat f_p$ an operator that flips the occupation status of a spinorbital $p$.
 \begin{align}
   \begin{cases}
-  \hat f_p \ket A = a_p \ket A & \text{if }  a_p \ket A \neq 0\\
-  \hat f_p \ket A = a^\dagger_p \ket A & \text{if }  a^\dagger_p  \ket A \neq 0\\
+  \hat f_p \ket A = \ordering a_p \ket A & \text{if }  a_p \ket A \neq 0\\
+  \hat f_p \ket A = \ordering a^\dagger_p \ket A & \text{if }  a^\dagger_p  \ket A \neq 0\\
   \end{cases}
 \end{align}
 or in a less verbose formulation
 \begin{equation}
-\hat f_p = a_p + a^\dagger_p
+\hat f_p = \ordering a_p + \ordering a^\dagger_p
 \end{equation}
 This avoids the burden of making a distinction between annihilation and creation operator, and of checking whether they can be applied to a determinant. This also ignores phase factors.
 
