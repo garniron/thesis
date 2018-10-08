@@ -199,7 +199,7 @@ The second term being $\deltabold^m$ without its deterministic contribution, we 
 \begin{equation}
 \gamma^m_I = 
 \begin{cases}
-0 & \text{if } i \leq \dot n_0(m) \vee m=0 \\
+0 & \text{if } I \leq \dot n_0(m) \vee m=0 \\
 \mu^m_I \times M_m = \frac{W_T \times M_{m,I}}{w_I} & \text{if } I > \dot n_0(m) \wedge m \neq 0
 \end{cases}.
 \end{equation}
@@ -469,7 +469,7 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 	
 
 	$\deltabold^m \gets 0$ \;
-	\tcc{Reverse loop for numerical precision \alert{POURQUOI?}}
+	\tcc{Reverse loop for numerical precision}
 	\For{$p\gets m,1$ \KwBy $-1$}{
 		$\deltabold^m \gets \deltabold^m + \deltabold^{S,p}$
 	}
