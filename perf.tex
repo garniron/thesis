@@ -111,13 +111,13 @@ with an increasing number of 36-core compute nodes.}
 \hline
 \tabc{Nodes} & \tabc{9~356~952 determinants} & \tabc{42~959~496 determinants} \\
 \hline
-$ 1$ &$836.19$ &$11~853.95$\\
-$ 5$ &$182.75$ &$ 2~451.40$\\
-$10$ &$101.37$ &$ 1~269.86$\\
-$20$ &$ 59.94$ &$   671.87$\\
-$30$ &$ 46.51$ &$   476.25$\\
-$40$ &$ 39.72$ &$   382.20$\\
-$50$ &$ 35.71$ &$   320.58$\\
+$ 1$ &$775.55$ &$11~853.95$\\
+$ 5$ &$169.88$ &$ 2~451.40$\\
+$10$ &$ 93.22$ &$ 1~269.86$\\
+$20$ &$ 56.86$ &$   671.87$\\
+$30$ &$ 43.76$ &$   476.25$\\
+$40$ &$ 36.18$ &$   382.20$\\
+$50$ &$ 33.67$ &$   295.25$\\
 \hline
 \end{tabular}
 \end{center}
@@ -283,13 +283,13 @@ increasing number of 36-core compute nodes.}
 \hline
 \tabc{Nodes} & \tabc{Ground state} & \tabc{Excited state} \\
 \hline
-$1 $ & $7~779.80$  & $9~663.79$  \\
-$5 $ & $1~630.27$  & $2~006.49$  \\
-$10$ & $  855.49$  & $1~038.94$  \\
-$20$ & $  464.52$  & $  555.38$  \\
-$30$ & $  337.69$  & $  399.27$  \\
-$40$ & $  270.26$  & $  318.58$  \\
-$50$ & $  231.73$  & $  274.27$  \\
+$1 $ & $7~779.80$  & $9~663.79$  \\ %TODO
+$5 $ & $1~649.26$  & $2~037.44$  \\
+$10$ & $  854.52$  & $1~054.09$  \\
+$20$ & $  461.96$  & $  560.73$  \\
+$30$ & $  352.26$  & $  424.19$  \\
+$40$ & $  281.51$  & $  331.23$  \\
+$50$ & $  225.08$  & $  278.21$  \\
 \hline
 \end{tabular}
 \end{center}
@@ -317,12 +317,12 @@ Time is given in seconds.}
 \hline
 \tabc{$\Ndet$} & \tabc{Ground state} & \tabc{Excited state} \\
 \hline
-$      123$ & $     0.24$  & $     0.81$ \\
-$    3~083$ & $     3.79$  & $     4.75$ \\
-$   29~409$ & $    23.12$  & $    28.72$ \\
-$  168~595$ & $   200.06$  & $   219.91$ \\
-$1~322~537$ & $  2784.19$  & $  3023.61$ \\
-$9~356~952$ & $ 27476.91$  & $ 28253.20$ \\
+$      123$ & $      0.80$  & $      0.78$ \\
+$    3~083$ & $      4.06$  & $      5.38$ \\
+$   29~409$ & $     27.27$  & $     29.45$ \\
+$  168~595$ & $    129.93$  & $    201.65$ \\
+$1~322~537$ & $  1~518.60$  & $  1~766.36$ \\
+$9~356~952$ & $ 15~004.54$  & $ 17~766.99$ \\
 \hline
 \end{tabular}
 \end{center}
@@ -350,6 +350,37 @@ sent at every checkpoint. The computational overhead for this reduction of the c
 scales as $\order{\Ndet}$, and this explains why the scaling with the number of determinants is
 closer to linear than for $\EPT$.
 
+\begin{center}
+\begin{tabular}{rrr}
+\hline
+\tabc{Nodes} & \tabc{Ground state} & \tabc{Excited state} \\
+\hline
+\begin{center}
+\begin{tabular}{rrr}
+\hline
+\tabc{Nodes} & \tabc{Ground state} & \tabc{Excited state} \\
+\hline
+$1 $ & $7~779.80$  & $9~663.79$  \\ %TODO
+$5 $ & $1~649.26$  & $2~037.44$  \\
+$10$ & $  854.52$  & $1~054.09$  \\
+$20$ & $  461.96$  & $  560.73$  \\
+$30$ & $  352.26$  & $  424.19$  \\
+$40$ & $  281.51$  & $  331.23$  \\
+$50$ & $  225.08$  & $  278.21$  \\
+\hline
+\end{tabular}
+\end{center}
+%TODO
+%$1 $ & $7~779.80$  & $9~663.79$  \\ %TODO
+%$5 $ & $1~649.26$  & $2~037.44$  \\
+%$10$ & $  854.52$  & $1~054.09$  \\
+%$20$ & $  461.96$  & $  560.73$  \\
+%$30$ & $  352.26$  & $  424.19$  \\
+%$40$ & $  281.51$  & $  331.23$  \\
+%$50$ & $  225.08$  & $  278.21$  \\
+\hline
+\end{tabular}
+\end{center}
 \begin{figure}[hbt]
 	\begin{center}
 		%\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sbk_node}
