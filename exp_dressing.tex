@@ -213,9 +213,9 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
 \begin{algorithm}
 \caption{Compute a $c_\alpha$ for MRCC}
 \KwData{$\kalpha$ the considered exernal determinant}
-\KwData{$\ket {D_i}$ the list of $N$ internal determinants connected to $\kalpha$, sorted by increasing integer value}
+\KwData{$\ket {D_I}$ the list of $N$ internal determinants connected to $\kalpha$, sorted by increasing integer value}
 \KwData{$\ket {R_i}$ the list of $N_{ref}$ reference determinants sorted by increasing integer value and $c_{R_i}$ their coefficient}
-\KwData{$t_{R_r \rightarrow D_i}$ the used amplitudes}
+\KwData{$t_{R_r \rightarrow D_I}$ the used amplitudes}
 \KwResult{$c_\alpha$} 
 
 $c_\alpha \gets 0$ \;
@@ -223,24 +223,24 @@ discard $R_r$ when $\text{EXC\_DEGREE} (R_r, \alpha) > 4$ \;
 if $R_r$ so that $\text{EXC\_DEGREE} (R_r, \alpha) \leq 2$ was found, discard $\kalpha$ \;
 
 
-\ForAll{$D_j$}{
-\tcc{Note that $\phase{\ket {D_j}}{\kalpha}$ may be pre-computed here}
-$\delta \gets \alpha - D_j$ \;
+\ForAll{$D_J$}{
+\tcc{Note that $\phase{\ket {D_J}}{\kalpha}$ may be pre-computed here}
+$\delta \gets \alpha - D_J$ \;
 $i \gets 1$ \;
 $r \gets 1$ \;
 \While{$i \leq N \wedge r \leq N_{ref}$}{
-	\uIf{$D_i - R_r > \delta$}{
+	\uIf{$D_I - R_r > \delta$}{
 		$r \gets r + 1$ \;
 	}
-	\uElseIf{$D_i - R_r < \delta$}{
+	\uElseIf{$D_I - R_r < \delta$}{
 		$i \gets i + 1$ \;
 	}
 	\Else
 	{
-		\If{$R_r \oplus D_i \oplus D_j \oplus \alpha = 0$}{
+		\If{$R_r \oplus D_I \oplus D_J \oplus \alpha = 0$}{
 			\tcc{diamond found}
-			$\varphi \gets \phase{\ket {D_j}}{\kalpha} \times \phase{\ket {R_r}}{\ket {D_i}}$ \;
-			$c_\alpha \gets c_\alpha + \varphi \times c_{R_r} \times (t_{R_r \rightarrow D_i}) \times (t_{R_r \rightarrow D_j})$ \;
+			$\varphi \gets \phase{\ket {D_J}}{\kalpha} \times \phase{\ket {R_r}}{\ket {D_I}}$ \;
+			$c_\alpha \gets c_\alpha + \varphi \times c_{R_r} \times (t_{R_r \rightarrow D_I}) \times (t_{R_r \rightarrow D_J})$ \;
 		}
 		$r \gets r + 1$ \;
 		$i \gets i + 1$ \;
@@ -264,20 +264,20 @@ The formula for $c_\alpha$ as well as the procedure for computing amplitudes is 
 	\end{center}
 %\end{figure}
 
-With $\kalpha$ the external determinant being considered, $\ket {D_i}$ and $\ket {D_j}$ internal determinants, and $\ket {R_r}$ a reference determinant.  Parallel arrows indicate connections (excitation degree at most 2) by the same excitation, the vertical arrow indicates $\ket {R_r}$ and $\kalpha$ aren't connected (excitation degree at least 3). More generally, we only consider $\kalpha$ determinants that are not connected to any $\ket {R_r}$. All the determinants we are considering are ordered according to $\ordering$.
+With $\kalpha$ the external determinant being considered, $\ket {D_I}$ and $\ket {D_J}$ internal determinants, and $\ket {R_r}$ a reference determinant.  Parallel arrows indicate connections (excitation degree at most 2) by the same excitation, the vertical arrow indicates $\ket {R_r}$ and $\kalpha$ aren't connected (excitation degree at least 3). More generally, we only consider $\kalpha$ determinants that are not connected to any $\ket {R_r}$. All the determinants we are considering are ordered according to $\ordering$.
 
 The matrix dressing implementation supplies $\{\mathcal{D}\}$ the complete set of the $N$ internal determinants that connect to $\kalpha$. We call $\{\mathcal{R}\}$ the set of the $N_{ref}$ reference determinants.
 
 A naive way to find those diamonds, would be to loop over all unordered triplets 
 
 \begin{equation}
-(D_i \in \{\mathcal{D}\}, D_j \in \{\mathcal{D}\}, R_r \in \{\mathcal{R}\})
+(D_I \in \{\mathcal{D}\}, D_J \in \{\mathcal{D}\}, R_r \in \{\mathcal{R}\})
 \end{equation}
 
 so that
 
 \begin{equation}
-\hat T_{R_r \rightarrow D_i} \hat T_{R_r \rightarrow D_j} \ket {R_r} = \pm \kalpha
+\hat T_{R_r \rightarrow D_I} \hat T_{R_r \rightarrow D_J} \ket {R_r} = \pm \kalpha
 \end{equation}
 
 with $\hat T_{R_r \rightarrow D}$ the excitation operator so that $\hat T_{R_r \rightarrow D} \ket R = \ket D$.
@@ -286,11 +286,11 @@ with $\hat T_{R_r \rightarrow D}$ the excitation operator so that $\hat T_{R_r \
 
 Using excitation operators, a diamond can be identified by only verifying
 \begin{equation}
-\hat T_{R_r \rightarrow D_i} = \pm \hat T_{D_j \rightarrow \alpha}
+\hat T_{R_r \rightarrow D_I} = \pm \hat T_{D_J \rightarrow \alpha}
 \label{eq:excitation_diamond}
 \end{equation}
 
-In other words that $\hat T_{R_r \rightarrow D_i}$ and $\hat T_{D_j \rightarrow \alpha}$ involve the same holes and particles (the sign of $T_{D_j \rightarrow \alpha}$ sets the sign in of $\kalpha$ in a diamond).
+In other words that $\hat T_{R_r \rightarrow D_I}$ and $\hat T_{D_J \rightarrow \alpha}$ involve the same holes and particles (the sign of $T_{D_J \rightarrow \alpha}$ sets the sign in of $\kalpha$ in a diamond).
 We first set up a method to identify a diamond, then two methods to ``locate'' them.
 
 
@@ -313,16 +313,16 @@ This avoids the burden of making a distinction between anihilation and creation 
 
 The notation $\hat f_{ab\ldots}$ will be used as a shortcut for $\hat f_a \hat f_b \ldots$, and we define $\hat F_{A \rightarrow B} = \hat F_{B \rightarrow A}$ as the set of $\hat f$ operators that flips all spinorbitals whose occupation differ between $\ket A$ and $\ket B$.
 
-Clearly a set of $\hat f$ operators does not univocaly correspond to an excitation, but it is demonstrable that in this particular case, we can use $\hat F$ instead of the excitation operator $\hat T$, i.e. we can ensure $(R_r, D_i, D_j, \alpha)$ are forming a diamond by only verifying
+Clearly a set of $\hat f$ operators does not univocaly correspond to an excitation, but it is demonstrable that in this particular case, we can use $\hat F$ instead of the excitation operator $\hat T$, i.e. we can ensure $(R_r, D_I, D_J, \alpha)$ are forming a diamond by only verifying
 \begin{equation}
-\hat F_{R_r \rightarrow D_i} = \hat F_{D_j \rightarrow \alpha}
+\hat F_{R_r \rightarrow D_I} = \hat F_{D_J \rightarrow \alpha}
 \label{eq:diamond_flip}
 \end{equation}
 
-It is easy to understand from Eq.~\eqref{eq:excitation_diamond} how this is a necessary condition, it is less obvious that it is also a sufficient one, i.e. that this can only happen if there is a diamond. In fact, it is not generally true. It is demonstrable in this particular case thanks to the known excitation degrees. It is known $\ket {D_i}$ and $\ket {D_j}$ are connected by at most a double excitation to $\kalpha$, therefore at most 4 orbitals have their occupation status flipping, two of them occupied and two unoccupied in $\kalpha$. For later clarity we use the dot ($\dot a$) notation to denote indices of spinorbitals that are occupied in $\kalpha$.
+It is easy to understand from Eq.~\eqref{eq:excitation_diamond} how this is a necessary condition, it is less obvious that it is also a sufficient one, i.e. that this can only happen if there is a diamond. In fact, it is not generally true. It is demonstrable in this particular case thanks to the known excitation degrees. It is known $\ket {D_I}$ and $\ket {D_J}$ are connected by at most a double excitation to $\kalpha$, therefore at most 4 orbitals have their occupation status flipping, two of them occupied and two unoccupied in $\kalpha$. For later clarity we use the dot ($\dot a$) notation to denote indices of spinorbitals that are occupied in $\kalpha$.
 
 \begin{equation}
-\hat F_{D_i \rightarrow \alpha} = \hat F_{R_r \rightarrow D_j} = \hat f_{\dot a \dot bcd} \; ; \; \hat F_{D_j \rightarrow \alpha} = \hat F_{R_r \rightarrow D_i} = \hat f_{\dot e \dot fgh}
+\hat F_{D_I \rightarrow \alpha} = \hat F_{R_r \rightarrow D_J} = \hat f_{\dot a \dot bcd} \; ; \; \hat F_{D_J \rightarrow \alpha} = \hat F_{R_r \rightarrow D_I} = \hat f_{\dot e \dot fgh}
 \end{equation}
 
 The reference determinant $\ket {R_r}$ is reached from $\kalpha$ after chaining the two ``flippenings''.
@@ -331,7 +331,7 @@ The reference determinant $\ket {R_r}$ is reached from $\kalpha$ after chaining 
 \hat F_{R \rightarrow \alpha} = (\hat f_{\dot a \dot bcd})(\hat f_{\dot e \dot fgh})
 \end{equation}
 
-If indices $\dot a,\dot b,c,d,\dot e,\dot f,g,h$ are all unique, $\hat T_{R \rightarrow D_i}$ and $\hat T_{D_j \rightarrow \alpha}$ are independent and thus can be chained, so the diamond is valid. If they are not, the diamond is still known to be valid thanks to our knowledge that $\kalpha$ is at least a triple excitation from $\ket {R_r}$, and therefore at least 6 orbitals must flip. 
+If indices $\dot a,\dot b,c,d,\dot e,\dot f,g,h$ are all unique, $\hat T_{R \rightarrow D_I}$ and $\hat T_{D_J \rightarrow \alpha}$ are independent and thus can be chained, so the diamond is valid. If they are not, the diamond is still known to be valid thanks to our knowledge that $\kalpha$ is at least a triple excitation from $\ket {R_r}$, and therefore at least 6 orbitals must flip. 
 
 It is trivial that
 
@@ -358,13 +358,13 @@ With $A$ a single bitstring associated with $\ket A$ - the association between a
 Eq.~\eqref{eq:diamond_flip} is verified iff
 
 \begin{equation}
-R_r \oplus D_i = D_j \oplus \alpha
+R_r \oplus D_I = D_J \oplus \alpha
 \end{equation}
 
 or alternatively, since $A \oplus A = 0$
 
 \begin{equation}
-R_r \oplus D_i \oplus D_j \oplus \alpha = 0
+R_r \oplus D_I \oplus D_J \oplus \alpha = 0
 \label{eq:diamond_xor}
 \end{equation}
 
@@ -372,27 +372,27 @@ R_r \oplus D_i \oplus D_j \oplus \alpha = 0
 Now that we expressed the identification of a diamond in a simple way, we must figure a strategy to find them fast. Eq.~\eqref{eq:diamond_xor} can be rewritten as
 
 \begin{equation}
-D_j = R_r \oplus D_i \oplus \alpha
+D_J = R_r \oplus D_I \oplus \alpha
 \end{equation}
 
 which implies a simple algorithm that finds the diamonds in $\mathcal{O}(N \times N_{ref} \times log(N))$.
 \begin{enumerate}
 \item
-iterate over $(R_r, D_i)$
+iterate over $(R_r, D_I)$
 \item
-binary search for $D_j = (R_r \oplus D_i \oplus \alpha)$ in $\{D\}$. 
+binary search for $D_J = (R_r \oplus D_I \oplus \alpha)$ in $\{\mathcal{D}\}$. 
 \end{enumerate}
 
 Depending on the size of $\{D\}$ and $\{R\}$ sets, this variant can also be used, giving a complexity of $\mathcal{O}(N^2 \times log(N_{ref}))$.
 
 \begin{enumerate}
 \item
-iterate over $(D_i, D_j)$
+iterate over $(D_I, D_J)$
 \item
-binary search for $R_r = (D_i \oplus D_j \oplus \alpha)$ in $\{\mathcal{R}\}$. 
+binary search for $R_r = (D_I \oplus D_J \oplus \alpha)$ in $\{\mathcal{R}\}$. 
 \end{enumerate}
 
-Those are desirable if one of $\{\mathcal{D}\}$ or $\{\mathcal{R}\}$ is relatively small, in particular, in case of single-reference computation, i.e. $|R|=1$, the former variant is ideal. For larger sets, however, a more complex variant with a complexity $\mathcal{O}(N \times (N+N_{ref}))$ is introduced next.
+Those are desirable if one of $\{\mathcal{D}\}$ or $\{\mathcal{R}\}$ is relatively small, in particular, in case of single-reference computation, i.e. $|\mathcal{R}|=1$, the former variant is ideal. For larger sets, however, a more complex variant with a complexity $\mathcal{O}(N \times (N+N_{ref}))$ is introduced next.
 
 
 \paragraph{Locating diamonds by rewriting excitations as additions}
@@ -409,7 +409,7 @@ T_{A \rightarrow B} + A = B
 With $A$ the bitstring associated with $\ket A$ as a single integer - the association between a spinorbital and a bit is arbitrary. It is a necessary but not sufficent condition for a diamond that
 
 \begin{equation}
-T_{R \rightarrow D_i} = T_{D_j \rightarrow \alpha}
+T_{R \rightarrow D_I} = T_{D_J \rightarrow \alpha}
 \end{equation}
 
 Indeed 
@@ -422,10 +422,10 @@ with $T$ the integer associated with excitation $\pm \hat T$. If $\pm \hat T \ke
 Eq.~\eqref{eq:excitation_diamond} implies
 
 \begin{align}
-D_i - R_r = \alpha - D_j 
+D_I - R_r = \alpha - D_J 
 \end{align}
 
-Finding all $(D_i, R_r)$ pairs that verify this, assuming $\{\mathcal{D}\}$ and $\{\mathcal{R}\}$ are sorted in ascending order, can be achieved with linear complexity.
+Finding all $(D_I, R_r)$ pairs that verify this, assuming $\{\mathcal{D}\}$ and $\{\mathcal{R}\}$ are sorted in ascending order, can be achieved with linear complexity.
 
 % with a complexity of either $\mathcal{O}(N + N_{ref})$ or $\mathcal{O}(N \times min(N, N_{ref}) \times log(max(N, N_{ref})))$
 
@@ -435,11 +435,11 @@ initialize $i$ and $r$ to $1$
 \item
 loop while both $i$ and $r$ are not out of bounds
 \item
-if $D_i - R_r < \alpha - D_j$, increment $i$ and loop
+if $D_I - R_r < \alpha - D_J$, increment $i$ and loop
 \item
-if $D_i - R_r > \alpha - D_j$, increment $r$ and loop
+if $D_I - R_r > \alpha - D_J$, increment $r$ and loop
 \item
-if $D_i - R_r = \alpha - D_j$, a $(D_i, R_r)$ pair has been found. Check diamond using Eq.~\eqref{eq:diamond_xor}. Increment $i$ and $r$, and loop
+if $D_I - R_r = \alpha - D_J$, a $(D_I, R_r)$ pair has been found. Check diamond using Eq.~\eqref{eq:diamond_xor}. Increment $i$ and $r$, and loop
 \end{enumerate}
 
 The complexity is $\mathcal{O}(N \times (N+N_{ref}))$.
@@ -477,7 +477,7 @@ t_{I \rightarrow i} = \frac{t_{pq \rightarrow rs}}{\phase{\ket I}{\ket i}}
 In order to compute the contribution of a diamond to $c_\alpha$, we are required to compute the phase factor
 
 \begin{equation}
-\phase{\ket {R_r}}{\kalpha} = \phase{\ket {R_r}}{\ket {D_i}} \phase{\ket {D_i}}{\kalpha}
+\phase{\ket {R_r}}{\kalpha} = \phase{\ket {R_r}}{\ket {D_I}} \phase{\ket {D_I}}{\kalpha}
 \end{equation}
 
 
@@ -485,19 +485,19 @@ In order to compute the contribution of a diamond to $c_\alpha$, we are required
 which is noted $(-1)^{n(I \rightarrow \alpha)}$ in equation 26 of the presented article, with $I$ the reference determinant. The article uses reference-independent notation for amplitudes. If we re-write the formula with reference-dependent notations, the contribution for each diamond becomes
 
 \begin{equation}
-c_r \phase{\ket {R_r}}{\kalpha} \frac{t_{R_r \rightarrow D_i}}{\phase{\ket {R_r}}{\ket {D_i}}} \frac{t_{D_i \rightarrow \alpha}}{\phase{\ket {D_i}}{\kalpha}} =c_r t_{R_r \rightarrow D_i} t_{D_i \rightarrow \alpha}
+c_r \phase{\ket {R_r}}{\kalpha} \frac{t_{R_r \rightarrow D_I}}{\phase{\ket {R_r}}{\ket {D_I}}} \frac{t_{D_I \rightarrow \alpha}}{\phase{\ket {D_I}}{\kalpha}} =c_r t_{R_r \rightarrow D_I} t_{D_I \rightarrow \alpha}
 \end{equation}
 with $c_r$ the coefficient of $\ket {R_r}$.
-Amplitude for $t_{D_i \rightarrow \alpha}$ of course cannot be stored and would be too expensice to compute on the fly. Because $\hat T_{D_i \rightarrow \alpha}$ involves the same orbitals as $\hat T_{R_r \rightarrow D_j}$, their associated amplitudes are the same up to the phase factor
+Amplitude for $t_{D_I \rightarrow \alpha}$ of course cannot be stored and would be too expensice to compute on the fly. Because $\hat T_{D_I \rightarrow \alpha}$ involves the same orbitals as $\hat T_{R_r \rightarrow D_J}$, their associated amplitudes are the same up to the phase factor
 
 \begin{equation}
-t_{D_i \rightarrow \alpha} = t_{R_r \rightarrow D_j} \phase{\ket {R_r}}{\ket {D_j}}\phase{\ket {D_i}}{\kalpha}
+t_{D_I \rightarrow \alpha} = t_{R_r \rightarrow D_J} \phase{\ket {R_r}}{\ket {D_J}}\phase{\ket {D_I}}{\kalpha}
 \end{equation}
 
 So we can finally rewrite the contribution to $c_\alpha$ for each diamond
 
 \begin{equation}
-c_r t_{R_r \rightarrow D_i} t_{R_r \rightarrow D_j} \phase{\ket {R_r}}{\ket {D_j}}\phase{\ket {D_i}}{\kalpha}
+c_r t_{R_r \rightarrow D_I} t_{R_r \rightarrow D_J} \phase{\ket {R_r}}{\ket {D_J}}\phase{\ket {D_I}}{\kalpha}
 \end{equation}
 
 \end{document}
