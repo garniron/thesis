@@ -426,10 +426,10 @@ The algorithm to find a generator index associated with drawing $u$ in with a di
 		\KwRet $r$ \;
 	}
 \end{algorithm}
-\begin{description}
 
 \subsection{Building teeth}
 
+\begin{description}
 \item[Input] 
 \begin{itemize}
 \item[] \phantom{pouet}
@@ -620,7 +620,6 @@ The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. 
 \begin{algorithm}
 	\caption{Master node in $\EPT$ computation}
 	\label{alg:PT2_MASTER}
- \SetKw{KwBy}{by}            
 	$n \gets 1$ \;
 	$t \gets 0$ \;
 	$U \gets 0$ \;
@@ -665,6 +664,7 @@ The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. 
 \begin{algorithm}
 	\caption{Update $S$ and $S^{(2)}$ from algorithm \ref{alg:PT2_MASTER}.}
 	\label{alg:UPDATE_S}
+ \SetKw{KwBy}{by}            
 	\tcc{Done naively, updating $S_* \gets S_* + B_*(u)$ and $S^{(2)}_* \gets S^{(2)}_* + B_*(u)^2$ scales as $\mathcal{O}({\Nteeth}^2 \log{\Ngen})$.}
 	
 					

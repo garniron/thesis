@@ -177,7 +177,7 @@ The algorithm for ``excitation driven'' connection finding is detailed in algori
 	\Fn(\tcc*[h]{co}){\FMain{some args}}{
 		$i \gets 1$ \;
 		$j \gets 1$ \;
-		\While{$i \leq N_i \& j \leq N_j$}{
+		\While{$i \leq N_i \& j \leq N_Q$}{
 			\For{$\sigma \gets \{\alpha, \beta\}$}{
 			$overflow \gets 0$ \;
 			\For{$k\gets1,N_{int}$}{
@@ -216,15 +216,15 @@ The algorithm for ``excitation driven'' connection finding is detailed in algori
 		$j \gets 1$ \;
 		
 
-		\While{$i \leq N_i \& j \leq N_j$}{
+		\While{$i \leq N_i \& j \leq N_Q$}{
 			$aim \gets APPLY(I_i, E, ok)$ \;
 			\If{$not\ ok$}{
 				$i \gets i+1$ \;
 				cycle \;
 			}
-			\While{$j \leq N_j$}{
-				\tcc{find the index of $aim$ in $J$ in the range $[j, N_j]$. If not found, return the lowest $j$ so that $detCmp(aim, J_j) = 1$, or $N_{j}+1$ if $aim > J_{N_j}$.}
-				$j \gets find(aim, J, j, N_j, ok)$ \;
+			\While{$j \leq N_Q$}{
+				\tcc{find the index of $aim$ in $J$ in the range $[j, N_Q]$. If not found, return the lowest $j$ so that $detCmp(aim, J_j) = 1$, or $N_{j}+1$ if $aim > J_{N_Q}$.}
+				$j \gets find(aim, J, j, N_Q, ok)$ \;
 				\If{$ok$}{
 					found \;
 				}
@@ -275,9 +275,9 @@ The algorithm for ``excitation driven'' connection finding is detailed in algori
 
 		\While{$i \leq N_I \& j \leq N_J$}{
 			$aim \gets APPLY(I_i, E, ok)$ \;
-			$j \gets find\_first\_geq(aim, J, j, N_j, match)$ \;				
+			$j \gets find\_first\_geq(aim, J, j, N_Q, match)$ \;				
 			
-			\If{$not(match) \& j \leq N_j$}{
+			\If{$not(match) \& j \leq N_Q$}{
 				$aim \gets REVERSE\_APPLY(J_j, E, ok)$ \;
 				$i \gets find\_first\_geq(aim, I, i, N_i, match)$ \;
 				
