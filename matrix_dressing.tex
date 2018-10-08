@@ -356,8 +356,6 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 	\caption{Computation of $\tilde \mu$, $\dot t$ and $\dot n_0$.}
 	\label{COMPUTE_MU}
 	\KwData{$Q$, $R^{-1}$, $n_0$, $\Nteeth$}
-	\SetKw{KwBy}{by}
-
 		\KwResult{ $\tilde \mu$, $\dot t$ and $\dot n_0$}
 		$\tilde \mu^*_* \gets 0$ \;
 		$F \gets n_0(1)+1$ \;		
@@ -462,7 +460,6 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 	\label{alg:build_checkpoints}
 	\tcc{Compute partial value of $\deltabold^m$ with partial values of $\deltabold^{D,t}$ and $\deltabold^{S,m}$}
 	\tcc{Sending information for checkpoint $m$}
-	\SetKw{KwBy}{by}
 
 	
 	$\dot f \gets \sum_{I \in \mathcal{P}_{p\leq m}} f[I]$ \;
