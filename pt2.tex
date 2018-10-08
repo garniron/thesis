@@ -178,7 +178,7 @@ To sample with $p(e_I)$, we set $w_I = p(e_I)$.
 	\end{center}
 	\caption{Schematic representation of 
 Values inside the boxes are generator indices. Values outside are probabilities and drawn random numbers.
-Drawing the random number $u$ using the probability density $w$ yields generator index $i=w(u)$.}
+Drawing the random number $u$ using the probability density $w$ yields generator index $I=w(u)$.}
 	\label{fig:mc_representation}
 \end{figure}
 
@@ -569,7 +569,7 @@ Because of the tooth filling mechanism, we know we will need at most $\Ngen$ com
 	$R[N_Q] \gets N_c$ \;
 	FILL\_TOOTH shown as algorithm \ref{alg:FILL_TOOTH} \;
 	}
-	\tcc{\alert{For convenience, makes sure the last task matches the last comb, rather than a tooth filling.}}
+	\tcc{For convenience, pretend the last comb is available when the last task is done (last task may be a tooth filling).}
 	\If{$\Ngen > 1$}{
 		$R[N_Q-1] \gets 0$ \;
 		$R[N_Q] \gets N_c$ \;
