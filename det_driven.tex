@@ -578,8 +578,8 @@ Using the above formulas and taking into account the internal representation of 
 		\KwResult{ The phase factor associated with $\ordering \excorb{a}{b} \ket{I}$}
 		$\texttt{high} \gets \max(a,b)-1$ \;
 		$\texttt{low} \gets \min(a,b)-1$ \;
-		$il \gets \frac{\texttt{low}}{64} + 1$ \;
-		$ih \gets \frac{\texttt{high}}{64} + 1$ \;
+		$il \gets \frac{\texttt{low}}{64}$ \;
+		$ih \gets \frac{\texttt{high}}{64}$ \;
 		$l \gets \texttt{low} \mod 64$ \;
 		$h \gets \texttt{high} \mod 64$ \; 
 		\For{$i \gets il, ih-1$}{
@@ -664,18 +664,16 @@ Because $\hat T_{i'}^{j'} \ket I \neq 0$, we know that $\occ{j'}{I} + \occ{i'}{I
 \end{equation}
 This translates to $\tilde N^{I}_{j' i'}$ and $\tilde N^{I}_{i'j'}$ being of different parity.
 
-\alert{TODO : Expliquer comment fla fla fla est comme pic pic pic : comment passer de Nbit a log(Nbit).}
-
 
 \begin{algorithm}
 	\caption{Optimized version of the function which returns a phase mask as a bitstring.}
-	\label{alg:PHASEMASK_bit}	
-	\SetKwFunction{FMain}{PHASEMASK\_BIT}
+	\label{alg:PHASEMASK}	
+	\SetKwFunction{FMain}{PHASEMASK}
 	\SetKwProg{Fn}{Function}{:}{}
 	
 	\Fn(){\FMain{$\bitI$}}{
 		\KwData{ $\bitI$ the bitstring representation of $\ket{I}$}
-		\KwResult{ $\bitP$ is the phase mask array associated with $\ket{I}$, as described in Eq.~\eqref{eq:phasemask}}
+		\KwResult{ $\bitP$ is the phase mask associated with $\ket{I}$, as described in Eq.~\eqref{eq:phasemask}, as a bitstring.}
 		   
 		\For{$\sigma \in \{\uparrow, \downarrow\}$}{
 		$r \gets 0$ \;
@@ -699,7 +697,7 @@ This translates to $\tilde N^{I}_{j' i'}$ and $\tilde N^{I}_{i'j'}$ being of dif
 \begin{algorithm}
 	\caption{Returns a phase factor associated with a single excitation using a phase mask.}
 	\label{alg:PHASE_FROM_PHASEMASK}	
-	\SetKwFunction{FMain}{PHASE\_FROM\_PHASEMASK}
+	\SetKwFunction{FMain}{PHASE\_PHASEMASK}
 	\SetKwProg{Fn}{Function}{:}{}
 	
 	\Fn(){\FMain{$P^I$, $i$, $j$}}{
@@ -712,12 +710,21 @@ This translates to $\tilde N^{I}_{j' i'}$ and $\tilde N^{I}_{i'j'}$ being of dif
 		\Else{
 			$c \gets 1$ \;		
 		}
-		\uIf{$\qty(P^I_\sigma[i+1] \oplus P^I_\sigma[j]) = c$}{
+		$i_n \gets (i-1)/64$ \;
+		$j_n \gets (j-1)/64$ \;
+		$i_b \gets (i-1) \mod 64$ \;
+		$j_b \gets (j-1) \mod 64$ \;
+		$B \gets \ISHFT{P_\sigma^I[i_n]}{-i_b} + \ISHFT{P_\sigma^I[j_n]}{-j_b}$ \;
+		\uIf{$B \wedge 1 = c$}{
 		\KwRet{ $-1$}\;}
                 \Else{\KwRet{ $1$} \; }
+        
+        
+		%\uIf{$\qty(P^I_\sigma[i+1] \oplus P^I_\sigma[j]) = c$}{
+		%\KwRet{ $-1$}\;}
+        %        \Else{\KwRet{ $1$} \; }
 		}
 \end{algorithm}
-
 
 
                 
@@ -733,9 +740,49 @@ This translates to $\tilde N^{I}_{j' i'}$ and $\tilde N^{I}_{i'j'}$ being of dif
 
 
 Currently, the \QP does not store the $\bitP$ vector for each determinant of the wavefunction, but recomputes it whenever needed before a loop.
-The algorithm for computing $P^I$ is shown as algorithm \ref{alg:PHASEMASK}. 
-With this method, the cost of computing a phase ---~after paying the overhead of computing $P$~--- is accessing two integers and applying the \lstinline{IEOR} function to them, in addition to the tests. Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the cumbersome boundaries of 64-bit integers.
+The algorithm for computing $P^I$ as a phase mask is shown as algorithm \ref{alg:PHASEMASK}. It uses a trick to get the phase mask of a single integer with logarithmic complexity (loop from $0$ to $5$ in the show algorithm). With $P^0$ a single-integer bitstring for which we want to compute the phase mask, bits being indexed from $0$:
 
+\begin{enumerate}
+\item
+$P^1 \gets P^0 \oplus \ishft{P^0}{2^0})$.\\
+\begin{align}
+P^1_i& =
+  \begin{cases}
+  	p(P^0_i)  & \text{if } i<1 \\
+  	p(P_{i-1}^0 + P_{i}^0)   & \text{if } i \geq 1 \\
+  \end{cases}
+\end{align}
+
+\item
+$P^2 \gets P^1 \oplus \ishft{P^1}{2^1})$.\\
+\begin{align}
+P^2_i& =
+  \begin{cases}
+  	p(P^1_i)  & \text{if } i<2 \\
+  	p(P_i^1 + P_{i-2}^1)    & \text{if } i \geq 2 \\
+  \end{cases}
+\end{align}
+\begin{equation}
+P^2_i = p(P_{min(i-3, 0)}^0 + \ldots + P_i^0)
+\end{equation}
+\item
+$P^3 \gets P^2 \oplus \ishft{P^2}{2^2})$.\\
+\begin{align}
+P^3_i& =
+  \begin{cases}
+  	p(P^2_i)  & \text{if } i<4 \\
+  	p(P_i^2 + P_{i-4}^2)    & \text{if } i \geq 4 \\
+  \end{cases}
+\end{align}
+\begin{equation}
+P^3_i = p(P_{min(i-7, 0)}^0 + \ldots + P_i^0)
+\end{equation}
+\item
+etc...
+\end{enumerate}
+
+The method to compute the phase associated with a single excitation from a phase mask is show as algorithm \ref{alg:PHASE_SINGLE}.
+With this method, the cost of computing a phase ---~after paying the overhead of computing $P$~--- is accessing two bits and applying the \lstinline{IEOR} function to them, in addition to the tests. Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the cumbersome boundaries of 64-bit integers.\phantom{\ref{alg:EXC_DEGREE}}
 
 
 \subsection{Double excitations}
@@ -802,13 +849,30 @@ As we can see in figure \ref{fig:biphasefactor}, applying  $\tilde T_{qs}$ resul
 	\end{center}
 \end{figure}
 
-So we add an extra permutation (flip the phase factor) if
+
+
+In practice, because $\text{LIST\_FROM\_BITSTRING}$ returns indices with increasing order, if we determine an excitation operator $\hat T_{pq}^{rs}$ so that $\hat T_{pq}^{rs} \ket I = \pm \ket J$, we know $p<q$ and $r<s$. So for a $\uparrow \uparrow$ or $\downarrow \downarrow$ double excitation, we compute the phase factor from $P^I$ the phase mask associated with $I$, as
+
+%\begin{equation}
+% F_{pqrs} = \qty( \max(p,r) > \min(q,s) ) \wedge \qty( \max(q,s) > \min(p,r) )
+%\end{equation}
+
+
+\begin{align}
+\phase{\hat T_{pq}^{rs} \ket I}{\ordering  \ket J} = 
+\begin{cases}
+\kappa & \text{if } \neg \qty( \max(p,r) > \min(q,s) ) \\
+-\kappa & \text{if } \qty( \max(p,r) > \min(q,s) )
+\end{cases}
+\end{align}
+with 
+%\begin{equation}
+%\kappa = \phase{\ket{I}}{\ordering \hat T^r_p \ket I} \phase{\ket{I}}{\ordering \hat T_q^s \ket I}
+%\end{equation}
 
 \begin{equation}
- \qty( \max(p,r) > \min(q,s) ) \wedge \qty( \max(q,s) > \min(p,r) )
+\kappa = \text{PHASE\_PHASEMASK}(P^I, p,r) \times \text{PHASE\_PHASEMASK}(P^I, q,s)
 \end{equation}
-
-
 \section{Summary}
 
 
