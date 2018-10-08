@@ -356,7 +356,9 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 \begin{algorithm}
 	\caption{Computation of $\tilde \mu$, $\dot t$ and $\dot n_0$.}
 	\label{COMPUTE_MU}
-		\KwData{$Q$, $R^{-1}$, $n_0$, $\Nteeth$}
+	\KwData{$Q$, $R^{-1}$, $n_0$, $\Nteeth$}
+	\SetKw{KwBy}{by}
+
 		\KwResult{ $\tilde \mu$, $\dot t$ and $\dot n_0$}
 		$\tilde \mu^*_* \gets 0$ \;
 		$F \gets n_0(1)+1$ \;		
@@ -379,13 +381,13 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 				}
 			}
 				
-			\For{$I\gets \dot n_0(m)+1, \Ngen$}{
-				$\tilde \gamma^m_I \gets \frac{W_T \times M_{m,I}}{w[i]}$ \;
+			\For{$I=\dot n_0(m)+1, \Ngen$}{
+				$ \gamma^m_I \gets \frac{W_T \times M_{m,I}}{w[I]}$ \;
 			}
 		}
-		
-		\For{$m\gets \Ncp,2,-1$}{
-			$\tilde \mu^m_* \gets \tilde \gamma^m_* - \tilde \gamma^{m-1}_*$ \;
+		$\tilde \mu^1_* \gets \gamma^1_*$ \;
+		\For{$m=2,N_{cp}$}{
+			$\tilde \mu^m_* \gets \gamma^m_* - \gamma^{m-1}_*$ \;
 		}
 \end{algorithm}
 
@@ -461,20 +463,24 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 	\label{alg:build_checkpoints}
 	\tcc{Compute partial value of $\deltabold^m$ with partial values of $\deltabold^{D,t}$ and $\deltabold^{S,m}$}
 	\tcc{Sending information for checkpoint $m$}
+	\SetKw{KwBy}{by}
+
 	
 	$\dot f \gets \sum_{I \in \mathcal{P}_{p\leq m}} f[I]$ \;
 	\If{$\dot f = 0$}{
 		return \;
 	}
 	
+
 	$\deltabold^m \gets 0$ \;
 	\tcc{Reverse loop for numerical precision \alert{POURQUOI?}}
-	\For{$p\gets m \text{ down to }1$}{
+	\For{$p=m,1$ \KwBy $-1$}{
 		$\deltabold^m \gets \deltabold^m + \deltabold^{S,p}$
 	}
 	$\deltabold^m \gets \frac{\deltabold^m}{M_m}$ \; 
-	\For{$t\gets \dot t_m-1,0,-1$}{
+	\For{$t=\dot t_m-1,0$ \KwBy $-1$}{
 		$\deltabold^m \gets \deltabold^m + \deltabold^{D,t}$ \;
+
 	}
 	%$\mathcal{I}$ the set of $I \in \mathcal{P}_m$ with $f[I] > 0$ \;
 	send ($m$, $\deltabold^m$, $e_{I \in \mathcal{P}_m}$, $\dot f$) \;

@@ -173,20 +173,20 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
 		\KwData{$\tilde{\mathcal{C}}_{rs}$ the intermediate sets, $B_{rs}$ the tag matrix}
 		%\KwResult{$Z^\star(\Gpqrs, \mathcal{C}_{rs})$ is called for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$}
 		\KwResult{$\mathcal{C}_{rs}$ is computed for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$} 
-		\tcc{$\interC{rs}$ and $\finC{rs}$ are considered arrays, the syntax $\finC{rs}[i\ldots j]$ is used to denote a segment of array}
+		\tcc{$\interC{rs}$ and $\finC{rs}$ are considered arrays, the syntax $\finC{rs}[i\ldots j]$ is used to denote a segment of array, $|\finC{rs}|$ is the cardinality of $\finC{rs}$}
 		$T$ an array of size $\Nsel$ initialized to $\TRUE$ \;
 		$L$ an array of determinants size $\Nsel$ \;
         $i_1 = |\interC{00}|$ \;   
         $L[1 \ldots i_1] \gets \interC{00}[1 \ldots {i_1}]$ \;
         
-		\tcc {$B_{r0} = \FALSE$ if column $r$ is entirely tagged}		
-		\ForAll{$r ; B_{r0}$}{
+		\tcc {$B_{r0} = \TRUE$ if column $r$ is entirely tagged}		
+		\ForAll{$r ; \neg B_{r0}$}{
 		  $i_2 = i_1 + |\interC{r0}|$ \;
 		  $L[i_1+1 \ldots i_2] \gets \interC{r0}$ \;
 		  \For{$i\gets 1,|\interC{r0}|$}{
 		    $T[\interC{r0}[i]] \gets \FALSE$
 		  }
-		  \ForAll{$s;B_{rs}=\TRUE$}{
+		  \ForAll{$s;\neg (B_{rs} \vee B_{0s})$}{
 		    $i_3 = i_2$ \;
 		    \For{$i\gets 1,|\interC{s0}|$}{
 		      \If{$T[\interC{s0}[i]]$}{
@@ -224,7 +224,7 @@ if $R_r$ so that $\text{EXC\_DEGREE} (R_r, \alpha) \leq 2$ was found, discard $\
 
 
 \ForAll{$D_j$}{
-\tcc{Note that $\Phi(D_j \rightarrow \alpha)$ may be pre-computed here}
+\tcc{Note that $\phase{\ket {D_j}}{\kalpha}$ may be pre-computed here}
 $\delta \gets \alpha - D_j$ \;
 $i \gets 1$ \;
 $r \gets 1$ \;
@@ -239,7 +239,7 @@ $r \gets 1$ \;
 	{
 		\If{$R_r \oplus D_i \oplus D_j \oplus \alpha = 0$}{
 			\tcc{diamond found}
-			$\varphi \gets \Phi(D_j \rightarrow \alpha) \times \Phi(R_r \rightarrow D_i)$ \;
+			$\varphi \gets \phase{\ket {D_j}}{\kalpha} \times \phase{\ket {R_r}}{\ket {D_i}}$ \;
 			$c_\alpha \gets c_\alpha + \varphi \times c_{R_r} \times (t_{R_r \rightarrow D_i}) \times (t_{R_r \rightarrow D_j})$ \;
 		}
 		$r \gets r + 1$ \;
@@ -471,13 +471,13 @@ preserving the phase factor of $\ket i$. Therefore
 
 
 \begin{equation}
-t_{I \rightarrow i} = \frac{t_{pq \rightarrow rs}}{\Phi(I \rightarrow i)}
+t_{I \rightarrow i} = \frac{t_{pq \rightarrow rs}}{\phase{\ket I}{\ket i}}
 \end{equation}
 
 In order to compute the contribution of a diamond to $c_\alpha$, we are required to compute the phase factor
 
 \begin{equation}
-\Phi(R _r \rightarrow \alpha) = \Phi(R _r \rightarrow D_i) \Phi(D_i \rightarrow \alpha)
+\phase{\ket {R_r}}{\kalpha} = \phase{\ket {R_r}}{\ket {D_i}} \phase{\ket {D_i}}{\kalpha}
 \end{equation}
 
 
@@ -485,19 +485,19 @@ In order to compute the contribution of a diamond to $c_\alpha$, we are required
 which is noted $(-1)^{n(I \rightarrow \alpha)}$ in equation 26 of the presented article, with $I$ the reference determinant. The article uses reference-independent notation for amplitudes. If we re-write the formula with reference-dependent notations, the contribution for each diamond becomes
 
 \begin{equation}
-c_r \Phi(R _r \rightarrow \alpha) \frac{t_{R _r \rightarrow D_i}}{\Phi(R _r \rightarrow D_i)} \frac{t_{D_i \rightarrow \alpha}}{\Phi(D_i \rightarrow \alpha)} =c_r t_{R_r \rightarrow D_i} t_{D_i \rightarrow \alpha}
+c_r \phase{\ket {R_r}}{\kalpha} \frac{t_{R_r \rightarrow D_i}}{\phase{\ket {R_r}}{\ket {D_i}}} \frac{t_{D_i \rightarrow \alpha}}{\phase{\ket {D_i}}{\kalpha}} =c_r t_{R_r \rightarrow D_i} t_{D_i \rightarrow \alpha}
 \end{equation}
 with $c_r$ the coefficient of $\ket {R_r}$.
-Amplitude for $t_{D_i \rightarrow \alpha}$ of course cannot be stored and would be too expensice to compute on the fly. Because $\hat T_{D_i \rightarrow \alpha}$ involves the same orbitals as $\hat T_{R _r \rightarrow D_j}$, their associated amplitudes are the same up to the phase factor
+Amplitude for $t_{D_i \rightarrow \alpha}$ of course cannot be stored and would be too expensice to compute on the fly. Because $\hat T_{D_i \rightarrow \alpha}$ involves the same orbitals as $\hat T_{R_r \rightarrow D_j}$, their associated amplitudes are the same up to the phase factor
 
 \begin{equation}
-t_{D_i \rightarrow \alpha} = t_{R _r \rightarrow D_j} \Phi(R _r \rightarrow D_j)\Phi(D_i \rightarrow \alpha)
+t_{D_i \rightarrow \alpha} = t_{R_r \rightarrow D_j} \phase{\ket {R_r}}{\ket {D_j}}\phase{\ket {D_i}}{\kalpha}
 \end{equation}
 
 So we can finally rewrite the contribution to $c_\alpha$ for each diamond
 
 \begin{equation}
-c_r t_{R _r \rightarrow D_i} t_{R _r \rightarrow D_j} \Phi(R _r \rightarrow D_j)\Phi(D_i \rightarrow \alpha)
+c_r t_{R_r \rightarrow D_i} t_{R_r \rightarrow D_j} \phase{\ket {R_r}}{\ket {D_j}}\phase{\ket {D_i}}{\kalpha}
 \end{equation}
 
 \end{document}

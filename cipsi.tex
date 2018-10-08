@@ -306,7 +306,7 @@ Pick $Q$ any ``non-frozen'' $\uparrow$ spinorbital occupied in $\ket G$. Again w
         \begin{center}
                 \includegraphics[width=0.70\columnwidth]{figures/cipsi/systematic_determination}
         \end{center}
-        \caption{Illustrative example of systematic determination of the connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ have the same spin. $c_S$ is the coefficient of $\ket S$ in $\ket \Psi$. \alert{IL FAUT METTRE UN CHAPEAU SUR H DANS LA FIGURE!}}
+        \caption{Illustrative example of systematic determination of the connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ have the same spin. $c_S$ is the coefficient of $\ket S$ in $\ket \Psi$.}
         \label{fig:systematic_determination}
         
 \end{figure}
@@ -316,7 +316,7 @@ Pick $Q$ any ``non-frozen'' $\uparrow$ spinorbital occupied in $\ket G$. Again w
         \begin{center}
                 \includegraphics[width=0.90\columnwidth]{figures/cipsi/systematic_determination2}       
         \end{center}
-        \caption{Illustrative example of systematic determination of the connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ are of different spins. $c_S$ is the coefficient of $\ket S$ in $\ket \Psi$.\alert{IL FAUT METTRE UN CHAPEAU SUR H DANS LA FIGURE!}}
+        \caption{Illustrative example of systematic determination of the connection between a selector $\ket S$ and determinants of the $\ket {G_{pq}}$ batch when $p$ and $q$ are of different spins. $c_S$ is the coefficient of $\ket S$ in $\ket \Psi$.}
         \label{fig:systematic_determination2}
 \end{figure}
 
@@ -353,7 +353,7 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
 \begin{algorithm}
         \caption{Unfiltered CIPSI selection}
         \label{alg:selection}
-        \tcc{For simplification purpose, a determinant $\ket S$ is here represented by a single bitstring $S_\sigma$ of size $2\Norb$ where each bit is associated with a spinorbital}
+        \tcc{For simplification purpose, a determinant $\ket S$ is here represented by a single bitstring $S$ of size $2\Norb$ where each bit is associated with a spinorbital}
         \KwData{ $\ket \Psi$, i.e. $\{D_I\}$ the set of internal determinants and their coefficients $c_I$}
         \KwData{ $\Ngen$, $\Nsel$, $\Ndet$}
         %\KwResult{ $\Hij{\alpha}{\Psi} \neq 0$ has been computed exactly once for any $\alpha \notin \Psi$ }
@@ -371,9 +371,9 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
                 
                 \For{$t \gets 1,N_{det}$}{
                         $\ket S \gets \ket {D_t}$ \; 
-                        $C_\sigma \gets S_\sigma \wedge \neg [G_{pq}]_\sigma$ \; %c \gets \IAND{S}{\NOT{G_{pq}}}$ \; 
-                        \If{$||C_\sigma|| = 2$}{
-                                $e \gets \texttt{LIST\_FROM\_BITSTRING}(C_\sigma)$\; 
+                        $C \gets S \wedge \neg G_{pq}$ \; %c \gets \IAND{S}{\NOT{G_{pq}}}$ \; 
+                        \If{$||C|| = 2$}{
+                                $e \gets \texttt{LIST\_FROM\_BITSTRING}(C)$\; 
                                 $B_{e[0]\, e[1]} \gets \TRUE$\;                     
                         }                       
                         \tcc{see table \ref{tab:systematic_determination} for $(r,s)$ pairs}
@@ -510,11 +510,13 @@ Left branch : Determinants that aren't selectors, but are equal to some $\ket {G
 
 
 This step sets the complexity of the algorithm with respect to $\Ndet$. Naively, $f_G^S$ must be computed for all pairs of internal determinants, setting the complexity to $\mathcal{O}(\Ndet^2)$.
+\begin{comment}
 \begin{algorithm}
 \caption{Filtering internal determinants for generator $\ket G$}
 \label{alg:generators_filtering}
 \KwData{$U_\uparrow, U_\downarrow$~: the set of unique $\uparrow$ and $\downarrow$ strings used
-to build the $\Ndet$ determinants}
+to build the $\Ndet$ determinants. $\ket G$ a generator determinant.}
+\KwResult{Finds all $\ket S$ internal determinants so that $f_G^S \leq 4$}
 \For{$S_\uparrow \in \{U_\uparrow \}$}{
 $a \gets \texttt{EXC\_DEGREE}(S_\uparrow, G_\uparrow)$ \;
 \If{$a \leq 2$}{
@@ -528,6 +530,40 @@ $b \gets \text{EXC\_DEGREE}(S_\downarrow, G_\downarrow)$ \;
 }
 }
 \end{algorithm}
+\end{comment}
+
+\begin{algorithm}
+\caption{Filter internal determinants $\ket S$ so that $f_G^S \leq 4$ }
+\label{alg:generators_filtering}
+\KwData{$\ket G$: a generator determinant.}
+\KwData{$\Nalphadet$: the number of unique $\uparrow$ spin parts present in $\ket \Psi$.}
+\KwData{$D^\uparrow$: the array of determinants present in $\ket \Psi$, sorted by $\uparrow$-major order (all determinants sharing the same $\uparrow$ part are next to each other).}
+\KwData{$A^\uparrow$: the arrays so that $A^\uparrow[n]$ is the index of the first occurence of the $n^{th}$ unique $\uparrow$ spin part in $D^\uparrow$. For algorithmic convenience we set $A^\uparrow[\Nalphadet +1] = \Ndet+1$.}
+\KwData{$\Nbetadet$, $D^\downarrow$, $A^\downarrow$: the $\downarrow$ counterparts.}
+
+\For{$a \gets 1, \Nalphadet$}{
+$e \gets \text{EXC\_DEGREE}(D^\uparrow[A^\uparrow(a)]_\uparrow, G_\uparrow)$ \;
+\If{$e \leq 2$}{
+	\For{$b \gets A^\uparrow(a), A^\uparrow(a+1)-1$}{
+		\If{$e + \text{EXC\_DEGREE}(D^\uparrow[b]_\downarrow, G_\downarrow) \leq 4$}{
+			retain $D^\uparrow[b]$ \;		
+		}
+	}
+}
+}
+
+\For{$a \gets 1, \Nbetadet$}{
+$e \gets \text{EXC\_DEGREE}(D^\downarrow[A^\downarrow(a)]_\downarrow, G_\downarrow)$ \;
+\If{$e \leq 1$}{
+	\For{$b \gets A^\downarrow(a), A^\downarrow(a+1)-1$}{
+		\If{$e + \text{EXC\_DEGREE}(D^\downarrow[b]_\uparrow, G_\uparrow) \leq 4$}{
+			retain $D^\downarrow[b]$ \;		
+		}
+	}
+}
+}
+\end{algorithm}
+
 Our current implementation quickly discards $f_G^S > 4$ by using a method similar to what we used in the Davidson diagonalization, adapted to seek excitation degrees $\leq 4$ rather than $\leq 2$. The key difference is that, for parallelism reasons, the research has to be done individually for each generator~; that is, we are not computing all $f_G^S$ at the same time, but all $f_G^S$ for a given $\ket G$ separately. The procedure is shown as algorithm \ref{alg:generators_filtering}. The complexity is reduced from $\order{\Ndet^2}$ to $\order{\Ndet^{3/2}}$.
 
 

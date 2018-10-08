@@ -358,7 +358,7 @@ Because computing excitations is a hotspot of the program, and because we are ty
 	\SetKwProg{Fn}{Function}{:}{}
 	
 	\Fn(){\FMain{$I, J$}}{
-		\KwData {$I, J$: bitstring representations of determinants $\ket{I}$ and $\ket{J}$}
+		\KwData {$I, J$: bitstring representations of determinants $\ket{I}$ and $\ket{J}$. }
 		\KwResult{ Returns the excitation degree between $\ket{I}$ and $\ket{J}$, namely $\frac{1}{2}\popcnt{\ieor{I}{J}}$ }
 
 		$X \gets 0$   \;
@@ -725,7 +725,7 @@ This translates to $\tilde N^{I}_{j' i'}$ and $\tilde N^{I}_{i'j'}$ being of dif
 	\begin{center}
 		\includegraphics[width=0.5\columnwidth]{figures/determinant_driven/phase}
 		\caption[phase mask illustration]{
-		$i$ and $j$ are the lower and higher spinorbitals involved in the excitation. $E_i^I$ is the number of electrons in spinorbitals below $i$ and of same spin, $P_i^I$ is its parity. $E_j^I - E_{i+1}^I$ gives the number of electrons that are ``crossed'' during the excitation, $\phi = P^I_{i+1} \oplus P^I_j$ the parity of that number, $(-1)^\phi$ is the phase factor.
+		$i$ and $j$ are the lowest and highest spinorbitals involved in the excitation. $E_i^I$ is the number of electrons in spinorbitals below $i$ and of same spin, $P_i^I$ is its parity. $E_j^I - E_{i+1}^I$ gives the number of electrons that are ``crossed'' during the excitation, $\phi = P^I_{i+1} \oplus P^I_j$ the parity of that number, $(-1)^\phi$ is the phase factor.
 		}
 		\label{generators_selectors}
 	\end{center}

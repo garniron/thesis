@@ -46,8 +46,10 @@ A practical way to circumvent this problem was already proposed 20 years ago, by
 
 We eventually solved the previously discussed problem by turning the bias into an error bar. The basic idea is that, instead of trying to get the largest possible chunk of contribution, we can randomly pick $e_\alpha$ contributions and make a Monte-Carlo estimate for the sum over all $\ket \alpha$. In this case, to avoid any bias we must set
 \begin{equation}
-\Ngen = \Ndet \; ; \; \Nsel = \Ndet.
+\Ngen = \Nsel = \Ndet^\star
 \end{equation}
+
+with $\Ndet^\star$ the number of internal determinants with non-zero coefficient.
 Not only the estimate will be unbiased and much closer to the actual $\EPT$, but we will have an estimate for the error. Because $\EPT$ is itself used as an approximation
 \begin{equation}
 \Evar + \EPT \simeq \EFCI,
@@ -208,12 +210,12 @@ In our case, this optimization also leads to a drastic improvement in the comput
 
 
 \section{Deterministic and stochastic ranges}
-Because $e_I$ decreases rapidly, most of the contribution is contained in the first few $e_I$. We can compute the exact energy contribution for the first $e_I$, and only make a stochastic estimation for the sum over the smaller ones. This effectively splits the space of generators in two ranges, a deterministic one $\mathcal{D}$, then a stochastic one $\mathcal{S}$ (hence the hybrid characteristic of this method). Being ranges, they are always made of contiguous generators. The estimated energy can be written as
+Because $e_I$ decreases rapidly, most of the contribution is contained in the first few $e_I$. We can compute the exact energy contribution for the first $e_I$, and only make a stochastic estimation for the sum over the smaller ones. This effectively splits the space of generators in two ranges, a deterministic one $\mathcal{D}_D$, then a stochastic one $\mathcal{D}_S$ (hence the hybrid characteristic of this method). Being ranges, they are always made of contiguous generators. The estimated energy can be written as
 \begin{equation}
 \EPT = E_D + E_S
 \end{equation}
-with $E_D$ the exact energy for $\mathcal{D}$, and $E_S$ the estimated energy for $\mathcal{S}$. The error bar only applies to $E_S$, which is typically much smaller than $E_D$.
-The number of generators in $\mathcal{D}$ increases during the computation. Initially, $\mathcal{D}=\mathcal{T}_0$ the initial deterministic range, for which the total weight is $u_0$.
+with $E_D$ the exact energy for $\mathcal{D}_D$, and $E_S$ the estimated energy for $\mathcal{D}_S$. The error bar only applies to $E_S$, which is typically much smaller than $E_D$.
+The number of generators in $\mathcal{D}_D$ increases during the computation. Initially, $\mathcal{D}_D=\mathcal{T}_0$ the initial deterministic range, for which the total weight is $u_0$.
 \begin{equation}
 \sum_{I \in \mathcal{T}_0} w_I=u_0
 \end{equation}
@@ -270,7 +272,7 @@ As seen in section~\ref{sec:partition}, because $\frac{e_I}{w_I}$ overall decrea
 \end{figure}
 
 The partition of the generator space is as shown in figure~\ref{fig:teeth}.
-Intuitively, the sum of ``one large, one medium and one small'' has a lower variance than the sum of ``three at random''. Instead of drawing individual indices, we are going to draw ``combs'' of indices, which are correlated sets of 1 index from each tooth. The associated sample value is the sum of $\frac{e_I}{w_I}$ over those indices that are in $\mathcal{S}$.  The expression for this sample value is given below in Eq.~\eqref{eq:combvalue}.
+Intuitively, the sum of ``one large, one medium and one small'' has a lower variance than the sum of ``three at random''. Instead of drawing individual indices, we are going to draw ``combs'' of indices, which are correlated sets of 1 index from each tooth. The associated sample value is the sum of $\frac{e_I}{w_I}$ over those indices that are in $\mathcal{D}_S$.  The expression for this sample value is given below in Eq.~\eqref{eq:combvalue}.
 
 \subsection{Fully-computed teeth are moved to the deterministic range}
 
@@ -302,7 +304,7 @@ An illustrative example is given as figure \ref{fig:toothindet}.
 	\begin{center}
 		\includegraphics[width=0.75\columnwidth]{figures/pt2/toothindet}
 	\end{center}
-		\caption{Illustrative example of drawing $n=2$ combs $a$ and $b$. Contributions that have been computed are greyed. $\mathcal{T}_1$ has been fully computed and is thus moved to $\mathcal{D}$. The first non-deterministic/not fully-computed tooth is $\mathcal{T}_{t=2}$.
+		\caption{Illustrative example of drawing $n=2$ combs $a$ and $b$. Contributions that have been computed are greyed. $\mathcal{T}_1$ has been fully computed and is thus moved to $\mathcal{D}_D$. The first non-deterministic/not fully-computed tooth is $\mathcal{T}_{t=2}$.
 		$ E_D = e_1 + e_2 + e_3 $, 
 		$B_t(a) = W_T \Big ( \frac{e_6}{w_6} + \frac{e_{10}}{w_{10}} \Big ) \;;B_t(b) = W_T \Big ( \frac{e_6}{w_6} + \frac{e_{11}}{w_{11}} \Big )$, 
 		$E_S = \frac{B_t(a)+B_t(b)}{n}$}
@@ -333,7 +335,7 @@ S^{(2)}_{t} = \sum_{u \in \{\mathcal{U}\}} B_{t}(u)^2
 
 The initial deterministic range $\mathcal{T}_0$ is a technical constraint.
 Because generators are sorted with decreasing $p(e_I)$, it is guaranteed that $|\mathcal{T}_{t>t'}| \geq |\mathcal{T}_{t' \neq 0}|-1$ with $|\mathcal{T}_t|$ the cardinality of $\mathcal{T}_t$.
-For each comb, we draw a sample in each tooth, and when a tooth is entirely computed, it is moved to $\mathcal{D}$. Thus, it is immediately obvious that a tooth containing a single generator makes no sense, as it will be instantly moved to $\mathcal{D}$ ; it can as well be considered part of it. Because it is common practice to require at least 30 samples for the distribution of the average to become close enough to a Gaussian distribution,\cite{Hogg2014Jan} we can go further and consider that a tooth with fewer than 5-10 generators will be moved to $\mathcal{D}$ too fast to be of real interest. Because the first $c_I^2$ are usually disproportionately large, it is not possible to fit that many in a tooth. Therefore they are immediately considered part of $\mathcal{D}$.
+For each comb, we draw a sample in each tooth, and when a tooth is entirely computed, it is moved to $\mathcal{D}_D$. Thus, it is immediately obvious that a tooth containing a single generator makes no sense, as it will be instantly moved to $\mathcal{D}_D$ ; it can as well be considered part of it. Because it is common practice to require at least 30 samples for the distribution of the average to become close enough to a Gaussian distribution,\cite{Hogg2014Jan} we can go further and consider that a tooth with fewer than 5-10 generators will be moved to $\mathcal{D}_D$ too fast to be of real interest. Because the first $c_I^2$ are usually disproportionately large, it is not possible to fit that many in a tooth. Therefore they are immediately considered part of $\mathcal{D}_D$.
 
 \subsection{Desired \textit{vs} effective distribution function}
 \label{sec:pt2_distribution}
@@ -379,7 +381,7 @@ This is an empirical mechanism to balance the stochastic and deterministic aspec
 \begin{equation}
 \sum_{i=0}^{n-1} \frac{n}{n-i}
 \end{equation}
-combs are drawn. Thus, teeth containing thousands of determinants are very hard to move to $\mathcal{D}$. A tooth containing $10~000$ generators with a single non-computed contribution only needs that particular generator to be drawn in order to be moved to $\mathcal{D}$, but it will take on average $10~000$ more combs to be drawn until this happens by chance. With the non-uniform sampling, the situation is even worse.
+combs are drawn. Thus, teeth containing thousands of determinants are very hard to move to $\mathcal{D}_D$. A tooth containing $10~000$ generators with a single non-computed contribution only needs that particular generator to be drawn in order to be moved to $\mathcal{D}_D$, but it will take on average $10~000$ more combs to be drawn until this happens by chance. With the non-uniform sampling, the situation is even worse.
 A convenient way to avoid this frustrating situation is, every time a comb is drawn, to additionally compute the first non-computed contribution of the whole space. This ensures smooth filling of teeth, and that that the full deterministic computation will be achieved before $\Ngen$ combs are drawn.
 
 
@@ -445,7 +447,7 @@ A desired minimal number of generators in the first tooth. All subsequent teeth 
 \item $w_I$:
 The effective distribution function
 \item $n_0(t)$:
-An array of size $\Nteeth+1$ so that $n_0(t)$ is the number of samples in $\mathcal{D}$ with $\mathcal{T}_t$ the first non-deterministic tooth. For algorithmic convenience, $n_0(\Nteeth+1)=\Ngen$.
+An array of size $\Nteeth+1$ so that $n_0(t)$ is the number of samples in $\mathcal{D}_D$ with $\mathcal{T}_t$ the first non-deterministic tooth. For algorithmic convenience, $n_0(\Nteeth+1)=\Ngen$.
 \end{itemize}
 \end{description}
 
