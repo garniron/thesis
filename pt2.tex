@@ -459,7 +459,7 @@ With $n_0(1)$ the size of the initial deterministic set $\mathcal{T}_0$, teeth b
 \end{equation}
 However, the opposite doesn't guarantee success. Because samples are sorted with decreasing $p(e_I)$, each tooth is guaranteed to contain at least $\minDetInT -1$ samples, so building will success if $|\mathcal{T}_1| \geq \minDetInT$.
 Relying on the fact that relative values of $p(e_I)$ get closer and closer, we increment $n_0(1)$ until either the first tooth contains $\minDetInT$ samples, or the impossibility condition is reached.
-If teeth building fails, we retry will $N_{teeth} - 1$ teeth (build always succeeds with $N_{teeth} = 1$).
+If teeth building fails, we retry will $\Nteeth - 1$ teeth (build always succeeds with $\Nteeth = 1$).
 Then, $n_0(t)$ and the effective distribution function $w_I$ can be fully computed.
 Teeth building is show as algorithms \ref{alg:build_teeth} and \ref{alg:build_w}.
 
@@ -475,7 +475,7 @@ Teeth building is show as algorithms \ref{alg:build_teeth} and \ref{alg:build_w}
 	\While{}{
 		$u_0 \gets P[n_0(1)]$\;
 		$r \gets P[n_0(1)+\minDetInT]$ \;
-		$W_T \gets \frac{1 - u_0}{N_{teeth}}$ \;
+		$W_T \gets \frac{1 - u_0}{\Nteeth}$ \;
 		\If{$W_T \geq r - u_0$}{
 			break loop\;
 		}
@@ -486,7 +486,7 @@ Teeth building is show as algorithms \ref{alg:build_teeth} and \ref{alg:build_w}
 			Try with fewer teeth. \;
 		}
 	}
-	\For{$t \gets 2,N_{teeth}$}{
+	\For{$t \gets 2,\Nteeth$}{
 		$r \gets u_0 + W_T \times (t-1)$ \;
 		$n_0(t) \gets FIND\_SAMPLE(r, P)$ \;
 	}
@@ -582,7 +582,7 @@ Because of the tooth filling mechanism, we know we will need at most $\Ngen$ com
 		\KwData{$N_c,u[N_c],F,d,N_Q,Q$ as in the scope of the calling function}
 		\KwData{$\tilde M$ as in the scope of the calling function if defined, otherwise ignored}
 		$N_c \gets N_c + 1$ \;
-  		\For{$t\gets 0,N_{teeth}-1$}{
+  		\For{$t\gets 0,\Nteeth-1$}{
 		%$v \gets lTeeth[t] + rand \times toothSize[t]$ \;
 		$v \gets u_0 + W_T \times (t+u[N_c])$ \;
 		
@@ -620,6 +620,7 @@ The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. 
 \begin{algorithm}
 	\caption{Master node in $\EPT$ computation}
 	\label{alg:PT2_MASTER}
+ \SetKw{KwBy}{by}            
 	$n \gets 1$ \;
 	$t \gets 0$ \;
 	$U \gets 0$ \;
@@ -668,7 +669,7 @@ The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. 
 	
 					
 	$x \gets 0$ \;
-	\For{$t \gets N_{teeth} \text{ down to } 1$}{
+	\For{$t \gets \Nteeth, 1 \KwBy -1$}{
 		$I \gets FIND\_SAMPLE(u_0+W_T \times (u+t-1), W)$ \;
 		$x \gets x + W_T \times \frac{e_{I}}{w_I}$ \;
 		$S_t \gets S_t + x$ \;

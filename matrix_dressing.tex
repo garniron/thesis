@@ -380,12 +380,12 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 				}
 			}
 				
-			\For{$I=\dot n_0(m)+1, \Ngen$}{
+			\For{$I \gets \dot n_0(m)+1, \Ngen$}{
 				$ \gamma^m_I \gets \frac{W_T \times M_{m,I}}{w[I]}$ \;
 			}
 		}
 		$\tilde \mu^1_* \gets \gamma^1_*$ \;
-		\For{$m=2,N_{cp}$}{
+		\For{$m\gets2,\Ncp$}{
 			$\tilde \mu^m_* \gets \gamma^m_* - \gamma^{m-1}_*$ \;
 		}
 \end{algorithm}
@@ -473,11 +473,11 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 
 	$\deltabold^m \gets 0$ \;
 	\tcc{Reverse loop for numerical precision \alert{POURQUOI?}}
-	\For{$p=m,1$ \KwBy $-1$}{
+	\For{$p\gets m,1$ \KwBy $-1$}{
 		$\deltabold^m \gets \deltabold^m + \deltabold^{S,p}$
 	}
 	$\deltabold^m \gets \frac{\deltabold^m}{M_m}$ \; 
-	\For{$t=\dot t_m-1,0$ \KwBy $-1$}{
+	\For{$t\gets \dot t_m-1,0$ \KwBy $-1$}{
 		$\deltabold^m \gets \deltabold^m + \deltabold^{D,t}$ \;
 
 	}
