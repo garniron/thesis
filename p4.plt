@@ -15,7 +15,7 @@ set output 'figures/perf/scaling_davidson.pdf'
 unset clip points
 set clip one
 unset clip two
-set errorbars front 1.000000 
+#set errorbars front 1.000000 
 set border 31 front lt black linewidth 1.000 dashtype solid
 set zdata 
 set ydata 
@@ -35,7 +35,7 @@ set format y2 "% h"
 set format z "% h" 
 set format cb "% h" 
 set format r "% h" 
-set ttics format "% h"
+#set ttics format "% h"
 set timefmt "%d/%m/%y,%H:%M"
 set angles radians
 set tics back
@@ -44,10 +44,10 @@ set grid xtics nomxtics ytics nomytics noztics nomztics nortics nomrtics \
  nox2tics nomx2tics noy2tics nomy2tics nocbtics nomcbtics
 set grid layerdefault   lt 0 linecolor 0 linewidth 0.500 dashtype solid,  lt 0 linecolor 0 linewidth 0.500 dashtype solid
 unset raxis
-set theta counterclockwise right
+#set theta counterclockwise right
 set style parallel front  lt black linewidth 2.000 dashtype solid
 set key title "" center
-set key inside right bottom vertical Right noreverse enhanced autotitle nobox
+#set key inside right bottom vertical Right noreverse enhanced autotitle nobox
 set key noinvert samplen 4 spacing 1 width 0 height 0 
 set key maxcolumns 0 maxrows 0
 set key noopaque
@@ -56,9 +56,9 @@ unset arrow
 set style increment default
 unset style line
 unset style arrow
-set style histogram clustered gap 2 title textcolor lt -1
+#set style histogram clustered gap 2 title textcolor lt -1
 unset object
-set style textbox transparent margins  1.0,  1.0 border  lt -1 linewidth  1.0
+#set style textbox transparent margins  1.0,  1.0 border  lt -1 linewidth  1.0
 set offsets 0, 0, 0, 0
 set pointsize 1
 set pointintervalbox 1
@@ -66,11 +66,11 @@ set encoding default
 unset polar
 unset parametric
 unset decimalsign
-unset micro
-unset minussign
+#unset micro
+#unset minussign
 set view 60, 30, 1, 1
-set view azimuth 0
-set rgbmax 255
+#set view azimuth 0
+#set rgbmax 255
 set samples 100, 100
 set isosamples 10, 10
 set surface 
@@ -81,8 +81,8 @@ set datafile separator whitespace
 unset hidden3d
 set cntrparam order 4
 set cntrparam linear
-set cntrparam levels auto 5 unsorted
-set cntrparam firstlinetype 0
+#set cntrparam levels auto 5 unsorted
+#set cntrparam firstlinetype 0
 set cntrparam points 5
 set size ratio 0 1,1
 set origin 0,0
@@ -101,28 +101,28 @@ set mztics default
 set mx2tics default
 set my2tics default
 set mcbtics default
-set mrtics default
-set nomttics
+#set mrtics default
+#set nomttics
 set xtics border in scale 1,0.5 mirror norotate  autojustify
-set xtics  norangelimit autofreq 
+#set xtics  norangelimit autofreq 
 set ytics border in scale 1,0.5 mirror norotate  autojustify
-set ytics  norangelimit autofreq 
+#set ytics  norangelimit autofreq 
 set ztics border in scale 1,0.5 nomirror norotate  autojustify
-set ztics  norangelimit autofreq 
+#set ztics  norangelimit autofreq 
 unset x2tics
 unset y2tics
 set cbtics border in scale 1,0.5 mirror norotate  autojustify
 set cbtics  norangelimit autofreq 
 set rtics axis in scale 1,0.5 nomirror norotate  autojustify
 set rtics  norangelimit autofreq 
-unset ttics
-unset paxis 1 tics
-unset paxis 2 tics
-unset paxis 3 tics
-unset paxis 4 tics
-unset paxis 5 tics
-unset paxis 6 tics
-unset paxis 7 tics
+#unset ttics
+#unset paxis 1 tics
+#unset paxis 2 tics
+#unset paxis 3 tics
+#unset paxis 4 tics
+#unset paxis 5 tics
+#unset paxis 6 tics
+#unset paxis 7 tics
 set title "" 
 set title  font "" norotate
 set timestamp bottom 
@@ -149,8 +149,8 @@ set zrange [ * : * ] noreverse writeback
 set cblabel "" 
 set cblabel  font "" textcolor lt -1 rotate
 set cbrange [ * : * ] noreverse writeback
-set rlabel "" 
-set rlabel  font "" textcolor lt -1 norotate
+#set rlabel "" 
+#set rlabel  font "" textcolor lt -1 norotate
 set rrange [ * : * ] noreverse writeback
 set paxis 1 range [ * : * ] noreverse nowriteback
 set paxis 2 range [ * : * ] noreverse nowriteback
@@ -160,21 +160,21 @@ set paxis 5 range [ * : * ] noreverse nowriteback
 set paxis 6 range [ * : * ] noreverse nowriteback
 set paxis 7 range [ * : * ] noreverse nowriteback
 unset logscale
-unset jitter
+#unset jitter
 set zero 1e-08
 set lmargin  -1
 set bmargin  -1
 set rmargin  -1
 set tmargin  -1
-set locale "en_US.UTF-8"
+#set locale "en_US.UTF-8"
 set pm3d explicit at s
 set pm3d scansautomatic
 set pm3d interpolate 1,1 flush begin noftriangles noborder corners2color mean
-set pm3d nolighting
+#set pm3d nolighting
 set palette positive nops_allcF maxcolors 0 gamma 1.5 color model RGB 
 set palette rgbformulae 7, 5, 15
 set colorbox default
-set colorbox vertical origin screen 0.9, 0.2 size screen 0.05, 0.6 front  noinvert bdefault
+#set colorbox vertical origin screen 0.9, 0.2 size screen 0.05, 0.6 front  noinvert bdefault
 set style boxplot candles range  1.50 outliers pt 7 separation 1 labels auto unsorted
 set loadpath 
 set fontpath 
@@ -182,6 +182,8 @@ set psdir
 set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap v5
 GNUTERM = "qt"
 x = 0.0
+set key bottom
+set xrange [:40]
 ## Last datafile plotted: "data_davidson"
-plot x title "Ideal", 'data_davidson' index 2 u 1:(11853.952/$2) title '42 959 496 dets' w lp, 'data_davidson' index 1 u 1:(836.1914/$2) title '9 356 952 dets' w lp
+plot x title "Ideal", 'data_davidson' index 2 u 1:(11198.698/$2) title '42 959 496 dets' w lp, 'data_davidson' index 1 u 1:(775.5464/$2) title '9 356 952 dets' w lp
 #    EOF

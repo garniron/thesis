@@ -21,7 +21,10 @@ the FCI space which is explored is a CAS(18,111). The reference excitation
 energy, obtained at the CC3/ANO-L-VQZP level is 7.18~eV.\cite{Send_2011}
 The measurements were made on the Olympe supercomputer (CALMIP). Each node is 
 a dual-socket Intel(R) Xeon(R) Gold 6140 CPU @ 2.30GHz with 192GiB of RAM, and
-contains 36 physical CPU cores.
+contains 36 physical CPU cores. Parallel speedup curves are made with up to
+$1~800$~cores for the four main parts presented in this manuscript, namely the
+Davidson diagonalization, the CIPSI selection, the hybrid
+stochastic/deterministic computation of $\EPT$ and the matrix dressing.
 
 \begin{figure}[hbt]
 	\begin{center}
@@ -32,7 +35,7 @@ contains 36 physical CPU cores.
 \end{figure}
 
 \begin{table}[hbt]
-\caption{Energies and second-order perturbative corrections for increasingly large wavefunctions. $\Delta$ is the energy difference
+\caption{Energies and second-order perturbative corrections for increasingly large wavefunctions. $\Delta E$ is the energy difference
 between the ground state and the excited state.}
 \label{tab:energy_pt2}
 \begin{center}
@@ -72,7 +75,7 @@ $186~978~487$ & $-150.017~51(2)$ & $-149.752~90(2)$ & $7.20$ \\
 In figure~\ref{fig:energy_pt2}, we plot the convergence of the energies of
 the ground and excited states as a function of the number of
 determinants, with and without the second order perturbative contribution.
-From these data, one can see that although $\EPT$ is still large ($\sim 0.04$~au)
+From these data, one can see that although $\EPT$ is still large ($\sim 0.02$~au)
 the excitation energies both at the variational level and with the perturbative
 correction converge to a value of $7.20$~eV compatible with the reference
 energy obtained in a larger basis set.
@@ -82,6 +85,9 @@ energy obtained in a larger basis set.
 \clearpage
 
 \section{Davidson diagonalization}
+
+
+First, we measure the time required to compute one iteration of the Davidson algorithm with increasingly large wave functions. The results are reported in table~\ref{tab:time_davidson_ndet}.
 
 \begin{table}[hbt]
 \caption{Wall-clock time (in seconds) to run one Davidson's iteration in parallel with increasingly large wavefunctions.}
@@ -94,30 +100,8 @@ energy obtained in a larger basis set.
 $    29~409$ &       $2.72$ \\
 $   168~595$ &       $4.21$ \\
 $ 1~322~537$ &      $56.24$ \\
-$ 8~495~334$ &    $1039.35$ \\
-$ 9~356~952$ &    $1260.14$ \\
-$42~959~496$ &  $11~853.95$ \\
-\hline
-\end{tabular}
-\end{center}
-\end{table}
-
-\begin{table}[hbt]
-\caption{Wall-clock time (in seconds) to run one Davidson's iteration in parallel on two different wavefunctions 
-with an increasing number of 36-core compute nodes.}
-\label{tab:time_davidson}
-\begin{center}
-\begin{tabular}{rrr}
-\hline
-\tabc{Nodes} & \tabc{9~356~952 determinants} & \tabc{42~959~496 determinants} \\
-\hline
-$ 1$ &$775.55$ &$11~853.95$\\
-$ 5$ &$169.88$ &$ 2~451.40$\\
-$10$ &$ 93.22$ &$ 1~269.86$\\
-$20$ &$ 56.86$ &$   671.87$\\
-$30$ &$ 43.76$ &$   476.25$\\
-$40$ &$ 36.18$ &$   382.20$\\
-$50$ &$ 33.67$ &$   295.25$\\
+$ 9~356~952$ &     $775.55$ \\
+$42~959~496$ &  $11~198.70$ \\
 \hline
 \end{tabular}
 \end{center}
@@ -132,6 +116,32 @@ determinants in the wavefunction.}
     \end{center}
 \end{figure}
 
+Plotting this data with a log-log scale (figure~\ref{fig:speedup_davidson_ndet}) shows an agreement with the predicted $\order{\Ndet^{3/2}}$ scaling.
+
+Then, we took the two largest wavefunctions. One with $9~356~952$ and one with $42~959~496$ determinants, and measured the wall-clock time required to
+perform one iteration of the Davidson diagonalization, with an increasing number of compute nodes.
+
+\begin{table}[hbt]
+\caption{Wall-clock time (in seconds) to run one Davidson's iteration in parallel on two different wavefunctions 
+with an increasing number of 36-core compute nodes.}
+\label{tab:time_davidson}
+\begin{center}
+\begin{tabular}{rrr}
+\hline
+\tabc{Nodes} & \tabc{9~356~952 determinants} & \tabc{42~959~496 determinants} \\
+\hline
+$ 1$ &$775.55$ &$11~198.70$\\
+$ 5$ &$169.88$ &$ 2~288.58$\\
+$10$ &$ 93.22$ &$ 1~213.95$\\
+$20$ &$ 56.86$ &$   626.41$\\
+$30$ &$ 43.76$ &$   445.65$\\
+$40$ &$ 36.18$ &$   350.25$\\
+$50$ &$ 33.67$ &$   295.25$\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
 \begin{figure}[h]
     \begin{center}
       \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_davidson}
@@ -141,11 +151,9 @@ determinants in the wavefunction.}
     \end{center}
 \end{figure}
 
-We took a wavefunction with 42~959~496 determinants, and measured the wall-clock time required to
-perform one iteration of the Davidson diagonalization, with an increasing number of compute nodes.
 The timings are reported in table~\ref{tab:time_davidson} and the parallel speedup curve is represented in figure~\ref{fig:speedup_davidson}. Using a log-log plot, we were able to fit the data and find
 a scaling as $\order{\Ndet^{3/2}}$, as expected.  As the communication scales as $\order{\Ndet}$, 
-the parallel efficiency increases together with $\Ndet$, as shown of figure~\ref{fig:speedup_davidson}.
+the parallel efficiency increases together with $\Ndet$, as shown on figure~\ref{fig:speedup_davidson}.
 
 
 \clearpage
@@ -212,23 +220,22 @@ determinants in the wavefunction.}
 
 We have measured the time necessary to realize a selection step, with an
 increasing number of determinants in the variational space.
-Figure~\ref{fig:scaling_sel_node} shows a linear scaling with the number of
-determinants. The parallel speedup was also measured with up to 50 nodes, but
-the maximum speedup value is $\sim 20$ with 40 nodes. This is explained by
-the overall low computational cost of the algorithm (a small wall-clock time), 
-and communications scaling as $\order{\Ndet}$, as the computation.
+Figure~\ref{fig:scaling_sel_node} shows a near-linear scaling with the number of
+determinants. This is due to the threshold $n_g$ which tends to make the number of external determinants constant when the wavefunction becomes large enough.
 
-
-
+The parallel speedup was also measured with up to 50 nodes, showing an almost ideal speedup curve. This is in part due to the tuning of the fragmentation of the
+tasks which gives a very well balanced task queue.
 
 \clearpage
 
 \section{PT2 calculations}
 
-The stopping criterion of the calculation of the PT2 contribution was a
-relative statistical error below 1/1000-th.
-The fraction of the full deterministic calculation required to reach this criterion
-is typically around $5\%$.
+The algorithms for the computation $\EPT$ are very similar to those of the CIPSI selection. Therefore, we expect a similar behavior with $\Ndet$ and with the number of nodes.
+
+The stopping criterion of the calculation of the $\EPT$ contribution was a
+relative statistical error below 1/1000-th. Hence, the error bar decreases with
+the number of determinants, but the fraction of the full deterministic
+calculation required to reach this criterion is relatively stable around $5$\%.
 
 \begin{figure}[hbt]
 	\begin{center}
@@ -261,18 +268,18 @@ $9~356~952$ &  $ 7~779.80$ & $ 9~663.79$ \\
 Table~\ref{tab:time_pt2} reports the wall-clock time required to compute $\EPT$
 on a single node.
 From these data, one can evaluate the scaling of the cost of $\EPT$ 
-with the number of determinants, as plotted in figure~\ref{fig:scaling_det_pt2}.
-
-The number of $\ket{\alpha}$ determinants is proportional to the
+with the number of determinants, as plotted in figure~\ref{fig:scaling_det_pt2},
+which is close to linear.
+This can be understood, since 
+the number of $\ket{\alpha}$ determinants is proportional to the
 number of determinants in the variational wavefunction, and each
 $\ket{\alpha}$ needs to be compared to all the determinants 
 in the computation of $\mel{\alpha}{H}{\Psi}$.
 But when the wavefunction becomes large enough, the second point is not true any more because only a limited number of determinants $\ket{I}$ of $\Psi$ have a non-zero
 value $\mel{\alpha}{H}{I}$, and this number is bounded by the number of single and double excitations, characteristic of the basis set.
 Fitting the last points with a log-log plot shows an asymptotic scaling as
-$\order{\Ndet^{1.45}}$, which is consistent with the fact that the scaling is
-expected to be going from $\order{\Ndet^2}$ for small sizes to $\order{\Ndet}$.
-
+$\order{\Ndet^{1.07}}$, which is expected to be linear for very large numbers 
+of determinants.
 
 \begin{table}
 \caption{Time (in seconds) to run parallel $\EPT$ calculations on the largest wavefunction with an
@@ -302,11 +309,16 @@ $50$ & $  225.08$  & $  278.21$  \\
 	\end{center}
 \end{figure}
 
-To analyze the parallel efficiency of the $\EPT$ calculation, we have made the parallel speedup curve using up to 50 nodes (1800 CPU cores), plotted in figure~\ref{fig:scaling_node_pt2}. With 50 nodes, one obtains a speedup with respect to the single-node reference of $38.8\times$ for the ground state and $39.5\times$ for the excited state. This corresponds to a parallel efficiency of 77.7\% and 79.1\%.
+To analyze the parallel efficiency of the $\EPT$ calculation, we have made the parallel speedup curve using up to 50 nodes (1800 CPU cores), plotted in figure~\ref{fig:scaling_node_pt2}. With 50 nodes, one obtains a speedup with respect to the single-node reference of $35\times$ for both the ground and excited states. This corresponds to a parallel efficiency of 70\%, which is less satisfactory than the almost ideal speedup obtained for the selection.
+
+There are two reasons for this disappointing speedup. The first one is that the calculation is aborted when the target precision is below a given threshold. So when more compute nodes are used, more samples are gathered at the end of the calculation and the computation is more precise. In the limit of $\Ndet$ CPU cores, only the deterministic calculation can be done, whatever the stopping criterion. So the computation of the speedup is not 100\% fair.
+The second reason for the on-ideal speedup is the pre-computation of the combs on the master process which delays the start of the computation of the tasks.
 
 \clearpage
 
 \section{Matrix dressing}
+
+The algorithms for the matrix dressing are similar to those of $\EPT$. Therefore, we expect a similar behavior with $\Ndet$ and with the number of nodes.
 
 \begin{table}[hbt]
 \caption{Single-node (36-core) Shifted-$B_k$ iteration for increasingly large wavefunctions.
@@ -337,24 +349,15 @@ $9~356~952$ & $ 15~004.54$  & $ 17~766.99$ \\
 
 The time necessary to build the dressing matrix in the Shifted-$B_k$ method was measured on a single
 36-core node with an increasing number of determinants (figure~\ref{fig:scaling_det_sbk}).
-The stopping criterion was an estimated relative error on 
-$\mel{\Psi}{\hat \Delta}{\Psi}$, the dressed energy, equal to $0.01$.
+As for $\EPT$, the stopping criterion was an estimated relative error on 
+$\mel{\Psi}{\hat \Delta}{\Psi}$, the dressed energy, equal to $0.001$.
 
 Using the log-log plot, the scaling with the number of determinants was found to be
-$\order{\Ndet^{1.25}}$. In the previous section, we have seen that the scaling for $\EPT$ was
-$\order{\Ndet^{1.5}}$. We can explain this difference by the fact that in the 
-calculation of $\EPT$, the communication was negligible. In the computation of the
-matrix dressing, the result of each task scales as $\order{\Ndet}$. To palliate this 
-bottleneck, the results of multiple tasks are aggregated together and one large message is
-sent at every checkpoint. The computational overhead for this reduction of the communication
-scales as $\order{\Ndet}$, and this explains why the scaling with the number of determinants is
-closer to linear than for $\EPT$.
+$\order{\Ndet^{1.15}}$.
+This scaling is slightly higher than the $\order{\Ndet^{1.07}}$ measured for $\EPT$,
+but close to linear, as expected. The additional overhead is due to the handling of
+the checkpoints which eliminates the communication bottleneck.
 
-\begin{center}
-\begin{tabular}{rrr}
-\hline
-\tabc{Nodes} & \tabc{Ground state} & \tabc{Excited state} \\
-\hline
 \begin{center}
 \begin{tabular}{rrr}
 \hline
@@ -364,26 +367,14 @@ $1 $ & $7~779.80$  & $9~663.79$  \\ %TODO
 $5 $ & $1~649.26$  & $2~037.44$  \\
 $10$ & $  854.52$  & $1~054.09$  \\
 $20$ & $  461.96$  & $  560.73$  \\
-$30$ & $  352.26$  & $  424.19$  \\
 $40$ & $  281.51$  & $  331.23$  \\
 $50$ & $  225.08$  & $  278.21$  \\
 \hline
 \end{tabular}
 \end{center}
-%TODO
-%$1 $ & $7~779.80$  & $9~663.79$  \\ %TODO
-%$5 $ & $1~649.26$  & $2~037.44$  \\
-%$10$ & $  854.52$  & $1~054.09$  \\
-%$20$ & $  461.96$  & $  560.73$  \\
-%$30$ & $  352.26$  & $  424.19$  \\
-%$40$ & $  281.51$  & $  331.23$  \\
-%$50$ & $  225.08$  & $  278.21$  \\
-\hline
-\end{tabular}
-\end{center}
 \begin{figure}[hbt]
 	\begin{center}
-		%\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sbk_node}
+		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sbk_node}
 		\caption{Parallel speedup for the calculation of the matrix dressing of the ground state using the largest wavefunction. Each node contains 36 physical CPU cores.}
 		\label{fig:scaling_node_sbk}
 	\end{center}
