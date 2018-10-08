@@ -810,8 +810,12 @@ So we add an extra permutation (flip the phase factor) if
 
 
 \section{Summary}
-\alert{
-Indeed, a partir de 2 determinants I et J, on peut trouver rapidement T tel que T I = J, ce qui donne acces aux indices ijkl des integrales impliquees. A cause de la structure de donnees qu'on utilise pour stocker les determinants, il faut egalement calculer un facteur de phase, ce qui peut aussi etre fait de facon efficace grace aux phase masks. Une fois les indices ijkl obtenus, il faut aller chercher les integrales, ce qui peut aussi etre fait rapidement grace a notre table de hash efficace.
-Donc grace aux algos presentes dans cette section, on est capable de calculer de facon tres efficace les elements de matrice de H. C'est l'ingredient de de base de toute methode determinant-driven.
-}
+
+
+
+Taking advantage of low-level hardware instructions, we are able, for a minimal cost, to find $\hat T$ so that $\hat T \ket I = \ket J$, which yields the $i,j,k,l$ indices of the associated electronic integral. Then, fetching its value can be done fastly using our hash table.
+Because of the data structure we are using to store determinants, we also need to compute a phase factor, which can be done efficiently using phase masks. 
+
+Thanks to the algorithms presented in this chapter, we are able to efficiently compute the matrix elements of $H$, which are the basic ingredients of a determinant-driven method. The instructions and functions we have defined here will however be used in the following chapters for different purposes.
+
 \end{document}
