@@ -405,9 +405,19 @@ If $D_I - R_r = \alpha - D_J$, a $(D_I, R_r)$ pair has been found. Check if a di
 \end{enumerate}
 The complexity is $\mathcal{O}(N \times (N+\Nref))$.
 
+For implementational ease and efficiency, two things are worth noting:
+\begin{itemize}
 
-For implementational ease and efficiency, it is worth noting that it is not required to handle bitstrings as actual arbitrary size integers when it comes to addition and subtraction. While addition to a bitstring was introduced as being associated with an excitation, it can actually be associated with any combination of creation and annihilation operators. It is therefore valid to consider each 64-bit integer as an independent ``sub-bitstring'' on which a subset of the operators will be applied. In short, additions and subtractions can be done integer-wise, without the overhead of handling carries.
-
+\item
+Integer overflows do not need to be handled. The size of integers being limited to 64 bits essentially means an unsigned integer $I$ is represented as $I \mod{2^{64}}$. Quite fortunately modulus has the properties of compatibility with addition and substraction.
+\begin{align}
+a_1 + a_2 &\equiv b_1 + b_2 \mod{n} \\
+a_1 - a_2 &\equiv b_1 - b_2 \mod{n}
+\end{align}
+with $a_1 \equiv b_1 \mod n$, and $a_2 \equiv b_2 \mod n$. When it comes to addition and substraction, signed and unsigned integers are equivalent, so signed integers can be used as well.
+\item
+It is not required to handle bitstrings as actual arbitrary size integers when it comes to addition and subtraction. While addition to a bitstring was introduced as being associated with an excitation, it can actually be associated with any combination of creation and annihilation operators. It is therefore valid to consider each 64-bit integer as an independent ``sub-bitstring'' on which a subset of the operators will be applied. In short, additions and subtractions can be done integer-wise, without the overhead of handling carries.
+\end{itemize}
 When it comes to comparison, since the 64 bit integers corresponding to the lower orbitals will typically have more mobile electrons, they should be given them more weight to resolve comparison as fast as possible.
 
 \paragraph{Computing the phase factor}
