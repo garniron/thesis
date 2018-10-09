@@ -150,6 +150,7 @@ set style boxplot candles range  1.50 outliers pt 7 separation 1 labels auto uns
 set loadpath 
 set fontpath 
 set psdir
+set key bottom
 set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap v5
 GNUTERM = "qt"
 ## Last datafile plotted: "data_selection"

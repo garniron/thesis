@@ -26,7 +26,7 @@ $1~800$~cores for the four main parts presented in this manuscript, namely the
 Davidson diagonalization, the CIPSI selection, the hybrid
 stochastic/deterministic computation of $\EPT$ and the matrix dressing.
 
-\begin{figure}[hbt]
+\begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/perf/cn3_energy}
 		\caption{Convergence of the energy of the ground and excited states with respect to the number of determinants in the variational space.}
@@ -201,7 +201,7 @@ $50$ & $   472.33$ \\
 \end{center}
 \end{table}
 
-\begin{figure}[hbt]
+\begin{figure}[h]
     \begin{center}
       \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sel_det}
       \caption{Wall-clock time of the selection as a function of the number of
@@ -237,7 +237,7 @@ relative statistical error below 1/1000-th. Hence, the error bar decreases with
 the number of determinants, but the fraction of the full deterministic
 calculation required to reach this criterion is relatively stable around $5$\%.
 
-\begin{figure}[hbt]
+\begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_pt2_det}
 		\caption{Wall clock time required to compute $\EPT$ for the ground and the excited states, as a function of the number of determinants in the wavefunction.}
@@ -245,7 +245,7 @@ calculation required to reach this criterion is relatively stable around $5$\%.
 	\end{center}
 \end{figure}
 
-\begin{table}[hbt]
+\begin{table}[h]
 \caption{Single-node (36-core) $\EPT$ calculations for increasingly large wavefunctions. Time is given in seconds.}
 \label{tab:time_pt2}
 \begin{center}
@@ -259,7 +259,7 @@ $   29~409$ &  $    13.83$ & $    16.21$ \\
 $  168~595$ &  $    75.62$ & $   103.26$ \\
 $1~322~537$ &  $   708.53$ & $   818.58$ \\
 $8~495~334$ &  $ 5~578.76$ & $ 6~751.25$ \\
-$9~356~952$ &  $ 7~779.80$ & $ 9~663.79$ \\
+$9~356~952$ &  $ 7~779.80$ & $ 9~855.45$ \\
 \hline
 \end{tabular}
 \end{center}
@@ -290,7 +290,7 @@ increasing number of 36-core compute nodes.}
 \hline
 \tabc{Nodes} & \tabc{Ground state} & \tabc{Excited state} \\
 \hline
-$1 $ & $7~779.80$  & $9~663.79$  \\ %TODO
+$1 $ & $7~779.80$  & $9~855.45$  \\ %TODO
 $5 $ & $1~649.26$  & $2~037.44$  \\
 $10$ & $  854.52$  & $1~054.09$  \\
 $20$ & $  461.96$  & $  560.73$  \\
@@ -320,7 +320,7 @@ The second reason for the on-ideal speedup is the pre-computation of the combs o
 
 The algorithms for the matrix dressing are similar to those of $\EPT$. Therefore, we expect a similar behavior with $\Ndet$ and with the number of nodes.
 
-\begin{table}[hbt]
+\begin{table}[h]
 \caption{Single-node (36-core) Shifted-$B_k$ iteration for increasingly large wavefunctions.
 Time is given in seconds.}
 \label{tab:time_selection}
@@ -339,7 +339,7 @@ $9~356~952$ & $ 15~004.54$  & $ 17~766.99$ \\
 \end{tabular}
 \end{center}
 \end{table}
-\begin{figure}[hbt]
+\begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sbk_det}
 		\caption{Wall clock time required to compute the Shifted-$B_k$ dressing for the ground and the excited states, as a function of the number of determinants in the wavefunction.}
@@ -363,12 +363,12 @@ the checkpoints which eliminates the communication bottleneck.
 \hline
 \tabc{Nodes} & \tabc{Ground state} & \tabc{Excited state} \\
 \hline
-$1 $ & $7~779.80$  & $9~663.79$  \\ %TODO
-$5 $ & $1~649.26$  & $2~037.44$  \\
-$10$ & $  854.52$  & $1~054.09$  \\
-$20$ & $  461.96$  & $  560.73$  \\
-$40$ & $  281.51$  & $  331.23$  \\
-$50$ & $  225.08$  & $  278.21$  \\
+$1 $ &$15~004.54$  &$17~766.99$  \\ 
+$5 $ & $3~104.00$  & $3~653.90$  \\
+$10$ & $ 1618.64$  & $1~893.80$  \\
+$20$ & $  885.66$  & $1~022.11$  \\
+$40$ & $  726.48$  & $  582.69$  \\
+$50$ & $  719.02$  & $  647.11$  \\
 \hline
 \end{tabular}
 \end{center}
