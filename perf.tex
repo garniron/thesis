@@ -214,7 +214,7 @@ determinants in the wavefunction.}
     \begin{center}
       \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sel_node}
       \caption{Parallel speedup of the CIPSI selection. The reference is a single 36-core node.}
-      \label{fig:speedup_sel_node}
+      \label{fig:scaling_sel_node}
     \end{center}
 \end{figure}
 
@@ -323,7 +323,7 @@ The algorithms for the matrix dressing are similar to those of $\EPT$. Therefore
 \begin{table}[h]
 \caption{Single-node (36-core) Shifted-$B_k$ iteration for increasingly large wavefunctions.
 Time is given in seconds.}
-\label{tab:time_selection}
+\label{tab:sbk_selection}
 \begin{center}
 \begin{tabular}{rrr}
 \hline
@@ -348,7 +348,7 @@ $9~356~952$ & $ 15~004.54$  & $ 17~766.99$ \\
 \end{figure}
 
 The time necessary to build the dressing matrix in the Shifted-$B_k$ method was measured on a single
-36-core node with an increasing number of determinants (figure~\ref{fig:scaling_det_sbk}).
+36-core node with an increasing number of determinants (table~\ref{tab:sbk_selection} and figure~\ref{fig:scaling_det_sbk}).
 As for $\EPT$, the stopping criterion was an estimated relative error on 
 $\mel{\Psi}{\hat \Delta}{\Psi}$, the dressed energy, equal to $0.001$.
 
