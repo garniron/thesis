@@ -164,10 +164,10 @@ ${\Nint = \lfloor \frac{\Norb-1}{64} \rfloor + 1}$
 Quantum chemistry is a discipline which relies on very expensive computations.
 The scalings of wave function methods lie between $\order{N^5}$ and
 $\order{N^8}$, where $N$ is proportional to the number of electrons in the
-system. Therefore, treating large systems requires both approximations that can
-reduce the scaling, and an efficient implementation that can take advantage of
-modern architectures. The work presented in this thesis is more centered on
-this last aspect. 
+system. Therefore, treating performing accurate calculations requires both
+approximations that can reduce the scaling, and an efficient implementation
+that can take advantage of modern architectures. The work presented in this
+thesis is more centered on this last aspect. 
 
 In 1965, Gordon Moore predicted that the number of transistors in an integrated
 circuit would double about every two years (the so-called Moore's
@@ -179,52 +179,54 @@ The development of today's most popular codes of the community
 initiated in the 1990's.  At that time, the increase of computational power
 from one generation of supercomputers to the next one was mostly due to the
 increase of the frequency of the processors. the amount of random access memory
-was small, the time to access data from disk was comparable to the time to
-perform a memory access and the energy consumption of the most powerful
-computer was 236kW, which was not an economical concern.\cite{top500_93}
+was small, the time to access data from disk was slow, and the energy
+consumption of the most powerful computer was 236kW, which was not an
+economical concern.\cite{top500_93}
 
 At the beginning of the years 2000, having increased continuously both the number
 of processors and their frequency raised the power consumption of
 supercomputers by two orders of magnitude, raising accordingly the annual
 electricity bill.  The only way to slow down this need for electricity while
-keeping alive Moore's law was to fix the frequency between $1$ and
-$4$~GHz, and increase the number of CPU cores.  The consequence of such a
-choice is that the programmers now had to parallelize their programs to make them
-run faster.  At the same time, computer scientists realized that the increase
-of performance in memory access was slower than the increase in computational
-power,\cite{Wulf1995Mar} and that the floating-point operation (or flop) count
-would soon not be the bottleneck, and that data movement would be the concern. 
+keeping alive Moore's law was to keep the frequency fixed (between $1$ and
+$4$~GHz), and increase the number of CPU cores.  The consequence of such a
+choice was that ``free lunch'' was over, and the programmers now had to parallelize
+their programs to make them run faster.\cite{Sutter_2005}
+At the same time, computer scientists
+realized that the increase of performance in memory access was slower than the
+increase in computational power,\cite{Wulf1995Mar} and that the floating-point
+operation (or flop) count would soon not be the bottleneck, and that data
+movement would be the concern. This change was called the \emph{memory wall}.
 
 So today, the situation is completely different from the 1990's.
-Moore's law has ended\cite{Khan2018Jan}, the CPU frequency tends to decrease,
+Moore's law has ended,\cite{Khan2018Jan} the CPU frequency tends to decrease,
 hundreds of thousands of cores need to be handled, data movement is the
 principal concern, and disk access times are prohibitively high.
-
 The work presented in this thesis is in the context of this change in paradigm
-that has been going on for the last decade.\cite{Sutter_2005} 
+that has been going on for the last decade.
 The traditional sequential algorithms of quantum chemistry are currently being
 redesigned so as to be replaced by parallel equivalents by multiple groups
-around the world. 
+around the world, and this has an influence on methodological development.
 
 Initially, this work may been have expected to focus on methods that are by
 design adapted to massively parallel architectures, such as Monte-Carlo methods
-(stochastic methods), which are by design composed of a large number of
-independent tasks (``embarrassingly parallel'' algorithms). In addition, they
-often are able to yield an approximate result for just a fraction of the cost
-of the equivalent deterministic, exact computation. An example of the move
-toward this type of method is the recently developed FCIQMC, which can be seen
-as a Monte-Carlo version of older selection algorithms such as CIPSI, that are
-iterative and thus a priori not well adapted to parallel architectures. This is
-however not how things turned out for me.
+(stochastic methods), which are composed of a large number of independent tasks
+(\emph{embarrassingly parallel} algorithms). In addition, they often are able
+to yield an approximate result for just a fraction of the cost of the
+equivalent deterministic, exact computation. An example of the move toward this
+type of method is the recently developed \emph{Full Configuration Interaction
+Quantum Monte Carlo} (FCIQMC).\cite{Booth_2009} FCIQMC can be interpreted as a
+Monte-Carlo variant of older selection algorithms such as
+CIPSI,\cite{uron_1973} that are iterative and thus a priori not well adapted to
+parallel architectures. This is however not the direction this thesis took.
 
-Many methods, unlike Monte-Carlo, are not intrinsically parallel.
+Most methods, unlike Monte-Carlo, are not easily parallelizable.
 Nevertheless, some are well-known and widely used, or simply need to be
 experimented ; and thus they still need to be adapted to parallel
-architectures. The \QP developed at the LCPQ is a suit of wavefunction quantum
+architectures. The \QP developed at the LCPQ is a suite of wavefunction quantum
 chemistry methods, that strives to allow easy implementation and
 experimentation of new methods, and to make parallel computation as simple as
-possible. I focused on its improvement all through my thesis, which turned out
-to be about software development at least as much as about quantum chemistry.
+possible. I focused on the improvement of this software package, from the
+methodological, algorithmic and the implementational points of views.
 
 The previously mentioned goals of the \QP, in my opinion, have two main consequences
 \begin{itemize}
