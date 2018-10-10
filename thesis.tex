@@ -253,8 +253,7 @@ Davidson diagonalization, which is a pivotal point for CI methods. A naive
 determinant-driven algorithm implies a quadratic scaling with the number of
 determinants, while the integral-driven algorithm is expected to scale
 linearly. This fact gave us some insight that there was room for improvement
-in this step, and our actual implementation reduced the scaling to $\Ndet^{3/2}$,
-while we also proposed a linear-scaling algorithm.
+in this step. 
 
 The second focus was the improvement of the determinant selection algorithm
 which is the main method used by the \QP to build compact wavefunctions
@@ -353,28 +352,23 @@ so I decided to write this thesis in English.
 
 \chapter{Conclusion}
 
-As a conclusion, significant improvements were brought to the \QP in both sequential and parallel aspect.
+Significant improvements were brought to the \QP. Some were single-core optimization, and others were for adapting the algorithms for a better load balancing in the
+parallel regime.
 
-The Davidson diagonalization, which is at the center of many methods, suffers from the impossibility to fully store the Hamiltonian, forcing it to be recomputed on the fly at each iteration. While an extremely fast method was already available to detect zero matrix element,\cite{Scemama_2013} the former implementation still had to iterate over the $~\Ndet^2$ matrix elements. Now, determinants are split in disjoint sets, which are often identifiable as entirely disconnected from one another. Thus only a small fraction of the matrix elements need to be explored.
-While the parallelization of this method was somewhat challenging, due to the elementary tasks being extremely unbalanced, a distributed implementation was realized with rather satisfying results.
+The Davidson diagonalization, which is at the center of variational methods, suffers from the impossibility to fully store the Hamiltonian. A solution is to resort to \emph{direct methods}, recomputing its matrix elements on the fly at each iteration. While an extremely fast method was already available to detect zero matrix elements,\cite{Scemama_2013} the former implementation still had to iterate over the $\sim \Ndet^2$ matrix elements. Now, determinants are split in disjoint sets, which are often identifiable as entirely disconnected from one another. Thus only a small fraction of the matrix elements need to be explored, and a linear-scaling algorithm was proposed.
+While the parallelization of this method was somewhat challenging, due to the elementary tasks being extremely unbalanced, a distributed implementation was realized with rather satisfying parallel speedups, typically $35\times$ for $50$ nodes ($1~800$ cores) with respect to the $36$-core single-node reference.
 
-The CIPSI selection algorithm, whose previous implementation was somewhat naive, was enormously improved, allowing for some applications that were not feasible so far\cite{Scemama_2018,1806.05115}. Several different accelerations were used, reducing the cost of finding connections between external and internal determinant (``batch'' approach, filtering), as well as the cost of computing the corresponding matrix element in the Hamiltonian (phase mask, systematic determination of excitations). Again, in spite of unbalanced elementary tasks, a distributed implementation could be realized.
-Because computation of $\EPT$ was done by the same algorithm but did not allow for as much approximation - and thus was more expensive - a hybrid stochastic-deterministic approach was imagined. $\EPT$ being in itself an approximation for the Full-CI energy, an exact value is indeed not required. Our scheme allows to compute $\EPT$ with an error bar smaller than the typical error bar of $E_{\text{var}} + \EPT$ versus the Full-CI energy, for a few percent of the cost of the deterministic computation.
+The CIPSI selection algorithm, for which the previous implementation examined the external determinants one by one, was enormously improved, allowing for some applications that were not feasible so far.\cite{Scemama_2018,1806.05115} Several different optimizations were used, reducing the cost of finding connections between external and internal determinants (``batch'' approach, filtering), as well as the cost of computing the corresponding matrix element in the Hamiltonian (phase mask, systematic determination of excitations). Again, a distributed implementation could be realized after 
+solving the problems related to load imbalance.
+Because the computation of $\EPT$ was done by the same algorithm but did not allow for as much approximation ---~and thus was much more expensive~--- a hybrid stochastic-deterministic approach was imagined. $\EPT$ being in itself an approximation for the Full-CI energy, an exact value is indeed not required. Our scheme allows to compute $\EPT$ with an error bar smaller than the typical error of $E_{\text{var}} + \EPT$ versus the Full-CI energy, for a few percent of the cost of the full deterministic computation.
 
-To get the best of the data we were already able to gather, we implemented the shifted-Bk method, which uses the energy contributions computed by $\EPT$ to refine the internal wavefunction. It essentially creates an external space of determinants $\kalpha$ whose coefficients are perturbatively estimated, and allows them to act on internal coefficients. This method requires computation of a dressing matrix, which we could estimate stochastically in the same way we did for $\EPT$ (stochastic matrix dressing).
+To get the best of the data we were already able to compute, we implemented the shifted-\Bk method, which uses the energy contributions computed by $\EPT$ to refine the wavefunction. It essentially creates an external space of determinants $\kalpha$ whose coefficients are perturbatively estimated, and allows them to act on the coefficients of the wavefunction in the internal space. This method requires the computation of a dressing matrix, which we could estimate stochastically in a way similar to what we proposed for $\EPT$ (stochastic matrix dressing).
 The challenge in this case was to estimate, instead of a scalar, a vector of size $\Ndet$, which can be up to a few million elements. The storage and network issues could be solved by setting up a system of predefined checkpoints, a modest drawback being the impossibility to get an estimated dressing matrix outside of those checkpoints.
 
 Finally, this stochastic matrix dressing computation was extended to another external space, that of the Multi-Reference Coupled-Cluster we had previously implemented deterministically,\cite{Garniron_2017} which allowed to explore some possibilities of the bitstring-based determinant-driven approach.
 
-
-
-%montagne \cite{Loos_2018}
-%sbk \cite{Garniron_2018}
-%jmm \cite{Giner_2017}
-%mrcc \cite{Garniron_2017}
-%pt2 \cite{Garniron_2017b}
-%fes \cite{Scemama_2018}
-%Cu \cite{1806.05115}
+During the multiple steps of evolution of the program, more and more applications were made possible.\cite{Loos_2018,Garniron_2018,Giner_2017,Garniron_2017,Garniron_2017b,Scemama_2018,1806.05115} This gave to the \QP more visibility, and it was selected as a benchmark code for the choice of the new supercomputer of the CALMIP center. Moreover, different groups started to use it for applications and use it to develop new ideas. For example, the Argonne group is currently implementing complex orbitals to 
+adapt the \QP to solids.
 
 \appendix
 

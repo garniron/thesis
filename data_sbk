@@ -5,7 +5,7 @@
 # Parallel scaling made with the 9356952-det wf
 # Nnode  seconds  (state 1)
 1    19881.3023
-#5     
+5     4015.1110
 10    2038.4577
 20    1063.4109
 30     738.9626
