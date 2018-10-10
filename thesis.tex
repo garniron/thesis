@@ -201,58 +201,117 @@ So today, the situation is completely different from the 1990's.
 Moore's law has ended,\cite{Khan2018Jan} the CPU frequency tends to decrease,
 hundreds of thousands of cores need to be handled, data movement is the
 principal concern, and disk access times are prohibitively high.
-The work presented in this thesis is in the context of this change in paradigm
+The work presented in this thesis is in the context of this change of paradigm
 that has been going on for the last decade.
 The traditional sequential algorithms of quantum chemistry are currently being
 redesigned so as to be replaced by parallel equivalents by multiple groups
-around the world, and this has an influence on methodological development.
+around the world, and this has also an influence on methodological development.
 
 Initially, this work may been have expected to focus on methods that are by
 design adapted to massively parallel architectures, such as Monte-Carlo methods
 (stochastic methods), which are composed of a large number of independent tasks
 (\emph{embarrassingly parallel} algorithms). In addition, they often are able
-to yield an approximate result for just a fraction of the cost of the
+to yield a satisfactory result for just a fraction of the cost of the
 equivalent deterministic, exact computation. An example of the move toward this
 type of method is the recently developed \emph{Full Configuration Interaction
 Quantum Monte Carlo} (FCIQMC).\cite{Booth_2009} FCIQMC can be interpreted as a
 Monte-Carlo variant of older selection algorithms such as
-CIPSI,\cite{uron_1973} that are iterative and thus a priori not well adapted to
-parallel architectures. This is however not the direction this thesis took.
+CIPSI,\cite{Huron_1973} that are iterative and thus a priori not well adapted to
+massively parallel architectures.
+Unlike Monte-Carlo, most wavefunction methods are not easy to parallelize.
 
-Most methods, unlike Monte-Carlo, are not easily parallelizable.
-Nevertheless, some are well-known and widely used, or simply need to be
-experimented ; and thus they still need to be adapted to parallel
-architectures. The \QP developed at the LCPQ is a suite of wavefunction quantum
+The \QP developed at the LCPQ is a suite of wavefunction quantum
 chemistry methods, that strives to allow easy implementation and
-experimentation of new methods, and to make parallel computation as simple as
-possible. I focused on the improvement of this software package, from the
+experimentation of new methods, and to make parallel computation
+as simple and efficient as possible.
+Hence, the initial choice of the \QP was to go in  the direction of
+determinant-driven algorithms, as opposed to the more traditional
+integral-driven algorithms.
+A determinant-driven approach essentially implies that the wavefunction
+is expressed as a linear combination of determinants, and that the 
+outermost loops of the algorithms loop over determinants.
+On the other hand, integral-driven algorithms have their outermost loop
+on the two-electron integrals which appear in the expression of the matrix
+elements in the determinant basis.
+In the context of \emph{configuration interaction} (CI) or perturbative
+methods, the determinant-driven approach simplifies the development and allows
+the researchers to test new ideas very quickly.  These algorithms allow more
+flexibility than their integral-driven
+counterparts,\cite{povill_efficient_1995} but they have been known for years to
+be by far less efficient for solving the same problem.  High-precision
+calculations are always in a regime where the number of 
+determinants is larger than the number of determinants, which justifies the
+integral-driven choice.  Today, programming imposes parallelism, and if
+determinant-driven calculations are better adapted to parallelism, such methods
+could regain in popularity.  The work presented in this thesis focuses on
+exploring determinant-driven approaches via the improvement of the \QP from the
 methodological, algorithmic and the implementational points of views.
 
-The previously mentioned goals of the \QP, in my opinion, have two main consequences
-\begin{itemize}
-\item
-it should be dominantly determinant-driven.
-\item
-it needs to have some parallel code base for common, deterministic methods.
-\end{itemize}
 
+Somewhat logically, the first focus was acceleration and parallelization of the
+Davidson diagonalization, which is a pivotal point for CI methods. A naive
+determinant-driven algorithm implies a quadratic scaling with the number of
+determinants, while the integral-driven algorithm is expected to scale
+linearly. This fact gave us some insight that there was room for improvement
+in this step, and our actual implementation reduced the scaling to $\Ndet^{3/2}$,
+while we also proposed a linear-scaling algorithm.
 
-A determinant-driven approach essentially means a wavefunction algorithm loops over determinants rather than electronic integrals, which is usually less effective - due to the larger number of determinants - but also simpler and more intuitive. While the determinant-driven character of the \QP was already established, some improvement was brought to it, in particular for computation of phase factors which, as simple as the problem may seem, is notably time-consuming.
+The second focus was the improvement of the determinant selection algorithm
+which is the main method used by the \QP to build compact wavefunctions
+suitable for determinant-driven computations. In a nutshell, the principle is
+to incrementally build a variational wavefunction by scavenging its external
+space for determinants that interact with it. While the significant
+improvement that was brought to this implementation was in itself the most
+important part of this work, it also turned out to be the basis for the subsequent
+implementation of other algorithms. Indeed, efficiently implementing this
+method raised the fundamental question of connecting a variational wavefunction
+to its external space ; that is, gathering data to go beyond what is readily
+available in it. The next steps were partly guided by the aversion to waste
+data gathered during the selection.
 
-Somewhat logically, the first focus was acceleration and parallelization of the Davidson diagonalization, which is a pivotal point for CI methods.
+Our selection algorithm, CIPSI, implies computing a perturbative contribution
+for external determinants, and include the ones of largest contribution into
+the internal space in which the variational wavefunction is expressed.
+$\EPT$, the sum of all the contributions of the external determinants,
+approximates how much energy the variational wavefunction is missing compared
+to  the exact solution in the same basis set, namely the \emph{Full Configuration Interaction} or Full CI. However to
+perform an acceptably accurate selection, not all external determinants need to
+be considered, nor does each contribution need be known with great accuracy.\cite{Bytautas_2009}
+This allows for approximations too severe for the sum of all computed
+contributions to yield an accurate estimation $\EPT$. Incidentally, the computation
+of $\EPT$ is much more time consuming than determinant selection. To
+make this step more affordable, we designed a hybrid deterministic-stochastic
+scheme which enabled us to get an accurate value for $\EPT$ by
+computing just a few percent of all the contributions.
 
-The second focus was improvement of the selection algorithm which was the main method used by the \QP to build compact wavefunctions suitable for determinant-driven computations. In a nutshell, the principle is to incrementally build a variational wavefunction by scavenging its external space for determinants that interact with it. While I consider the significant improvement that was brought to this implementation to be in itself the most important part of this work, it also turned out to be the basis for subsequent implementations of other algorithms. Indeed, efficiently implementing this method raised the fundamental question of connecting a variational wavefunction to its external space ; that is, gathering data to go beyond what is readily available in it. The next steps were partly guided by the aversion to waste data gathered during the selection.
+The computation of $\EPT$ allows to correct the energy of the 
+wavefunction by taking into account its external space. Unfortunately, it only
+improves the energy, but leaves the wavefunction unchanged. Based on the
+shifted-\Bk algorithm, using our CIPSI implementation and the hybrid
+deterministic-stochastic scheme we were able to refine the wavefunction under
+the effect of a stochastically estimated external space using
+a Hamiltonian dressed by a matrix computed semi-stochastically.
 
-Our selection algorithm, CIPSI, implies computing a perturbative contribution for external determinants, and include the ones of largest contribution into the internal (variational) wavefunction. $\EPT$ the sum of all contributions approximates how much energy the variational wavefunction is missing compared to Full-CI energy, which is the exact solution in a given basis set. However to perform an acceptably accurate selection, not all external determinants need to be considered, nor do each contribution needs be known with great accuracy. This allows for approximations too severe for the sum of all computed contributions to yield an accurate estimation $\EPT$. Incidentally, computation of $\EPT$ is much more costly that selection. We designed a hybrid deterministic-stochastic scheme which enabled us to get an acceptably accurate value for $\EPT$ by computing a few percent of all contributions.
+In addition, we set up a general framework to enable refining of the
+variational wavefunction under the effect of any
+external space, with a stochastic estimation.
+This was experimented by implementing a stochastic selected \emph{multi-reference
+coupled cluster with singe and double substitutions} (MR-CCSD).
 
-Computation of $\EPT$ allows to correct the energy of our internal wavefunction by taking into account its external space. Unfortunately, it only refines the energy and not the wavefunction itself. Based on the shifted-Bk algorithm, and using our CIPSI implementation and the hybrid deterministic-stochastic scheme we designed for computation of $\EPT$, we were able to refine our wavefunction under the effect of a stochastically estimated external space (stochastic matrix dressing).
+The efficiency of the implemented algorithms is exposed, and the code
+was used in numerous applications, in particular to obtain reference
+excitation energies for difficult molecular systems. The high quality
+of the CIPSI wavefunction was also used for quantum Monte Carlo calculations
+to characterize the ground state of the Fe-S molecule.
 
-In addition, we set up a more general framework to enable refining of the variational wavefunction under the effect of a ``custom'', stochastically estimated external space. This was experimented by implementing a MR-CCSD external space.
-
-
-The efficiency for the implemented algorithms has been studied, and the code could give way to numerous applications, in particular to obtain reference energies for complicated molecular systems.
-
-Of course, the technical considerations were not the focus of the different articles that were produced. In particular, no publication was made about our CIPSI implementation. Because my work focused on the actual implementations of the methods at least as much as on the theory behind them, this thesis is an opportunity to discuss the implementations in more details. In order for it to complete the articles as well as possible, I decided to write it in English.
+Of course, the technical considerations were not the focus of the different
+articles that were produced. In particular, no publication was made about all
+the detail of our CIPSI implementation. Because my work focused on the actual
+implementation of the methods at least as much as on the theory behind them,
+this thesis is an opportunity to discuss in depth the implementation.
+I expect this document to be one of the major pieces of documentation for
+developers willing to understand deeply the implementation of the \QP, 
+so I decided to write this thesis in English.
 
 
 
