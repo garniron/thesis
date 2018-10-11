@@ -54,17 +54,17 @@ w(\mathbf{R}) = \lim_{t \rightarrow \infty} \exp \qty( \int_0^t \text{d}t \frac{
 This expression can't be computed exactly, but it can be sampled with a diffusion
 process with drift and branching.\cite{Hammond_1994}
 
-This non-negativity constraint of $w$ implies that the nodal
-hyper-surfaces of $\Phi^{\text{FN}}$ coincide with those of $\Psi$, but not with
+The non-negativity constraint of $w$ implies that the nodal
+hyper-surfaces of $\Phi^{\text{FN}}$ coincide with those of $\Psi$, but not necessarily with
 those of the exact wavefunction. Hence, the Diffusion Monte Carlo (DMC) method
 suffers from the so-called \emph{fixed-node approximation}. But if the trial wave
 function has nodes which coincide with those of the exact wavefunction, the
 exact energy is obtained.
 
-There is no way to improve the nodes of the wavefunction by minimizing $\EDMC$.
+There is no way to improve the nodes of the wavefunction by minimizing directly $\EDMC$.
 However, it has recently been shown\cite{Caffarel_2016} that for each atomic basis
 set there was an $\EDMC$ associated with the FCI wavefunction, and increasing the
-size of the basis set enabled an extrapolation to the exact energy.
+size of the basis set enabled a smooth extrapolation to the exact energy.
 Hence, one expects that computing DMC energy differences with FCI wavefunctions will
 show an efficient compensation of errors.
 
@@ -74,8 +74,9 @@ function was a FCI wavefunction. We have applied this scheme to the difficult
 case of the Fe--S molecule, for which the nature of the ground state in not
 clear. Two states of different symmetries, $^5\Sigma$ and $^5\Delta$ are very
 close in energy, and the main methods of quantum chemistry disagree.
-We have confirmed state-of-the art QMC calculations giving the $^5\Delta$ state
-as the ground state.\cite{Haghighi_Mood_2017}
+State-of-the art QMC calculations were giving the $^5\Delta$ state
+as the ground state,\cite{Haghighi_Mood_2017} and our results agree with these
+conclusions.
 
 
 \includepdf[page=1-]{article_fes}

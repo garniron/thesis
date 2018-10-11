@@ -615,7 +615,7 @@ Because of the tooth filling mechanism, we know we will need at most $\Ngen$ com
 
 \subsection{Computing the average and error}
 
-The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. The slave threads take a generator and a ``fragment'' index, and return the result to the master thread;
+The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. The slave threads take a generator and a ``fragment'' index, and return the result to the master thread.
 
 \begin{algorithm}
 	\caption{Master node in $\EPT$ computation}
@@ -662,7 +662,7 @@ The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. 
 
 
 \begin{algorithm}
-	\caption{Update $S$ and $S^{(2)}$ from algorithm \ref{alg:PT2_MASTER}.}
+	\caption{Update $S$ and $S^{(2)}$ of algorithm \ref{alg:PT2_MASTER}.}
  \SetKw{KwBy}{by}            
 	\tcc{Done naively, updating $S_* \gets S_* + B_*(u)$ and $S^{(2)}_* \gets S^{(2)}_* + B_*(u)^2$ scales as $\mathcal{O}({\Nteeth}^2 \log{\Ngen})$.}
 	

@@ -349,18 +349,53 @@ so I decided to write this thesis in English.
 \minitoc
 \subfile{applications}
 
-\chapter{Conclusion}
+\chapter{Summary and outlook}
 
-Significant improvements were brought to the \QP. Some were single-core optimization, and others were for adapting the algorithms for a better load balancing in the
-parallel regime.
+Significant improvements were brought to the \QP. Some were single-core
+optimizations, and others were for adapting the algorithms for a better load
+balancing in the parallel regime. Today, the code has a parallel efficiency
+that enables routinely to realize runs on $\sim 2000$ CPU cores, with
+hundreds of millions of determinants in the variational space, and such a gain
+in efficiency will lead to many more challenging chemical applications.
 
-The Davidson diagonalization, which is at the center of variational methods, suffers from the impossibility to fully store the Hamiltonian. A solution is to resort to \emph{direct methods}, recomputing its matrix elements on the fly at each iteration. While an extremely fast method was already available to detect zero matrix elements,\cite{Scemama_2013} the former implementation still had to iterate over the $\sim \Ndet^2$ matrix elements. Now, determinants are split in disjoint sets, which are often identifiable as entirely disconnected from one another. Thus only a small fraction of the matrix elements need to be explored, and a linear-scaling algorithm was proposed.
-While the parallelization of this method was somewhat challenging, due to the elementary tasks being extremely unbalanced, a distributed implementation was realized with rather satisfying parallel speedups, typically $35\times$ for $50$ nodes ($1~800$ cores) with respect to the $36$-core single-node reference.
+The Davidson diagonalization, which is at the center of variational methods, suffers from the impossibility to fully store the Hamiltonian in the memory of a single node. The solution we adopted was to resort to \emph{direct methods}, recomputing the matrix elements on the fly at each iteration. While an extremely fast method was already available to detect zero matrix elements,\cite{Scemama_2013} the former implementation still had to iterate over the $\sim \Ndet^2$ matrix elements to search the interacting determinant pairs. Now, determinants are split in disjoint sets, which are often identifiable as entirely disconnected from one another. Thus only a small fraction of the matrix elements need to be explored, and a linear-scaling algorithm was proposed. Although this algorithm was not kept as the actual implementation in the program because of it important memory footprint, the candidate we kept has a scaling in $\order{\Ndet^{3/2}}$, which is already a significant improvement.
+While the parallelization of this method was somewhat challenging, due to the elementary tasks being extremely unbalanced, a distributed implementation was realized with satisfying parallel speedups, typically $35\times$ for $50$ nodes ($1~800$ cores) with respect to the $36$-core single-node reference.
+Our implementation could be further improved by using together the linear-scaling and the present
+algorithms, keeping track of an estimate of the allocated memory and switching smoothly between the
+two variants.
 
-The CIPSI selection algorithm, for which the previous implementation examined the external determinants one by one, was enormously improved, allowing for some applications that were not feasible so far.\cite{Scemama_2018,1806.05115} Several different optimizations were used, reducing the cost of finding connections between external and internal determinants (``batch'' approach, filtering), as well as the cost of computing the corresponding matrix element in the Hamiltonian (phase mask, systematic determination of excitations). Again, a distributed implementation could be realized after 
-solving the problems related to load imbalance.
-Because the computation of $\EPT$ was done by the same algorithm but did not allow for as much approximation ---~and thus was much more expensive~--- a hybrid stochastic-deterministic approach was imagined. $\EPT$ being in itself an approximation for the Full-CI energy, an exact value is indeed not required. Our scheme allows to compute $\EPT$ with an error bar smaller than the typical error of $E_{\text{var}} + \EPT$ versus the Full-CI energy, for a few percent of the cost of the full deterministic computation.
 
+The CIPSI selection algorithm, for which the previous implementation examined the external determinants one by one, was enormously improved, allowing for applications that were not feasible so far.\cite{Scemama_2018,1806.05115} Several different optimizations were used, reducing the cost of finding connections between external and internal determinants (batch approach, filtering), as well as the cost of computing the corresponding matrix element in the Hamiltonian (phase mask, systematic determination of excitations). Again, a distributed implementation was realized after 
+solving the problems related to load imbalance. For the selection algorithm, the speedup is almost ideal with 50 nodes. Despite the implementational improvements we have shown, there is still space for improvement from an algorithmic point of view. For instance, the selection step could be dramatically accelerated without reducing its quality by using a combination of CIPSI and of the Heat-Bath CI algorithm\cite{Holmes_2016_2}, by simply splitting the orbital space. The CIPSI selection, more expensive but more precise, would be used only where it is necessary, namely for excitations involving orbitals close to the Fermi level where the role of the denominator is crucial, and the Heat-Bath selection algorithm would be used the for the rest of the space.
+
+A large improvement was also realized in the computation of the second order
+perturbative correction to the energy, $\EPT$. The computation of
+$\EPT$ and the determinant selection were originally done with the same algorithm,
+but $\EPT$ did not allow for many
+approximations and thus was much more expensive. A natural idea to take into account
+a tremendous amount of tiny contributions was to imagine a stochastic approach.
+$\EPT$ being in itself an approximation for the Full-CI energy,
+an exact value with all the digits is indeed not required, as long as the
+value is unbiased and as the introduced statistical error is kept under control.
+The development of
+stochastic methods for quantum chemistry is one of the strengths of the LCPQ
+via Michel Caffarel's group, so we collaborated in the development of the
+hybrid stochastic/deterministic algorithm for the computation of $\EPT$.  Our
+scheme allows to compute $\EPT$ with an error bar smaller than the typical
+error of $E_{\text{var}} + \EPT$ versus the Full-CI energy, for a few percent
+of the cost of the full deterministic computation.  Now, the time to compute
+$\EPT$ is roughly similar to the time needed for the determinant selection.  To
+push even further the efficiency of the CIPSI method, it would make sense to
+make the determinant selection along with the computation of $\EPT$. In that
+case, the determinant selection would be free.  Doing a stochastic selection
+has further advantages: at a given iteration, \emph{any} external determinant
+can be potentially generated, so the algorithm will naturally converge to the
+unbiased Full-CI solution. This is not exactly the case with our current 3-class CIPSI-like
+implementation, where the determinants with small coefficients will never
+generate external determinants. This truncation is the source of a small but
+spurious size-consistence error.
+
+%J'en suis la
 To get the best of the data we were already able to compute, we implemented the shifted-\Bk method, which uses the energy contributions computed by $\EPT$ to refine the wavefunction. It essentially creates an external space of determinants $\kalpha$ whose coefficients are perturbatively estimated, and allows them to act on the coefficients of the wavefunction in the internal space. This method requires the computation of a dressing matrix, which we could estimate stochastically in a way similar to what we proposed for $\EPT$ (stochastic matrix dressing).
 The challenge in this case was to estimate, instead of a scalar, a vector of size $\Ndet$, which can be up to a few million elements. The storage and network issues could be solved by setting up a system of predefined checkpoints, a modest drawback being the impossibility to get an estimated dressing matrix outside of those checkpoints.
 

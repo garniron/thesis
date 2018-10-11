@@ -367,7 +367,7 @@ Cases of the form $ij$ cause the whole $P(G_{pq})$ matrix to be tagged or increm
                 $B$ a $\FALSE$-initialized boolean matrix of size $2\Norb \times 2\Norb$ \;
                 $P$ a zero-initialized real matrix size $2\Norb \times 2\Norb$ \;
                 
-                apply EPV and single excitations tagging (algorithm \ref{alg:unblock_single}) \;
+                Apply EPV and single excitations tagging (algorithm \ref{alg:unblock_single}) \;
                 
                 \For{$t \gets 1,N_{det}$}{
                         $\ket S \gets \ket {D_t}$ \; 
@@ -457,7 +457,7 @@ $0 \leq \qty(f_Y^S - f_X^S) \leq 1$ with $\ket Y = a_p \ket X$
 
 
 From the rules above, we can deduce that given any $\ket X$ and $\ket S$, there exists an $\kalpha$ generated from $\ket X$ so that $\Hij{\alpha}{S} \neq 0$ only if $f_X^S \leq 4$.
-Based on this, a filtering system can be set up, as shown on figure \ref{fig:selection}. The diagram is somewhat convoluted and deserves comments.
+Based on this, a filtering mechanism can be set up, as shown on figure \ref{fig:selection}. The diagram is somewhat convoluted and deserves comments.
 
 \paragraph{Internal determinants' path}
  
@@ -798,14 +798,14 @@ We have chosen a more practical solution.\cite{Bytautas_2009} After the selectio
 
 \section{Conclusion}
 
-The newer CIPSI algorithm runs orders of magnitude faster than the former one thanks to several key improvements.
+The novel implementation of the CIPSI algorithm runs orders of magnitude faster than the former one thanks to several key improvements.
 \begin{itemize}
 \item
 Excitations do not need to be computed explicitly using algorithms such as those presented in chapter \ref{chap:DET_DRIVEN}. However the associated phase factors still have to be computed.
 \item
 Although not directly related to the CIPSI algorithm, the computation of the phase factors has been made much cheaper thanks to the use of phase masks (see section~\ref{chap:PHASEMASK}).
 \item
-Selector determinants are simultaneously compared to $\qty(\Norb-\Nalpha)^2$ external determinants $\kalpha$ thanks to the batch system.
+Selector determinants are simultaneously compared to $\qty(\Norb-\Nalpha)^2$ external determinants $\kalpha$ thanks to the batch approach.
 \item
 Selector determinants go through a filtering mechanism that narrows down the number of selector determinants to be considered against a particular $\kalpha$ (a particular batch of $\kalpha$).
 \end{itemize}
