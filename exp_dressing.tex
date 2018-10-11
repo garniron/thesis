@@ -78,7 +78,7 @@ c_\alpha = \frac{\Hij{\alpha}{\Psi}}{\Delta E_\alpha} = \sum_{I=1}^{\Ndet} c_I \
 \end{equation}
 but the expression of $c_\alpha$ for Shifted-\Bk has a particularity that lifts a constraint compared to the general case: as can be seen, while for any $\kalpha$ we need to find all internal determinants it connects to, we do not need to know them \emph{at the same time}, i.e. $c_\alpha$ can be incrementally built from terms that only involve one internal determinant at a time. This is not generally the case, and isn't the case in MR-CC.
 
-Thus, matrix dressing generally requires the knowledge of all internal determinants a particular $\kalpha$ connects to, before $c_\alpha$ ---~and thus the associated increment to $\deltabold$~--- can be computed. For efficiency, as well as simplicity, this list must absolutely be computed upstream the computation of $Z(\alpha, \Psi, \ldots)$, making it in practice $Z^\star(\alpha, \Psi_{c}, \ldots)$ with $\Psi_{c}$ the variational wavefunction stripped of all determinants that do not connect to $\kalpha$ (thus not normalized). 
+Thus, matrix dressing generally requires the knowledge of all internal determinants a particular $\kalpha$ connects to, before $c_\alpha$ ---~and thus the associated increment to $\deltabold$~--- can be computed. For efficiency, as well as simplicity, this list must absolutely be computed upstream the computation of $Z(\alpha, \Psi, \ldots)$, making it in practice $Z^\star(\alpha, \Psi_{c}, \ldots)$ with $\Psi_{c}$ the variational wavefunction stripped of all determinants that do not connect to $\kalpha$ (thus not normalized). We will treat $\Psi_{c}$ as a set of determinants and forget about the coefficients (in practice, it is a list of internal determinant indices).
 
 This is a lot like the former implementation of CIPSI : considering one $\kalpha$ at a time, enumerate its connections to selectors. The new, more efficient algorithm, however, considers a batch of up to $\Nvirt = \qty(\Norb - \Nalpha)^2$ rather than a single one. The solution is conceptually simple. Neglecting connections to determinants that are not selectors :
 \begin{enumerate}
@@ -349,7 +349,7 @@ which implies a simple algorithm that finds the diamonds in $\mathcal{O}(N \time
 \item
 Iterate over $(R_r, D_I)$
 \item
-Binary search for $D_J = (R_r \oplus D_I \oplus \alpha)$ in $\{\mathcal{D}\}$. 
+Binary search for $D_J = (R_r \oplus D_I \oplus \alpha)$ in $\{\mathcal{D}\}$ if $||D_J|| = \Nelec$.
 \end{enumerate}
 
 Depending on the sizes of the $\{D\}$ and $\{R\}$ sets, an alternative variant can also be used, giving a complexity of $\mathcal{O}(N^2 \times \log(\Nref))$:
@@ -357,7 +357,7 @@ Depending on the sizes of the $\{D\}$ and $\{R\}$ sets, an alternative variant c
 \item
 iterate over $(D_I, D_J)$
 \item
-binary search for $R_r = (D_I \oplus D_J \oplus \alpha)$ in $\{\mathcal{R}\}$. 
+binary search for $R_r = (D_I \oplus D_J \oplus \alpha)$ in $\{\mathcal{R}\}$ if $||R_r|| = \Nelec$.
 \end{enumerate}
 
 Those are desirable if one of $\{\mathcal{D}\}$ or $\{\mathcal{R}\}$ is relatively small, in particular, in case of single-reference computation, i.e. $|\mathcal{R}|=1$, the former variant is ideal. For larger sets, however, a more complex variant with a complexity $\mathcal{O}(N \times (N+\Nref))$ is introduced next.
@@ -369,7 +369,7 @@ Unlike the previous one, this method may yield false positives, thus it uses Eq.
 The idea is to express an excitation as an addition. As was said, bitstrings can be interpreted as integers, so they can be added, subtracted and compared as such. As in the case of the $\hat f$ operator, this approach entirely ignores phase factors. We can easily associate the integer values $T_{A \rightarrow B}$ and $T_p^q$ to excitations $\pm \hat T_{A \rightarrow B}$ and $\pm \hat T_p^q$ respectively.
 \begin{align}
 T_p^q & = 2^{q-1} - 2^{p-1} \\
-T_{A \rightarrow B} = &  B - A \\
+T_{A \rightarrow B} & =  B - A \\
 T_{A \rightarrow B} + A & = B 
 \end{align}
 With $A$ the bitstring associated with $\ket A$ as a single integer ---~the association between a spinorbital and a bit is arbitrary. It is a necessary but not sufficient condition for a diamond that
