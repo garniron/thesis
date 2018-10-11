@@ -8,7 +8,7 @@ interaction. Standard diagonalization algorithms scale as $\order{\Ndet^3}$ in
 terms of computation, and $\order{\Ndet^2}$ in terms of storage, so the cost is
 prohibitive as $\Ndet$ ranges usually between a few million and a few billion.
 
-Fortunately,  not all the spectrum of $\hat H$ is required: only the few lowest
+Fortunately, not all the spectrum of $\hat H$ is required: only the few lowest
 eigenstates are of interest. The Davidson
 algorithm\cite{Davidson_1975,Liu_1978,Olsen_1990,Gadea_1994,Crouzeix_1994} is an iterative algorithm
 which aims at extracting the first few $\Nst$ lowest eigenstates of a large
@@ -80,10 +80,10 @@ though we presented in section~\ref{sec:det_exc} a very efficient method to
 compute the excitation degree
 between two determinants, the number of such computations to be made scales as
 $\Ndet^2$, which can still be prohibitively high. To get an efficient
-implementation it is mandatory to filter out all pairs of determinants that are
-not connected by $\mH$, and iterate only over connected pairs. To reach this
-goal, we have implemented an algorithm similar to the \emph{Direct Selected
-Configuration Interaction Using Strings} (DISCIUS)
+determinant-driven implementation it is mandatory to filter out all pairs of
+determinants that are not connected by $\mH$, and iterate only over connected
+pairs. To reach this goal, we have implemented an algorithm similar to the
+\emph{Direct Selected Configuration Interaction Using Strings} (DISCIUS)
 algorithm.\cite{Povill_1995}
 
 The finality is to build the matrix $\mW$ as

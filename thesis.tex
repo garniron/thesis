@@ -108,9 +108,6 @@
 %Alors?? Tu n'ecris pas ta these ???
 
 
-ref au iterative CI voir si c'est la bonne (Nakatsuji ajouté mais pas cité)
-
-citation "Sutter\_2005" dans l'intro ne passe pas...
 
 
 \newpage
@@ -164,7 +161,7 @@ ${\Nint = \lfloor \frac{\Norb-1}{64} \rfloor + 1}$
 Quantum chemistry is a discipline which relies on very expensive computations.
 The scalings of wave function methods lie between $\order{N^5}$ and
 $\order{N^8}$, where $N$ is proportional to the number of electrons in the
-system. Therefore, treating performing accurate calculations requires both
+system. Therefore, performing accurate calculations requires both
 approximations that can reduce the scaling, and an efficient implementation
 that can take advantage of modern architectures. The work presented in this
 thesis is more centered on this last aspect. 
@@ -173,7 +170,6 @@ In 1965, Gordon Moore predicted that the number of transistors in an integrated
 circuit would double about every two years (the so-called Moore's
 law).\cite{Moore}  Rapidly, this ``law'' was interpreted as an expected
 $2\times$ gain in performance every 18 months, which became an industrial goal.
-
 The development of today's most popular codes of the community
 (Molpro\cite{Molpro}, Molcas\cite{Molcas}, or Gaussian\cite{g09}\dots) was
 initiated in the 1990's.  At that time, the increase of computational power
@@ -182,7 +178,6 @@ increase of the frequency of the processors. the amount of random access memory
 was small, the time to access data from disk was slow, and the energy
 consumption of the most powerful computer was 236kW, which was not an
 economical concern.\cite{top500_93}
-
 At the beginning of the years 2000, having increased continuously both the number
 of processors and their frequency raised the power consumption of
 supercomputers by two orders of magnitude, raising accordingly the annual
@@ -215,16 +210,20 @@ to yield a satisfactory result for just a fraction of the cost of the
 equivalent deterministic, exact computation. An example of the move toward this
 type of method is the recently developed \emph{Full Configuration Interaction
 Quantum Monte Carlo} (FCIQMC).\cite{Booth_2009} FCIQMC can be interpreted as a
-Monte-Carlo variant of older selection algorithms such as
+Monte-Carlo variant of older selected configuration interaction algorithms such as
 CIPSI,\cite{Huron_1973} that are iterative and thus a priori not well adapted to
-massively parallel architectures.
-Unlike Monte-Carlo, most wavefunction methods are not easy to parallelize.
+massively parallel architectures. But things turn out differently, and the
+focus of this thesis was to investigate how to make \emph{configuration
+interaction} (CI) methods efficient on modern supercomputers.
+%Unlike Monte-Carlo, most wavefunction methods are not easy to parallelize.
 
 The \QP developed at the LCPQ is a suite of wavefunction quantum
 chemistry methods, that strives to allow easy implementation and
 experimentation of new methods, and to make parallel computation
-as simple and efficient as possible.
-Hence, the initial choice of the \QP was to go in  the direction of
+as simple and efficient as possible. The main purpose of this package
+is to make experimentation on code design, algorithms and methods,
+more than to be used massively in production.
+Hence, the initial choice of the \QP was to go in the direction of
 determinant-driven algorithms, as opposed to the more traditional
 integral-driven algorithms.
 A determinant-driven approach essentially implies that the wavefunction
@@ -233,27 +232,28 @@ outermost loops of the algorithms loop over determinants.
 On the other hand, integral-driven algorithms have their outermost loop
 on the two-electron integrals which appear in the expression of the matrix
 elements in the determinant basis.
-In the context of \emph{configuration interaction} (CI) or perturbative
+In the context of configuration interaction or perturbative
 methods, the determinant-driven approach simplifies the development and allows
-the researchers to test new ideas very quickly.  These algorithms allow more
+the researchers to test new ideas very quickly. These algorithms allow more
 flexibility than their integral-driven
-counterparts,\cite{povill_efficient_1995} but they have been known for years to
-be by far less efficient for solving the same problem.  High-precision
-calculations are always in a regime where the number of 
-determinants is larger than the number of determinants, which justifies the
-integral-driven choice.  Today, programming imposes parallelism, and if
-determinant-driven calculations are better adapted to parallelism, such methods
-could regain in popularity.  The work presented in this thesis focuses on
-exploring determinant-driven approaches via the improvement of the \QP from the
-methodological, algorithmic and the implementational points of views.
+counterparts,\cite{Povill_1995} but they have been known for years to
+be less efficient for solving problems that can be solved with an
+integral-driven variant. High-precision calculations are in a regime
+where the number of determinants is larger than the number of integrals,
+which justifies the integral-driven choice.  Today, programming imposes
+parallelism, and if
+determinant-driven calculations prove to be better adapted to parallelism, such
+methods could regain in popularity. The work presented in this thesis focuses
+on determinant-driven approaches via the improvement of the \QP from
+the methodological, algorithmic and the implementational points of views.
 
 
-Somewhat logically, the first focus was acceleration and parallelization of the
-Davidson diagonalization, which is a pivotal point for CI methods. A naive
-determinant-driven algorithm implies a quadratic scaling with the number of
-determinants, while the integral-driven algorithm is expected to scale
-linearly. This fact gave us some insight that there was room for improvement
-in this step. 
+Somewhat logically, the first focus was the acceleration and parallelization of the
+Davidson diagonalization, which is a pivotal point for CI methods.
+A naive determinant-driven algorithm implies a quadratic scaling with the
+number of determinants, while the integral-driven algorithm is expected to
+scale linearly. This fact gave us some insight that there was room for
+improvement in this step. 
 
 The second focus was the improvement of the determinant selection algorithm
 which is the main method used by the \QP to build compact wavefunctions
@@ -269,15 +269,15 @@ available in it. The next steps were partly guided by the aversion to waste
 data gathered during the selection.
 
 Our selection algorithm, CIPSI, implies computing a perturbative contribution
-for external determinants, and include the ones of largest contribution into
+for external determinants, and including those with the largest contributions into
 the internal space in which the variational wavefunction is expressed.
 $\EPT$, the sum of all the contributions of the external determinants,
 approximates how much energy the variational wavefunction is missing compared
 to  the exact solution in the same basis set, namely the \emph{Full Configuration Interaction} or Full CI. However to
 perform an acceptably accurate selection, not all external determinants need to
-be considered, nor does each contribution need be known with great accuracy.\cite{Bytautas_2009}
+be considered, nor does each contribution need to be known with a great accuracy.\cite{Evangelisti_1983}
 This allows for approximations too severe for the sum of all computed
-contributions to yield an accurate estimation $\EPT$. Incidentally, the computation
+contributions to yield an accurate estimation $\EPT$, and Incidentally the computation
 of $\EPT$ is much more time consuming than determinant selection. To
 make this step more affordable, we designed a hybrid deterministic-stochastic
 scheme which enabled us to get an accurate value for $\EPT$ by
@@ -291,7 +291,7 @@ deterministic-stochastic scheme we were able to refine the wavefunction under
 the effect of a stochastically estimated external space using
 a Hamiltonian dressed by a matrix computed semi-stochastically.
 
-In addition, we set up a general framework to enable refining of the
+In addition, we set up a general framework to enable the refining of the
 variational wavefunction under the effect of any
 external space, with a stochastic estimation.
 This was experimented by implementing a stochastic selected \emph{multi-reference
@@ -300,15 +300,14 @@ coupled cluster with singe and double substitutions} (MR-CCSD).
 The efficiency of the implemented algorithms is exposed, and the code
 was used in numerous applications, in particular to obtain reference
 excitation energies for difficult molecular systems. The high quality
-of the CIPSI wavefunction was also used for quantum Monte Carlo calculations
-to characterize the ground state of the Fe-S molecule.
+and compactness of the CIPSI wavefunction was also used for quantum Monte Carlo
+calculations to characterize the ground state of the Fe--S molecule.
 
 Of course, the technical considerations were not the focus of the different
-articles that were produced. In particular, no publication was made about all
-the detail of our CIPSI implementation. Because my work focused on the actual
+articles that were produced. Because my work focused on the actual
 implementation of the methods at least as much as on the theory behind them,
 this thesis is an opportunity to discuss in depth the implementation.
-I expect this document to be one of the major pieces of documentation for
+I hope this document will be one of the major pieces of documentation for
 developers willing to understand deeply the implementation of the \QP, 
 so I decided to write this thesis in English.
 
