@@ -868,3 +868,23 @@ As previously seen, the most important of excitations, those of the form $\hat T
 		}
 \end{algorithm}
 
+\begin{comment}
+But just like for the general algorithm, if we consider $\hat T_{i'}^{j'}$ we need to sort $i'$ and $j'$ to get the $i=\min(i', j')$ and $j=\max(i', j')$ indices used for the phase computation.
+
+This however doesn't need to be done explicitly. 
+
+
+
+
+We can arbitrarily choose $i=i'$ and $j=j'$, and reverse the phase if $j<i$. We effectively have computed $p(N^I_{i'j'})$ instead of $p(N^I_{j'i'})$, and it can be proved they are always of different parity:
+\begin{align}
+N^{I}_{i' j'} + N^{I}_{j'i'} & = E^{I}_{j'-1} - E^I_{i'} + E^I_{i'-1} - E^I_{j'} \\
+& = -\qty( \occ{j'}{I} + \occ{i'}{I})
+\end{align}
+Because $\hat T_{i'}^{j'} \ket I \neq 0$, we know that $\occ{j'}{I} + \occ{i'}{I} = 1$. 
+\begin{equation}
+N^{I}_{j' i'} = -(N^{I}_{i'j'} + 1)
+\end{equation}
+This translates to $N^{I}_{j' i'}$ and $N^{I}_{i'j'}$ being of different parity.
+
+\end{comment}
