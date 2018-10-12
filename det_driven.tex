@@ -609,11 +609,11 @@ Using the above formulas and taking into account the internal representation of 
 Algorithm \ref{alg:PHASE_SINGLE} is a general one, efficient for computing the phase factor for arbitrary determinants. However, a phase computation is typically needed every time two determinants are compared, resulting in a vast amount of computational power being consumed. When only this method was used in the \QP, it was not uncommon to find that a large fraction of the computational time was spent in phase computations.
 Advantage can be taken of the fact that, in most cases, the considered determinants aren't actually arbitrary. Usually, the phase computation will be performed repeatedly with the same determinant. For a fairly modest computational price, it is possible to compress the phase information from a particular determinant and make it cheaper to extract. The underlying principle is little more than a cumulative sum. If, for a determinant $\ket{I}$ that is going to be used repeatedly for phase computations, we pre-compute
 \begin{equation}
-E^I_i = \sum_{k=1}^{i-1} \occ{k}{I}
+E^I_i = \sum_{k=1}^{i} \occ{k}{I}
 \end{equation}
 and
 \begin{equation}
-\tilde{N}^I_{ij} = E^I_j - E^I_{i+1}.
+\tilde{N}^I_{ij} = E^I_{j-1} - E^I_{i}.
 \end{equation}
 Now, we can access $N^I_{ij}$ for any $i$ and $j>i$ with no need to loop over $k$ as
 \begin{equation}
@@ -633,17 +633,17 @@ P^I_i = p(E^I_i)
 which is 1 bit of information per spinorbital, as opposed to an integer big enough to accommodate a number of electrons.
 \begin{align}
 E^I_i & = 2 \times  \Big \lfloor \frac{E^I_i}{2} \Big \rfloor + P^I_i \\
-\tilde N^I_{ij} & = E^I_j - E^I_{i+1} \\
- & = 2 \times \qty( \Big \lfloor \frac{E^I_j}{2} \Big \rfloor - \Big \lfloor \frac{E^I_{i+1}}{2} \Big \rfloor ) + P^I_j - P^I_{i+1}
+\tilde N^I_{ij} & = E^I_{j-1} - E^I_{i} \\
+ & = 2 \times \qty( \Big \lfloor \frac{E^I_{j-1}}{2} \Big \rfloor - \Big \lfloor \frac{E^I_{i}}{2} \Big \rfloor ) + P^I_{j-1} - P^I_{i}
 \end{align}
 	    
 In the last equation, $\tilde N^I_{ij}$ is expressed as a sum of three terms. The first one being even by construction, the parity of $\tilde N^I_{ij}$ is the parity of the rest of the sum:
 \begin{equation}
-p(\tilde N^I_{ij})=p(P^I_j - P^I_{i+1})
+p(\tilde N^I_{ij})=p(P^I_{j-1} - P^I_{i})
 \end{equation}
 This can be rewritten in a slightly more efficient way as
 \begin{equation}
-p(\tilde N^I_{ij}) = P^I_j \oplus P^I_{i+1}
+p(\tilde N^I_{ij}) = P^I_{j-1} \oplus P^I_{i}
 \end{equation}
 
 %Note that using $E^I$ instead of $P^I$ would require an extra ADD instruction ( totalement negligeable ? )
@@ -655,7 +655,7 @@ We have used sorted indices $i<j$. But just like for the general algorithm, if w
 
 This however doesn't need to be done explicitly. We can arbitrarily choose $i=i'$ and $j=j'$, and reverse the phase if $j<i$. We effectively have computed $p(N^I_{i'j'})$ instead of $p(N^I_{j'i'})$, and it can be proved they are always of different parity:
 \begin{align}
-\tilde N^{I}_{i' j'} + \tilde N^{I}_{j'i'} & = E^{I}_{j'} - E^I_{i'+1} + E^I_{i'} - E^I_{j'+1} \\
+\tilde N^{I}_{i' j'} + \tilde N^{I}_{j'i'} & = E^{I}_{j'-1} - E^I_{i'} + E^I_{i'-1} - E^I_{j'} \\
 & = -\qty( \occ{j'}{I} + \occ{i'}{I})
 \end{align}
 Because $\hat T_{i'}^{j'} \ket I \neq 0$, we know that $\occ{j'}{I} + \occ{i'}{I} = 1$. 
@@ -688,8 +688,8 @@ This translates to $\tilde N^{I}_{j' i'}$ and $\tilde N^{I}_{i'j'}$ being of dif
 				}
 			}
 		}
-		\tcc{Ignoring the shift will cause all phases to be flipped, which is transparent.}
-		$P = \ishft{P}{1}$ \;
+		%\tcc{Ignoring the shift will cause all phases to be flipped, which is transparent.}
+		%$P = \ishft{P}{1}$ \;
 		\KwRet{$P$} \;
 		}
 \end{algorithm}
@@ -784,15 +784,17 @@ P^3_i = p \left (\sum_{j=max(i-7,0)}^{i} P_j^0 \right )
 \item
 etc...
 \end{enumerate}
-For a 64-bit integer we have to go to $P^6$.
+For a 64-bit integer we have to go to 
 \begin{equation}
 P^6_{i<64} = p \left (\sum_{j=0}^{i} P_j^0 \right )
 \end{equation}
-The phase mask as described is
-\begin{equation}
-P = \ISHFT{P^6}{1} \; ;\; P_i = p \left (\sum_{j=0}^{i-1} P_j^0 \right )
-\end{equation}
-but for convenience, the $\text{\texttt{ISHFT}}$ may be omitted. Because in a feasible excitation $\hat T_i^j$ it is known exactly one of $i$ and $j$ is occupied, using $P^6$ directly as the phase mask will result in the computed phases to be systematically flipped, which is transparent. Alternatively, the return value of algorithm \ref{alg:PHASE_FROM_PHASEMASK} can be flipped if used with an ``unshifted'' phase mask.
+which is the definiton of a phase mask (here indexed from $0$).
+
+%The phase mask as described is
+%\begin{equation}
+%P = \ISHFT{P^6}{1} \; ;\; P_i = p \left (\sum_{j=0}^{i-1} P_j^0 \right )
+%\end{equation}
+%but for convenience, the $\text{\texttt{ISHFT}}$ may be omitted. Because in a feasible excitation $\hat T_i^j$ it is known exactly one of $i$ and $j$ is occupied, using $P^6$ directly as the phase mask will result in the computed phases to be systematically flipped, which is transparent. Alternatively, the return value of algorithm \ref{alg:PHASE_FROM_PHASEMASK} can be flipped if used with an ``unshifted'' phase mask.
 
 
 
