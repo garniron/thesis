@@ -688,6 +688,8 @@ This translates to $\tilde N^{I}_{j' i'}$ and $\tilde N^{I}_{i'j'}$ being of dif
 				}
 			}
 		}
+		\tcc{Ignoring the shift will cause all phases to be flipped, which is transparent.}
+		$P = \ishft{P}{1}$ \;
 		\KwRet{$P$} \;
 		}
 \end{algorithm}
@@ -732,15 +734,15 @@ This translates to $\tilde N^{I}_{j' i'}$ and $\tilde N^{I}_{i'j'}$ being of dif
 	\begin{center}
 		\includegraphics[width=0.5\columnwidth]{figures/determinant_driven/phase}
 		\caption[phase mask illustration]{
-		$i$ and $j$ are the lowest and highest spinorbitals involved in the excitation. $E_i^I$ is the number of electrons in spinorbitals below $i$ and of same spin, $P_i^I$ is its parity. $E_j^I - E_{i+1}^I$ gives the number of electrons that are ``crossed'' during the excitation, $\phi = P^I_{i+1} \oplus P^I_j$ the parity of that number, $(-1)^\phi$ is the phase factor.
+		Illustrative exemple of phase mask use. $i$ and $j$ are the lowest and highest spinorbitals involved in the excitation. $E_i^I$ is the number of electrons in spinorbitals below $i$ and of same spin, $P_i^I$ is its parity. $E_j^I - E_{i+1}^I$ gives the number of electrons that are ``crossed'' during the excitation, $\phi = P^I_{i+1} \oplus P^I_j$ the parity of that number, $(-1)^\phi$ is the phase factor.
 		}
 		\label{generators_selectors}
 	\end{center}
 \end{figure}
 
 
-Currently, the \QP does not store the $\bitP$ vector for each determinant of the wavefunction, but recomputes it whenever needed before a loop.
-The algorithm for computing $P^I$ as a phase mask is shown as algorithm \ref{alg:PHASEMASK}. It uses a trick to get the phase mask of a single integer with a logarithmic complexity (loop at line 6 of the algorithm). With $P^0$ a single-integer bitstring for which we want to compute the phase mask, bits being indexed from $0$:
+Currently, the \QP does not store a phase mask for each determinant of the wavefunction, but recomputes it whenever needed before a loop.
+The algorithm for computing $P^I$ as a bitstring is shown as algorithm \ref{alg:PHASEMASK}. It uses a trick to get the phase mask of a single integer with logarithmic complexity (loop at line 6 of the algorithm). With $P^0$ a single-integer bitstring for which we want to compute the phase mask, bits being indexed from $0$:
 
 \begin{enumerate}
 \item
@@ -752,7 +754,9 @@ P^1_i& =
   	p(P_{i-1}^0 + P_{i}^0)   & \text{if } i \geq 1 \\
   \end{cases}
 \end{align}
-
+\begin{equation}
+P^1_i = p \left (\sum_{j=max(i-1,0)}^{i} P_j^0 \right )
+\end{equation}
 \item
 $P^2 \gets P^1 \oplus \ishft{P^1}{2^1})$.\\
 \begin{align}
@@ -763,7 +767,7 @@ P^2_i& =
   \end{cases}
 \end{align}
 \begin{equation}
-P^2_i = p(P_{\min(i-3, 0)}^0 + \ldots + P_i^0)
+P^2_i = p \left (\sum_{j=max(i-3,0)}^{i} P_j^0 \right )
 \end{equation}
 \item
 $P^3 \gets P^2 \oplus \ishft{P^2}{2^2})$.\\
@@ -775,11 +779,22 @@ P^3_i& =
   \end{cases}
 \end{align}
 \begin{equation}
-P^3_i = p(P_{\min(i-7, 0)}^0 + \ldots + P_i^0)
+P^3_i = p \left (\sum_{j=max(i-7,0)}^{i} P_j^0 \right )
 \end{equation}
 \item
 etc...
 \end{enumerate}
+For a 64-bit integer we have to go to $P^6$.
+\begin{equation}
+P^6_{i<64} = p \left (\sum_{j=0}^{i} P_j^0 \right )
+\end{equation}
+The phase mask as described is
+\begin{equation}
+P = \ISHFT{P^6}{1} \; ;\; P_i = p \left (\sum_{j=0}^{i-1} P_j^0 \right )
+\end{equation}
+but for convenience, the $\text{\texttt{ISHFT}}$ may be omitted. Because in a feasible excitation $\hat T_i^j$ it is known exactly one of $i$ and $j$ is occupied, using $P^6$ directly as the phase mask will result in the computed phases to be systematically flipped, which is transparent. Alternatively, the return value of algorithm \ref{alg:PHASE_FROM_PHASEMASK} can be flipped if used with an ``unshifted'' phase mask.
+
+
 
 The method to compute the phase associated with a single excitation from a phase mask is shown as algorithm \ref{alg:PHASE_SINGLE}.
 With this method, the cost of computing a phase ---~after paying the overhead of computing $P$~--- is accessing two bits and applying the \lstinline{IEOR} function to them, in addition to the tests. Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the cumbersome boundaries of 64-bit integers.\phantom{\ref{alg:EXC_DEGREE}}

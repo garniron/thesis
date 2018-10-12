@@ -378,8 +378,8 @@ T_{R \rightarrow D_I} = T_{D_J \rightarrow \alpha}
 \end{equation}
 Indeed,
 \begin{align}
-\pm \hat T \ket A = \ket B \implies  T + A = B\\
-T + A = B \centernot \implies \pm \hat T \ket A = \ket B
+\pm \hat T \ket A = \ket B & \implies  T + A = B\\
+T + A = B & \centernot \implies \pm \hat T \ket A = \ket B
 \end{align}
 with $T$ the integer associated with excitation $\pm \hat T$. If $\pm \hat T \ket A = 0$, in most cases $T + A$ will yield a bitstring with a wrong number of bits/electrons, but this is not guaranteed, hence the rare presence of false positives.
 
@@ -411,14 +411,14 @@ For implementational ease and efficiency, two things are worth noting:
 \item
 Integer overflows do not need to be handled. The size of integers being limited to 64 bits essentially means an unsigned integer $I$ is represented as $I \mod{2^{64}}$. Quite fortunately modulus has the properties of compatibility with addition and substraction.
 \begin{align}
-a_1 + a_2 &\equiv b_1 + b_2 \mod{n} \\
-a_1 - a_2 &\equiv b_1 - b_2 \mod{n}
+a_1 + a_2 &\equiv b_1 + b_2 \pmod{n} \\
+a_1 - a_2 &\equiv b_1 - b_2 \pmod{n}
 \end{align}
-with $a_1 \equiv b_1 \mod n$, and $a_2 \equiv b_2 \mod n$. When it comes to addition and substraction, signed and unsigned integers are equivalent, so signed integers can be used as well.
+with $a_1 \equiv b_1 \pmod n$, and $a_2 \equiv b_2 \pmod n$. When it comes to addition and substraction, signed and unsigned integers are equivalent, so signed integers can be used as well.
 \item
 It is not required to handle bitstrings as actual arbitrary size integers when it comes to addition and subtraction. While addition to a bitstring was introduced as being associated with an excitation, it can actually be associated with any combination of creation and annihilation operators. It is therefore valid to consider each 64-bit integer as an independent ``sub-bitstring'' on which a subset of the operators will be applied. In short, additions and subtractions can be done integer-wise, without the overhead of handling carries.
 \end{itemize}
-When it comes to comparison, since the 64 bit integers corresponding to the lower orbitals will typically have more mobile electrons, they should be given them more weight to resolve comparison as fast as possible.
+When it comes to comparison, since the 64-bit integers corresponding to the lower orbitals will typically have more mobile electrons, they should be given them more weight in order to resolve comparison as fast as possible.
 
 \paragraph{Computing the phase factor}
 
