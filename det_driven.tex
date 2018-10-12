@@ -617,10 +617,7 @@ N^I_{ij} = E^I_{j-1} - E^I_{i}.
 \end{equation}
 
 
-This requires to store $E^I$ which is an integer array of size $2 \times (\Norb+1)$. 
-
-
-This may be somewhat memory consuming if we want to pre-compute and store $E$ for each determinant. However, because the actual information needed isn't $N^I_{ij}$, but merely its parity, we only need to store the so-called ``phase mask'' array $P^I$
+This requires to store $E^I$ which is an integer array of size $2 \times (\Norb+1)$. This may be somewhat memory consuming if we want to pre-compute and store $E$ for each determinant. However, because the actual information needed isn't $N^I_{ij}$, but merely its parity, we only need to store the so-called ``phase mask'' array $P^I$
 \begin{equation}
 \label{eq:phasemask}
 P^I_i = p(E^I_i)
@@ -676,7 +673,6 @@ the phase factor can be computed as
 -(-1)^{P^I_{h} \oplus P^I_{p}} & \text{if } h>p \\
 \end{cases}
 \end{align}
-The implementation is shown as algorithm \ref{alg:PHASE_FROM_PHASEMASK}.
 
 
 \begin{algorithm}
@@ -812,8 +808,8 @@ which is the definiton of a phase mask (here indexed from $0$).
 
 
 
-The method to compute the phase associated with a single excitation from a phase mask is shown as algorithm \ref{alg:PHASE_SINGLE}.
-With this method, the cost of computing a phase ---~after paying the overhead of computing $P$~--- is accessing two bits and applying the \lstinline{IEOR} function to them, in addition to the tests. Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the cumbersome boundaries of 64-bit integers.\phantom{\ref{alg:EXC_DEGREE}}
+The method to compute the phase factor associated with a single excitation from a phase mask is shown as algorithm \ref{alg:PHASE_FROM_PHASEMASK}.
+With this method, the cost of computing a phase factor ---~after paying the overhead of computing $P$~--- is accessing two bits and applying the \lstinline{IEOR} function to them, in addition to the tests. Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the cumbersome boundaries of 64-bit integers.\phantom{\ref{alg:EXC_DEGREE}}
 
 
 \subsection{Double excitations}

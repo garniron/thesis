@@ -716,7 +716,7 @@ $X$ and $Y$ are ``wildcard'' indices referring to any spinorbital unoccupied in 
 
 \clearpage
 \section{Parallel computation}
-
+\label{seq:fragmentation}
 Arguably the simplest way to make an algorithm parallel is, whenever possible, to create independent tasks corresponding to one iteration of the outermost loop.
 As figure \ref{fig:selection} suggests, iterations for the outermost loop --- over generators --- are independent. This is due to our choice to perform the initial filtering on a ``generator by generator'' basis (algorithm \ref{alg:generators_filtering}). The cost for this initial filtering could be reduced with a ``spin part by spin part'' basis as in our Davidson algorithm, but since the CIPSI selection is more expensive than the Davidson diagonalization, the filtering steps only account for a few percent of the total CPU time, so for simplicity and load balancing we stuck to 1 task = 1 generator. Even so, the cost for different tasks is still very much unbalanced, the first few generators with large coefficients being very expensive, and the cost quickly decreasing.
 
@@ -736,7 +736,7 @@ Task $i$ is put in the task queue $F_i$ times, each time associated with a `frag
 % Cette phrase n'etait pas facile a comprendre. Le plus simple, c'etait de la virer...
  
 \begin{algorithm}
-        \caption{Task splitting, pseudocode for master}
+        \caption{Task splitting, pseudocode for master.}
         \label{alg:tasksplit_master}
         \tcc{A logical task is the computation of $e[i]$, the sum of $e_\alpha$ over all unique $\kalpha$ generated from generator $\ket {D_i}$}
         choose $F_i$ for all $i$\;
@@ -757,7 +757,7 @@ Task $i$ is put in the task queue $F_i$ times, each time associated with a `frag
 \end{algorithm}
 
 \begin{algorithm}
-        \caption{Task splitting, pseudocode for slave}
+        \caption{Task splitting, pseudocode for slave.}
         \label{alg:tasksplit_slave}
         \While{}{
                 get task $(i, s \in [0,F_i-1])$ from the queue \;
