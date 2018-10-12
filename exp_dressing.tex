@@ -78,23 +78,23 @@ c_\alpha = \frac{\Hij{\alpha}{\Psi}}{\Delta E_\alpha} = \sum_{I=1}^{\Ndet} c_I \
 \end{equation}
 but the expression of $c_\alpha$ for Shifted-\Bk has a particularity that lifts a constraint compared to the general case: as can be seen, while for any $\kalpha$ we need to find all internal determinants it connects to, we do not need to know them \emph{at the same time}, i.e. $c_\alpha$ can be incrementally built from terms that only involve one internal determinant at a time. This is not generally the case, and isn't the case in MR-CC.
 
-Thus, matrix dressing generally requires the knowledge of all internal determinants a particular $\kalpha$ connects to, before $c_\alpha$ ---~and thus the associated increment to $\deltabold$~--- can be computed. For efficiency, as well as simplicity, this list must absolutely be computed upstream the computation of $Z(\alpha, \Psi, \ldots)$, making it in practice $Z^\star(\alpha, \Psi_{c}, \ldots)$ with $\Psi_{c}$ the variational wavefunction stripped of all determinants that do not connect to $\kalpha$ (thus not normalized). We will treat $\Psi_{c}$ as a set of determinants and forget about the coefficients (in practice, it is a list of internal determinant indices).
+Thus, matrix dressing generally requires the knowledge of all internal determinants a particular $\kalpha$ connects to, before $c_\alpha$ ---~and thus the associated increment to $\deltabold$~--- can be computed. For efficiency, as well as simplicity, this list must absolutely be computed upstream the computation of $Z(\alpha, \Psi, \ldots)$, making it in practice $Z^\star(\alpha, \Psi_{c}, \ldots)$ with $\Psi_{c}$ the variational wavefunction stripped of all determinants that do not connect to $\kalpha$ (thus not normalized). In practice, it is a list of internal determinant indices.
 
 This is a lot like the former implementation of CIPSI : considering one $\kalpha$ at a time, enumerate its connections to selectors. The new, more efficient algorithm, however, considers a batch of up to $\Nvirt = \qty(\Norb - \Nalpha)^2$ rather than a single one. The solution is conceptually simple. Neglecting connections to determinants that are not selectors :
 \begin{enumerate}
 \item
-Loop over all $G_{pq}$ batches in the same way as in the CIPSI algorithm (building the $B_{rs}$ tag matrix)
+Loop over all $G_{pq}$ batches in the same way as in the CIPSI algorithm (building the $B_{rs}$ tag matrix).
 \item
-For each batch, create ${(2 \Norb)}^2$ determinant sets $\mathcal{C}_{rs}$, each associated with $\Gpqrs$
+For each batch, create ${(2 \Norb)}^2$ sets of internal determinant indices $\mathcal{C}_{rs}$, each associated with $\Gpqrs$.
 \item
-When a connection between a selector $\ket S$ and $\kalpha = \ket {G_{pq}^{rs}}$ is found, add $\ket S$ to $\mathcal{C}_{rs}$ (instead of incrementing $P(G_{pq})$).
+When a connection between a selector $\ket {D_I}$ and $\kalpha = \ket {G_{pq}^{rs}}$ is found, add $I$ to $\mathcal{C}_{rs}$ (instead of incrementing $P(G_{pq})$).
 \item
-When the computation of batch $G_{pq}$ is completed, $\mathcal{C}_{rs}$ is the set of all selectors $\ket S$ connected to $\kalpha = \ket {G_{pq}^{rs}}$. For each untagged $\kalpha$:
+When the computation of batch $G_{pq}$ is completed, $\mathcal{C}_{rs}$ is the set of all indices of selectors connected to $\kalpha = \ket {G_{pq}^{rs}}$. For each untagged $\kalpha$:
 \begin{enumerate}
 \item
-$c_\alpha \gets Z^\star(\alpha, \mathcal{C}_{rs}, \ldots)$
+$c_\alpha \gets Z^\star(\alpha, \mathcal{C}_{rs}, \ldots)$.
 \item
-for each selector $\ket{S} = \ket {D_K} \in \mathcal{C}_{rs}$ increment $\delta_K$ with $c_\alpha \Hij{\alpha}{S}$
+For each index $K \in \mathcal{C}_{rs}$ increment $\delta_K$ with $c_\alpha \Hij{\alpha}{S}$.
 \end{enumerate}
 
 
@@ -131,7 +131,7 @@ This case isn't unrealistic, with $\ket {G}$ the Hartree-Fock determinant and $(
 Another issue is the high number of non-contiguous writes in memory, especially with the selectors that connect to all determinants of the batch ; they need to be added to ${\Nvirt}^2$ sets, which is ${\Nvirt}^2$ non-contiguous writes for a single selector.
 
 We can solve the storage issue and mitigate the number of non-contiguous writes, by creating sets of $\kalpha$ that are subsets of several $\mathcal{C}_{rs}$.
-Table \ref{tab:systematic_determination} indicates which $\kalpha = \ket {G_{pq}^{rs}}$ of the current batch a selector $\kS$ connects to. In some cases, there are ``wildcard'' indices $X$ and $Y$. Instead of looping over the possible values for those wildcards and adding $\kS$ to all the corresponding $\mathcal{C}_{rs}$ sets, we are going to give wildcard indices the special value $0$ and build intermediate sets $\tilde{\mathcal{C}}_{rs}$. For example, in the case where both $r$ and $s$ are wildcards, instead of adding $\kS$ to all $\mathcal{C}_{rs}$ sets, we will add it to a single set $\tilde{\mathcal{C}}_{00}$. When computation for the batch is completed, $\mathcal{C}_{rs}$ can be evaluated as
+Table \ref{tab:systematic_determination} indicates which $\kalpha = \ket {G_{pq}^{rs}}$ of the current batch a selector $\kS$ connects to. In some cases, there are ``wildcard'' indices $X$ and $Y$. Instead of looping over the possible values for those wildcards and adding $\kS$ to all the corresponding $\mathcal{C}_{rs}$ sets, we are going to give wildcard indices the special value $0$ and build intermediate sets $\tilde{\mathcal{C}}_{rs}$. For example, in the case where both $r$ and $s$ are wildcards for a selector $\ket {D_I}$, instead of adding $I$ to all $\mathcal{C}_{rs}$ sets, we will add it to a single set $\tilde{\mathcal{C}}_{00}$. When computation for the batch is completed, $\mathcal{C}_{rs}$ can be evaluated as
 \begin{equation}
 \mathcal{C}_{rs} \gets \tilde{\mathcal{C}}_{rs} \cup \tilde{\mathcal{C}}_{r0} \cup \tilde{\mathcal{C}}_{s0} \cup \tilde{\mathcal{C}}_{00}
 \end{equation}
@@ -153,8 +153,8 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
 \begin{algorithm}
 	\caption{Build $\mathcal{C}_{rs}$ from $\tilde{\mathcal{C}}_{rs}$}
 	\label{alg:compute_connected}
-	\tcc{This takes place after $\tilde{\mathcal{C}}_{rs}$ and $B_{rs}$ for a given batch have been fully computed}
-		\KwData{$\tilde{\mathcal{C}}_{rs}$ the intermediate sets, $B_{rs}$ the tag matrix}
+	\tcc{This takes place after $\tilde{\mathcal{C}}_{rs}$ and $B_{rs}$ for a given batch have been fully computed.}
+		\KwData{$\tilde{\mathcal{C}}_{rs}$ the intermediate sets assumed to be sorted with increasing order, $B_{rs}$ the tag matrix}
 		%\KwResult{$Z^\star(\Gpqrs, \mathcal{C}_{rs})$ is called for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$}
 		\KwResult{$\mathcal{C}_{rs}$ is computed for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$} 
 		\tcc{$\interC{rs}$ and $\finC{rs}$ are considered arrays, the syntax $\finC{rs}[i\ldots j]$ is used to denote a segment of array, $|\finC{rs}|$ is the cardinality of $\finC{rs}$}
@@ -171,7 +171,7 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
             $j \gets 1$ \;
             $k \gets 1$ \;
             \While{$k \leq |\interC{s0}|$}{
-              \uIf{$(j_1 > |\interC{r0}|) \vee (\interC{s0}[k] < \interC{r0}[j])$}{
+              \uIf{$(j > |\interC{r0}|) \vee (\interC{s0}[k] < \interC{r0}[j])$}{
                  $i_3 \gets i_3 + 1$ \;
                  $L[i_3] \gets \interC{s0}[k]$ \;
                  $k \gets k + 1$ \;
