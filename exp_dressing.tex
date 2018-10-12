@@ -149,6 +149,7 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
 \newcommand{\interC}[1]{\tilde{\mathcal{C}}_{#1}}
 \newcommand{\finC}[1]{\mathcal{C}_{#1}}
 
+
 \begin{algorithm}
 	\caption{Build $\mathcal{C}_{rs}$ from $\tilde{\mathcal{C}}_{rs}$}
 	\label{alg:compute_connected}
@@ -157,7 +158,6 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
 		%\KwResult{$Z^\star(\Gpqrs, \mathcal{C}_{rs})$ is called for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$}
 		\KwResult{$\mathcal{C}_{rs}$ is computed for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$} 
 		\tcc{$\interC{rs}$ and $\finC{rs}$ are considered arrays, the syntax $\finC{rs}[i\ldots j]$ is used to denote a segment of array, $|\finC{rs}|$ is the cardinality of $\finC{rs}$}
-		$T$ an array of size $\Nsel$ initialized to $\TRUE$ \;
 		$L$ an array of determinants size $\Nsel$ \;
         $i_1 \gets |\interC{00}|$ \;   
         $L[1 \ldots i_1] \gets \interC{00}[1 \ldots {i_1}]$ \;
@@ -166,30 +166,30 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
 		\ForAll{$r ; \neg B_{r0}$}{
 		  $i_2 \gets i_1 + |\interC{r0}|$ \;
 		  $L[i_1+1 \ldots i_2] \gets \interC{r0}$ \;
-		  \For{$i\gets 1,|\interC{r0}|$}{
-		    $T[\interC{r0}[i]] \gets \FALSE$
-		  }
 		  \ForAll{$s;\neg (B_{rs} \vee B_{0s})$}{
-		    $i_3 \gets i_2$ \;
-		    \For{$i\gets 1,|\interC{s0}|$}{
-		      \If{$T[\interC{s0}[i]]$}{
-		        $i_3 \gets i_3+1$ \;
-		        $L[i_3] \gets \interC{s0}[i]$ \;
-		      }
+            $i_3 \gets i_2$ \;
+            $j \gets 1$ \;
+            $k \gets 1$ \;
+            \While{$k \leq |\interC{s0}|$}{
+              \uIf{$(j_1 > |\interC{r0}|) \vee (\interC{s0}[k] < \interC{r0}[j])$}{
+                 $i_3 \gets i_3 + 1$ \;
+                 $L[i_3] \gets \interC{s0}[k]$ \;
+                 $k \gets k + 1$ \;
+              }
+              \uElseIf{$\interC{s0}[k] > \interC{r0}[j]$}{
+                $j \gets j + 1$ \;
+              }
+              \Else{
+                $j \gets j + 1$ \;
+                $k \gets k + 1$ \;
+			  }
 		    }
-		    
-		    $i_4 \gets i_3 + |\interC{rs}|$ \;
-		    $L[i_3+1 .. i_4] \gets \interC{rs}$ \;
-		    assert $L = \finC{rs}$
 		  }
-		 \For{$i\gets 1,|\interC{s0}|$}{
-		    $T[\interC{s0}[i]] \gets \TRUE$
-		  }
+		  $i_4 \gets i_3 + |\interC{rs}|$ \;
+		  $L[i_3+1 \ldots i_4] \gets \interC{rs}$ \;
+		  \tcc{ $L = \finC{rs}$}
 		}
 \end{algorithm}
-
-
-
 
 
 
