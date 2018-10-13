@@ -5,6 +5,7 @@
 
 \label{chap:exp_dressing}
 
+\section{Coupled-cluster approach}
 While CI methods are common ways to account for electron correlation, they suffer a severe size consistency problem.
 
 
@@ -69,7 +70,12 @@ The wave function of the supersystem is the product of the wave functions for th
 
 In the article presented in section~\ref{sec:exp_article}, we have proposed a definition for amplitudes for coupled cluster in a multi-reference context. The somewhat ``brute force'' initial implementation of our \emph{Multi-Reference Coupled Cluster} (MR-CCSD) was re-written as a stochastic matrix dressing, based on our Shifted-\Bk implementation.
 
-\section{Computing $c_\alpha$}
+\clearpage
+\section{Alternative definition of excitation amplitudes in multi-reference state-specific coupled cluster}
+\label{sec:exp_article}
+\includepdf[page=2-]{article_mrcc}
+
+\section{Computing $c_\alpha$ for matrix dressing}
 Whether the matrix dressing algorithm performs a Shifted-\Bk, an MR-CCSD or some other method, depends on the external space, i.e. the $c_\alpha$ coefficients. Our goal is to set up a framework in which stochastic matrix dressing can be done efficiently using an external space only defined by $Z(\alpha, \Psi, \ldots)$ a function that takes a determinant $\kalpha$ and the wave function $\ket \Psi$, and returns the $c_\alpha$ it should be associated with. The ``$\ldots$'' notation indicates that the returned value may depend on any number of global parameters, such as approximation thresholds, etc\dots
 
 Looking at the expression of $c_\alpha$ for Shifted-\Bk, it looks like the computation required is the exact same as the one performed by our CIPSI
@@ -139,12 +145,8 @@ Table \ref{tab:systematic_determination} indicates which $\kalpha = \ket {G_{pq}
 Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathcal{C}}_{s0}$ may share common elements. Given its frequency, it is important that this computation is efficient. As is sometimes the case, efficiency implies $\mathcal{C}_{rs}$ are not computed individually, but become available inside a loop. An implementation is proposed as algorithm \ref{alg:compute_connected}, which tries to reuse shared $\tilde{\mathcal{C}}_{rs}$ as much as possible.
 
 
-\clearpage
-\section{Alternative definition of excitation amplitudes in multi-reference state-specific coupled cluster}
-\label{sec:exp_article}
-\includepdf[page=2-]{article_mrcc}
 
-\section{Efficient application to Multi-Reference Coupled Cluster}
+\section{Efficient application to multi-reference coupled cluster}
 
 \newcommand{\interC}[1]{\tilde{\mathcal{C}}_{#1}}
 \newcommand{\finC}[1]{\mathcal{C}_{#1}}
