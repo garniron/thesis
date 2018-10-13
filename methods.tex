@@ -13,7 +13,7 @@ Shrödinger's equation for electrons~:
 \begin{equation}
  \widehat{H} \Psi({\bf x}_1,\dots,{\bf x}_\Nelec) = E \Psi({\bf x}_1,\dots,{\bf x}_\Nelec)
 \end{equation}
-where $\Psi$ is the electronic wavefunction, $E$ the associated energy, and $\mathbf{x}_i = (\textbf{r},m_s)$
+where $\Psi$ is the electronic wave function, $E$ the associated energy, and $\mathbf{x}_i = (\textbf{r},m_s)$
 contains the spatial coordinates of the electron $\textbf{r}$, as well as a spin variable $m_s$.
 $\widehat H$ is the non-relativistic electronic Hamiltonian operator
 \begin{equation}
@@ -23,7 +23,7 @@ where ${\bf R}_j$ and $Z_j$ are respectively the spatial coordinate and charge o
 
 \section{Slater determinants}
 
-The simplest description of the wavefunction is the Hartree product. This consists in 
+The simplest description of the wave function is the Hartree product. This consists in 
 building the product of orthonormal one-electron functions, each function describing the state of
 one electron:
 \begin{equation}
@@ -44,7 +44,7 @@ Antisymmetrizing the Hartree product yields the so-called \emph{Slater determina
 \end{array} 
 \label{eq:slater1}
 \end{equation}
-which is the simplest possible antisymmetric wavefunction.
+which is the simplest possible antisymmetric wave function.
 The functions $\phi_i$ are called \emph{spinorbitals}:
 \begin{equation}
 \phi_i(\textbf{x}) = \varphi_i(\textbf{r}) \, \sigma_i(m_s)
@@ -127,8 +127,8 @@ Molecular orbitals are typically defined as linear combinations of \emph{atomic 
  \varphi_i({\bf r}) = \sum_k C_{ik} \chi_k({\bf r}).
 \label{eq:def_mo}
 \end{equation}
-These functions qualify the used one-electron \emph{basis set}, and are usually themselves pre-defined linear combinations of Gaussian functions. This is a restriction put on the form of the wavefunction, therefore it is known as the \emph{finite basis set approximation}.
-In the Hartree-Fock method, the wavefunction is a single Slater determinant, where the $C_{ik}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy.
+These functions qualify the used one-electron \emph{basis set}, and are usually themselves pre-defined linear combinations of Gaussian functions. This is a restriction put on the form of the wave function, therefore it is known as the \emph{finite basis set approximation}.
+In the Hartree-Fock method, the wave function is a single Slater determinant, where the $C_{ik}$ coefficients associated with molecular orbitals are optimized so as to minimize the energy.
 This method, however is missing some important physical effects. For instance, using Eq.~\eqref{eq:slater} one can see that in this model opposite-spin electrons are statistically independent (or \emph{uncorrelated}):
 \begin{equation}
 \begin{split}
@@ -224,7 +224,7 @@ In variational methods, one tries to minimize the \emph{variational energy}
 \Evar = \frac{\mel{\Psi}{\hat{H}}{\Psi}}{\braket{\Psi}{\Psi}} \ge \EFCI
 \label{eq:evar}
 \end{equation}
-by optimizing the parameters of the wavefunction.
+by optimizing the parameters of the wave function.
 Generally speaking, solving Schrö\-dinger's equation in a basis of Slater determinants is called \emph{Configuration Interaction (CI)}.
 In these methods, the molecular orbitals are kept fixed and the variational parameters are the coefficients associated with the Slater determinants.
 The general idea of CI methods is to select \textit{a priori} a relevant subset
@@ -278,7 +278,7 @@ and equation at order $n$ is obtained by isolating all terms that are multiplied
 \end{equation}
 and so on\dots
 
-The equation of order $n$ involves all $e^{(m \leq n)}$ and $\ket {\psi^{(m \leq n)}}$. It is possible to iteratively solve the equations up a given value of $n$, each iteration $i$ yielding $e^{(i)}$ and $\ket {\psi^{(i)}}$. Then the wavefunction and energy corrected at order $n$ can be written
+The equation of order $n$ involves all $e^{(m \leq n)}$ and $\ket {\psi^{(m \leq n)}}$. It is possible to iteratively solve the equations up a given value of $n$, each iteration $i$ yielding $e^{(i)}$ and $\ket {\psi^{(i)}}$. Then the wave function and energy corrected at order $n$ can be written
 \begin{align}
 E^{(n)} &=\sum_{i=0}^n e^{(i)} \\
 \ket {\Psi^{(n)}} &= \sum_{i=0}^n \ket {\psi^{(i)}}
@@ -297,7 +297,7 @@ the zeroth-order Hamiltonian is the so-called \emph{Epstein-Nesbet} Hamiltonian.
 \mel{D_I}{\hat{V}}{D_J} & = 0 \\
 \end{align}
 In Epstein-Nesbet perturbation theory, $e^{(0)}$ is the variational energy of
-the zeroth-order wavefunction, $e^{(1)} = 0$, and one needs to go to the second
+the zeroth-order wave function, $e^{(1)} = 0$, and one needs to go to the second
 order to get an improvement on the energy:
 \begin{equation}
 \EPT = e^{(2)} = \sum_{\alpha} \frac{\Hij{\alpha}{\Psi^{(0)}}^2}{E^{(0)} - \Hij{\alpha}{\alpha}}
@@ -308,15 +308,15 @@ order to get an improvement on the energy:
 \section{Selected CI methods}
 \label{sec:meth_cipsi}
 
-These methods rely on the same principle as the usual CI approaches, except that determinants aren't chosen \textit{a priori} based on an occupation or excitation criterion, but selected \emph{on the fly} among the entire set of determinant based on their estimated contribution to the FCI wavefunction. Conventional CI methods can be seen as an exact resolution of Schrödinger's equation for a complete, well-defined subset of determinants (and for a given atomic basis set), while selected CI methods are more of a truncation of the FCI.
+These methods rely on the same principle as the usual CI approaches, except that determinants aren't chosen \textit{a priori} based on an occupation or excitation criterion, but selected \emph{on the fly} among the entire set of determinant based on their estimated contribution to the FCI wave function. Conventional CI methods can be seen as an exact resolution of Schrödinger's equation for a complete, well-defined subset of determinants (and for a given atomic basis set), while selected CI methods are more of a truncation of the FCI.
 The main advantages of these methods compared to the more conventional \textit{a priori} selected ones, are that since the most relevant determinants are considered, they will typically yield a more accurate description of physical phenomena, and a much lower energy for an equivalent number of determinants.
-It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wavefunction.\cite{Bytautas_2009,Anderson_2018} Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been proposed from the late 60's by Bender and Davidson\cite{Bender_1969} as well as Whitten and Hackmeyer\cite{Whitten_1969} and is still very much under investigation, we can cite its stochastic variant the MC3I method\cite{Ohtsuka_2017} or the very recent \emph{Machine Learning Configuration Interaction (MLCI)}.\cite{1808.05787}
+It has been noticed long ago that, even inside a predefined subspace of determinants, only a small number significantly contributes to the wave function.\cite{Bytautas_2009,Anderson_2018} Therefore, an \emph{on the fly} selection of determinants is a rather natural idea that has been proposed from the late 60's by Bender and Davidson\cite{Bender_1969} as well as Whitten and Hackmeyer\cite{Whitten_1969} and is still very much under investigation, we can cite its stochastic variant the MC3I method\cite{Ohtsuka_2017} or the very recent \emph{Machine Learning Configuration Interaction (MLCI)}.\cite{1808.05787}
 
-The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developed by Huron, Rancurel and Malrieu,\cite{Huron_1973} that iteratively selects \emph{external} determinants $\kalpha$ (determinants which are not present in the wavefunction $\ket \Psi$) using a perturbative criterion
+The approach we are using is based on the \emph{Configuration Interaction using a Perturbative Selection (CIPSI)} developed by Huron, Rancurel and Malrieu,\cite{Huron_1973} that iteratively selects \emph{external} determinants $\kalpha$ (determinants which are not present in the wave function $\ket \Psi$) using a perturbative criterion
 \begin{equation}
 e_\alpha = \frac{\Hij{\Psi}{\alpha}^2}{\Evar - \Hij{\alpha}{\alpha}}
 \end{equation}
-with $\ket \alpha$ the external determinant being considered, and $e_\alpha$ the estimated gain in correlation energy that would be brought by the inclusion of $\ket \alpha$ in the wavefunction. $\EPT$ is an estimation of the total missing correlation energy:
+with $\ket \alpha$ the external determinant being considered, and $e_\alpha$ the estimated gain in correlation energy that would be brought by the inclusion of $\ket \alpha$ in the wave function. $\EPT$ is an estimation of the total missing correlation energy:
 \begin{align}
 \EPT & = \sum_{\alpha} e_\alpha \\
 \EFCI & \approx \Evar + \EPT
@@ -333,9 +333,9 @@ e^{\text{HCI}}_\alpha = \max \qty( \qty| c_I \Hij{D_I}{\alpha} | )
 This algorithmically allows for an extremely fast selection of doubly
 excited determinants by an integral-driven approach.
 
-Full Configuration Interaction Quantum Monte Carlo (FCI-QMC) is an alternate approach to selection recently proposed in 2009 by Alavi \textit{et al.},\cite{Booth_2009,Booth_2010,Cleland_2010} where signed walkers spawn from one determinant to connected ones, with a probability that is a function of the associated matrix element. The average proportion of walkers on a determinant converges to its coefficient in the FCI wavefunction.
+Full Configuration Interaction Quantum Monte Carlo (FCI-QMC) is an alternate approach to selection recently proposed in 2009 by Alavi \textit{et al.},\cite{Booth_2009,Booth_2010,Cleland_2010} where signed walkers spawn from one determinant to connected ones, with a probability that is a function of the associated matrix element. The average proportion of walkers on a determinant converges to its coefficient in the FCI wave function.
 
-A more ``bruteforce'' approach at stochastic selection is \emph{Monte-Carlo CI (MCCI)},\cite{Greer_1995,Greer_1998} where determinants are randomly added to the variational wavefunction. After diagonalization, the determinants of smaller coefficient are removed, and new random determinants are added.
+A more ``bruteforce'' approach at stochastic selection is \emph{Monte-Carlo CI (MCCI)},\cite{Greer_1995,Greer_1998} where determinants are randomly added to the variational wave function. After diagonalization, the determinants of smaller coefficient are removed, and new random determinants are added.
 
 
 

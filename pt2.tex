@@ -22,7 +22,7 @@ We have seen in section~\ref{sec:cipsi_approx} that approximate calculations cou
 
 The selection of determinants and the calculation of $\EPT$, all approximations aside, both imply the computation of $e_\alpha$ for all $\ket \alpha$, so both can be computed at the same time. The selection is about identifying the set of the most important contributions, $\EPT$ is about computing the sum over all of them. There are two main consequences to this:
 \paragraph{$\EPT$ is one iteration behind the selection}
-At iteration $n$, identifying the most significant $\ket \alpha$ is about building $\Psi^{(n+1)}$ while summing the contributions is about estimating the distance to full-CI for $\Psi^{(n)}$. Computing $\EPT$ for a ``final'' wavefunction therefore requires an extra iteration, which applies to a larger number of determinants and thus is more expensive. Note that if only $\EPT$ is required, a more efficient algorithm can be used.\cite{Cimiraglia_1996}
+At iteration $n$, identifying the most significant $\ket \alpha$ is about building $\ket {\Psi^{(n+1)}}$ while summing the contributions is about estimating the distance to full-CI for $\ket {\Psi^{(n)}}$. Computing $\EPT$ for a ``final'' wave function therefore requires an extra iteration, which applies to a larger number of determinants and thus is more expensive. Note that if only $\EPT$ is required, a more efficient algorithm can be used.\cite{Cimiraglia_1996}
 
 \paragraph{The selection can take more approximations}
 The computation of the sum has to be more costly than just identifying the largest terms. As was said in chapter~\ref{chap:CIPSI}, the CIPSI algorithm can take pretty drastic approximations for the selection.\cite{Evangelisti_1983}
@@ -39,7 +39,7 @@ Unfortunately, a truncated computation of $\EPT$ always yields in a biased resul
 %The $n_g$ threshold used in CIPSI determining $\Ngen$ can be seen as a way of adjusting this truncation to reach a given computational cost.
 %In the selection step, an additional approximation was made in the computation of $\Hij{\Psi}{\alpha}$, where the threshold $n_s$ determined the $\Nsel$ determinants which were considered. This approximation is another source of error in the calculation of $\EPT$.
 
-Before the stochastic computation of $\EPT$ was implemented, our best choice was to set low values of $n_g$ and $n_s$ while performing the selection, and accept very approximate values for $\EPT$ for intermediate wavefunctions. Then, once the selection was completed, we would raise them just for a final, very expensive ``$\EPT$ only'' iteration. In fact, an exact computation with $\Ngen=\Nsel=\Ndet$ was often prohibitively long, so the final $\EPT$ was still biased, and the biases were not well controlled. The effect was particularly important when computing atomization energies, where the $\EPT$ values were much more approximate on the molecule than on the atoms.
+Before the stochastic computation of $\EPT$ was implemented, our best choice was to set low values of $n_g$ and $n_s$ while performing the selection, and accept very approximate values for $\EPT$ for intermediate wave functions. Then, once the selection was completed, we would raise them just for a final, very expensive ``$\EPT$ only'' iteration. In fact, an exact computation with $\Ngen=\Nsel=\Ndet$ was often prohibitively long, so the final $\EPT$ was still biased, and the biases were not well controlled. The effect was particularly important when computing atomization energies, where the $\EPT$ values were much more approximate on the molecule than on the atoms.
 A practical way to circumvent this problem was already proposed 20 years ago, by giving an extrapolation of $\EPT$ when $n_g$ goes to one.\cite{Angeli_1997} However, the algorithm we propose here has the advantage of giving an unbiased result within a statistical confidence interval.
 
 \section{Stochastic estimation of $\EPT$}
@@ -331,7 +331,7 @@ S^{(2)}_{t} = \sum_{u \in \{\mathcal{U}\}} B_{t}(u)^2
 \section{Technical considerations}
 
 
-\subsection{Why an initial deterministic part?}
+\subsection{Point of the initial deterministic part}
 
 The initial deterministic range $\mathcal{T}_0$ is a technical constraint.
 Because generators are sorted with decreasing $p(e_I)$, it is guaranteed that $|\mathcal{T}_{t>t'}| \geq |\mathcal{T}_{t' \neq 0}|-1$ with $|\mathcal{T}_t|$ the cardinality of $\mathcal{T}_t$.
@@ -543,7 +543,7 @@ Because of the tooth filling mechanism, we know we will need at most $\Ngen$ com
 \item $N_c$: is the number of combs currently drawn.
 \item $R$: is an array of integer size $\Ngen$, keeping track of available combs at any point of the computation. The collector node checks $R[j]$ when the first $j$ tasks have been computed (for all $j$ with increasing order). If $R[j] = c \neq 0$, all samples for comb $c$ have just become available. 
 \end{itemize}
-
+Algorithm \ref{alg:TASK_QUEUE} shows the computation of the task queue.
 
 
 \begin{algorithm}
@@ -615,7 +615,7 @@ Because of the tooth filling mechanism, we know we will need at most $\Ngen$ com
 
 \subsection{Computing the average and error}
 
-The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. The slave threads take a generator and a ``fragment'' index, and return the result to the master thread.
+The algorithm for the master thread is shown as algorithm \ref{alg:PT2_MASTER}. The slave threads take a generator and a ``fragment'' index, and returns the result to the master thread.
 
 \begin{algorithm}
 	\caption{Master node in $\EPT$ computation}

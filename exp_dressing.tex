@@ -25,13 +25,13 @@ and  double excitation operators  are  the  same  as  those  obtained  for  the 
 and  $B$  problems.  
 Why this is not the case in CI methods can be easily understood as the absence of some excitations occurring simultaneously on all subsystems.
 
-Consider a supersystem $AB$ made of two non-interacting subsystems $A$ and $B$, and write its CID wavefunction (Hartree-Fock determinant and all its double excitations).
+Consider a supersystem $AB$ made of two non-interacting subsystems $A$ and $B$, and write its CID wave function (Hartree-Fock determinant and all its double excitations).
 \begin{equation}
 \Psi^{AB} = \Psi_{\HF}^{AB} + \Psi_{D}^{AB}
 \end{equation}
 with $\Psi_{\HF}^{AB}$ the Hartree-Fock determinant for system $AB$, and $\Psi_{D}^{AB}$ the sum of all double excitation with respect to $\Psi_{\HF}^{AB}$.
 
-If we now write $\Psi^{A\cdots B}$ the product of the two separate CID wavefunctions for $A$ and $B$
+If we now write $\Psi^{A\cdots B}$ the product of the two separate CID wave functions for $A$ and $B$
 \begin{align}
 \Psi^{A\cdots B} = & \Psi^A  \times \Psi^B \\
  = & \Psi_{\HF}^A\Psi_{\HF}^B  + \Psi_{\HF}^A\Psi_{D}^B + \Psi_{D}^A\Psi_{\HF}^B + \Psi_{D}^A \Psi_{D}^B 
@@ -44,7 +44,7 @@ As can be seen, $\Psi^{AB}$ isn't described as the product of $\Psi^A$ and $\Psi
 
 Some methods aim at partially or fully correcting this size-consistency error by eliminating the unlinked effects of the CISD: the so-called \emph{Davidson corrections}, that are essentially correction to the energy\cite{Langhoff_1974,Meissner_1988}, and the so-called \emph{Coupled Electron Pair Approximations (CEPA)} that correct the CI equations\cite{Kelly_1963,Kelly_1964,Meyer_1971,Meyer_1973,Meyer_1974,Ahlrichs_1975}. Many different variations have been proposed, for a review see~\citep{Koch_1981}.
 
-An alternative to CI approaches is the so-called Coupled-Cluster (CC) approach, that does not suffer this problem. The wavefunction is given an exponential structure
+An alternative to CI approaches is the so-called Coupled-Cluster (CC) approach, that does not suffer this problem. The wave function is given an exponential structure
 \begin{equation}
 \ket \Psi = e^{\hat T} \ket {\HF}
 \end{equation}
@@ -59,26 +59,26 @@ with $\hat T_1$ and $\hat T_2$ the one and two orbitals cluster operators
 \end{align}
 with the indices $p,q$ running on occupied MOs and $r,s$ running on virtual MOs. $\hat T_{pq}^{rs}$ is the usual excitation operator, and $t_{pq}^{rs}$ the so-called \emph{amplitude} associated with it.
 
-Again considering a system made of two infinitely non-interacting sub-systems $A$ and $B$, thanks to the exponential expression, if one uses local orbitals ---~that is, the reference determinant $\ket {\HF}$ is factorizable in $\ket{\HF_A}$ and $\ket{\HF_B}$ determinants isolated on $A$ and $B$~--- the energy and wavefunction on the isolated fragments will be the same as on the $A\cdots B$ supersystem.
+Again considering a system made of two infinitely non-interacting sub-systems $A$ and $B$, thanks to the exponential expression, if one uses local orbitals ---~that is, the reference determinant $\ket {\HF}$ is factorizable in $\ket{\HF_A}$ and $\ket{\HF_B}$ determinants isolated on $A$ and $B$~--- the energy and wave function on the isolated fragments will be the same as on the $A\cdots B$ supersystem.
 Indeed, amplitudes associated with excitations involving orbitals for both fragments will be zero due to the absence of interaction. Therefore $\hat T$ can be split in $\hat T_A$ and $\hat T_B$ the cluster operators involving one fragment.
 \begin{equation}
 \ket \Psi = e^{\hat T} \ket {\HF} = \ket \Psi = e^{\hat T_A + \hat T_B} \ket {\HF} = e^{\hat T_A} \ket {\HF_A} e^{\hat T_B} \ket {\HF_B}
 \end{equation}
-The wavefunction of the supersystem is the product of the wavefunctions for the isolated subsystems.
+The wave function of the supersystem is the product of the wave functions for the isolated subsystems.
 
 
-In the article presented in section~\ref{sec:exp_article}, we have proposed a definition for amplitudes for coupled cluster in a multi-reference context. The somewhat ``brute force'' initial implementation of our \emph{Multi-Reference Coupled Cluster} (MR-CC) was re-written as a stochastic matrix dressing, based on our Shifted-\Bk implementation.
+In the article presented in section~\ref{sec:exp_article}, we have proposed a definition for amplitudes for coupled cluster in a multi-reference context. The somewhat ``brute force'' initial implementation of our \emph{Multi-Reference Coupled Cluster} (MR-CCSD) was re-written as a stochastic matrix dressing, based on our Shifted-\Bk implementation.
 
 \section{Computing $c_\alpha$}
-Whether the matrix dressing algorithm performs a Shifted-\Bk, an MR-CCSD or some other method, depends on the external space, i.e. the $c_\alpha$ coefficients. Our goal is to set up a framework in which stochastic matrix dressing can be done efficiently using an external space only defined by $Z(\alpha, \Psi, \ldots)$ a function that takes a determinant $\kalpha$ and the wavefunction $\ket \Psi$, and returns the $c_\alpha$ it should be associated with. The ``$\ldots$'' notation indicates that the returned value may depend on any number of global parameters, such as approximation thresholds, etc\dots
+Whether the matrix dressing algorithm performs a Shifted-\Bk, an MR-CCSD or some other method, depends on the external space, i.e. the $c_\alpha$ coefficients. Our goal is to set up a framework in which stochastic matrix dressing can be done efficiently using an external space only defined by $Z(\alpha, \Psi, \ldots)$ a function that takes a determinant $\kalpha$ and the wave function $\ket \Psi$, and returns the $c_\alpha$ it should be associated with. The ``$\ldots$'' notation indicates that the returned value may depend on any number of global parameters, such as approximation thresholds, etc\dots
 
 Looking at the expression of $c_\alpha$ for Shifted-\Bk, it looks like the computation required is the exact same as the one performed by our CIPSI
 \begin{equation}
 c_\alpha = \frac{\Hij{\alpha}{\Psi}}{\Delta E_\alpha} = \sum_{I=1}^{\Ndet} c_I \frac{\Hij{\alpha}{D_I}}{\Delta E_\alpha},
 \end{equation}
-but the expression of $c_\alpha$ for Shifted-\Bk has a particularity that lifts a constraint compared to the general case: as can be seen, while for any $\kalpha$ we need to find all internal determinants it connects to, we do not need to know them \emph{at the same time}, i.e. $c_\alpha$ can be incrementally built from terms that only involve one internal determinant at a time. This is not generally the case, and isn't the case in MR-CC.
+but the expression of $c_\alpha$ for Shifted-\Bk has a particularity that lifts a constraint compared to the general case: as can be seen, while for any $\kalpha$ we need to find all internal determinants it connects to, we do not need to know them \emph{at the same time}, i.e. $c_\alpha$ can be incrementally built from terms that only involve one internal determinant at a time. This is not generally the case, and isn't the case for MR-CCSD.
 
-Thus, matrix dressing generally requires the knowledge of all internal determinants a particular $\kalpha$ connects to, before $c_\alpha$ ---~and thus the associated increment to $\deltabold$~--- can be computed. For efficiency, as well as simplicity, this list must absolutely be computed upstream the computation of $Z(\alpha, \Psi, \ldots)$, making it in practice $Z^\star(\alpha, \Psi_{c}, \ldots)$ with $\Psi_{c}$ the variational wavefunction stripped of all determinants that do not connect to $\kalpha$ (thus not normalized). In practice, it is a list of internal determinant indices.
+Thus, matrix dressing generally requires the knowledge of all internal determinants a particular $\kalpha$ connects to, before $c_\alpha$ ---~and thus the associated increment to $\deltabold$~--- can be computed. For efficiency, as well as simplicity, this list must absolutely be computed upstream the computation of $Z(\alpha, \Psi, \ldots)$, making it in practice $Z^\star(\alpha, \Psi_{c}, \ldots)$ with $\Psi_{c}$ the variational wave function stripped of all determinants that do not connect to $\kalpha$ (thus not normalized). In practice, it is a list of internal determinant indices.
 
 This is a lot like the former implementation of CIPSI : considering one $\kalpha$ at a time, enumerate its connections to selectors. The new, more efficient algorithm, however, considers a batch of up to $\Nvirt = \qty(\Norb - \Nalpha)^2$ rather than a single one. The solution is conceptually simple. Neglecting connections to determinants that are not selectors :
 \begin{enumerate}
@@ -153,8 +153,8 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
 \begin{algorithm}
 	\caption{Build $\mathcal{C}_{rs}$ from $\tilde{\mathcal{C}}_{rs}$}
 	\label{alg:compute_connected}
-	\tcc{This takes place after $\tilde{\mathcal{C}}_{rs}$ and $B_{rs}$ for a given batch have been fully computed.}
-		\KwData{$\tilde{\mathcal{C}}_{rs}$ the intermediate sets assumed to be sorted with increasing order, $B_{rs}$ the tag matrix}
+	%\tcc{This takes place after $\tilde{\mathcal{C}}_{rs}$ and $B_{rs}$ for a given batch have been fully computed.}
+		\KwData{$\tilde{\mathcal{C}}_{rs}$ the intermediate sets assumed to be sorted in increasing order, $B_{rs}$ the tag matrix}
 		%\KwResult{$Z^\star(\Gpqrs, \mathcal{C}_{rs})$ is called for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$}
 		\KwResult{$\mathcal{C}_{rs}$ is computed for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$} 
 		\tcc{$\interC{rs}$ and $\finC{rs}$ are considered arrays, the syntax $\finC{rs}[i\ldots j]$ is used to denote a segment of array, $|\finC{rs}|$ is the cardinality of $\finC{rs}$}
@@ -194,10 +194,10 @@ Among these intermediate sets only $\tilde{\mathcal{C}}_{r0}$ and $\tilde{\mathc
 
 
 \begin{algorithm}
-\caption{Compute a $c_\alpha$ for MR-CC}
+\caption{Compute a $c_\alpha$ for MR-CCSD}
 \KwData{$\kalpha$ the considered external determinant}
-\KwData{$\ket {D_I}$ the list of $N$ internal determinants connected to $\kalpha$, sorted by increasing integer value}
-\KwData{$\ket {R_i}$ the list of $\Nref$ reference determinants sorted by increasing integer value and $c_{R_i}$ the associated coefficient}
+\KwData{$\ket {D_I}$ the list of $N$ internal determinants connected to $\kalpha$, sorted with increasing integer value}
+\KwData{$\ket {R_r}$ the list of $\Nref$ reference determinants sorted with increasing integer value and $c_{R_r}$ the associated coefficients}
 \KwData{$t_{R_r \rightarrow D_I}$ the used amplitudes}
 \KwResult{$c_\alpha$} 
 
@@ -355,9 +355,9 @@ Binary search for $D_J = (R_r \oplus D_I \oplus \alpha)$ in $\{\mathcal{D}\}$ if
 Depending on the sizes of the $\{D\}$ and $\{R\}$ sets, an alternative variant can also be used, giving a complexity of $\mathcal{O}(N^2 \times \log(\Nref))$:
 \begin{enumerate}
 \item
-iterate over $(D_I, D_J)$
+Iterate over $(D_I, D_J)$
 \item
-binary search for $R_r = (D_I \oplus D_J \oplus \alpha)$ in $\{\mathcal{R}\}$ if $||R_r|| = \Nelec$.
+Binary search for $R_r = (D_I \oplus D_J \oplus \alpha)$ in $\{\mathcal{R}\}$ if $||R_r|| = \Nelec$.
 \end{enumerate}
 
 Those are desirable if one of $\{\mathcal{D}\}$ or $\{\mathcal{R}\}$ is relatively small, in particular, in case of single-reference computation, i.e. $|\mathcal{R}|=1$, the former variant is ideal. For larger sets, however, a more complex variant with a complexity $\mathcal{O}(N \times (N+\Nref))$ is introduced next.

@@ -7,12 +7,12 @@
 
 \section{Principle of matrix dressing}
 
-So far we have used the second order perturbation to build a zeroth-order wavefunction $\ket \Psi$ using CISPI, and estimate its distance to the FCI energy with a stochastic estimation of $\EPT$.
+So far we have used the second order perturbation to build a zeroth-order wave function $\ket \Psi$ using CISPI, and estimate its distance to the FCI energy with a stochastic estimation of $\EPT$.
 
 In both cases we have computed the interaction between $\ket \Psi$ and the external space, but we have not let $\ket \Psi$ be revised under those interactions. This idea is based on the so-called \Bk approximation proposed by Gershgorn and Shavitt.\cite{Gershgorn_1968}
 
 This can be achieved using the intermediate Hamiltonian theory,\cite{0305-4470-18-5-014} intermediate Hamiltonians being a class of effective Hamiltonians\cite{lindgren1982atomic} where not all roots are exact eigenvalues of the full Hamiltonian.
-The principle is to build a so-called intermediate Hamiltonian ${\bf \tilde H}$ which, when diagonalized, yields a wavefunction that takes into account the effect of an external space on the internal space. 
+The principle is to build a so-called intermediate Hamiltonian ${\bf \tilde H}$ which, when diagonalized, yields a wave function that takes into account the effect of an external space on the internal space. 
 
 
 Sticking to the state-specific case, the general principle can be understood as follows. This formulation, as it is limited to the state-specific case, is somewhat different and wishes to be more intuitive than the one presented in the article presented in section~\ref{sec:matrix_article}.
@@ -101,7 +101,7 @@ So as we only need $\tilde{\bf H}{\bf c}$ for Davidson's algorithm, the quantity
 \deltabold_I = \Deltabold_I\, {\bf c} = \sum_{\alpha \in \mathcal{A}_I} \deltabold_\alpha\, {\bf c}
 \end{equation}
 
-Thus, ${\pmb \delta}_I$ is a sum over external determinants, and requires to find connections between those determinants and the wavefunction. Presumably, the elementary dressing vectors $\deltabold_I$ will have a norm decreasing like $e_I$. Indeed, 
+Thus, ${\pmb \delta}_I$ is a sum over external determinants, and requires to find connections between those determinants and the wave function. Presumably, the elementary dressing vectors $\deltabold_I$ will have a norm decreasing like $e_I$. Indeed, 
 \begin{equation}
 e_I = \frac{{\bf c}^\dagger\, \Deltabold_I\, {\bf c}}{{\bf c}^\dagger {\bf c}} = {\bf c}^\dagger \deltabold_I
 \label{eq:c_delta_i}
@@ -133,7 +133,7 @@ In the case of $\EPT$, each connection found only requires an increment of some 
 
 Implementationally speaking, just like the state-specific version requires computing a single $\deltabold$ vector, the multi-state version requires a $\deltabold^{(k)}$ vector to be computed for each desired state $k$. This, in principle, should come with minimal cost, since the loop over states can be set as the innermost one. 
 
-In practice, since the exact computation of $\deltabold^{(k)}$ is as expensive than that of $\EPT$, we need to use the same hybrid stochastic-deterministic approach. Unfortunately, using state-average coefficients for the sampling did not yield satisfying results, so we have to stick to state-specific sampling and thus compute each $\deltabold^{(k)}$ individually. Therefore we will ignore the state from now on.
+In practice, since the exact computation of $\deltabold^{(k)}$ is as expensive as that of $\EPT$, we need to use the same hybrid stochastic-deterministic approach. Unfortunately, using state-average coefficients for the sampling did not yield satisfying results, so we have to stick to state-specific sampling and thus compute each $\deltabold^{(k)}$ individually. Therefore we will ignore the state from now on.
 The multi-state Davidson diagonalization, however, is done a single time per shifted-\Bk iteration.
 
 \subsection{Reduction of the memory bottleneck}
@@ -183,7 +183,7 @@ $\mu^m_I$ is defined as follows
 with $M_{m,I}$ the number of times generator $I$ has been drawn at checkpoint $m$.
 
 
-The memory cost for a checkpoint $m$ is $2 \times \Ndet$ floats, corresponding to the storage of ${\pmb \mu}^m$ and $\deltabold^m$. This cost is small enough to allow setting up quite a few checkpoints. However, in addition to this memory cost, comes some computational cost. If we set up $\Ncp$ checkpoints, it implies each time a sample is drawn, we will have, theoretically, to increment $\Ncp$ vectors of size $\Ndet$. For quicker tasks, this price may not be negligible. It gets worse if, as was the case in our first implementation, a collector is in charge of updating checkpoints for multiple slaves. 
+The memory cost for a checkpoint $m$ is $2 \times \Ndet$ floats, corresponding to the storage of ${\pmb \mu}^m$ and $\deltabold^m$. This cost is small enough to allow setting up quite a few checkpoints. However, in addition to this memory cost, comes some computational cost. If we set up $\Ncp$ checkpoints, it implies each time a sample is computed, we will have, theoretically, to increment $\Ncp$ vectors of size $\Ndet$. For quicker tasks, this price may not be negligible. It gets worse if, as was the case in our first implementation, a collector is in charge of updating checkpoints for multiple slaves. 
 
 We can drastically reduce the amount of writing required for each sample by rewriting $\deltabold^m$.
 First, we define $\deltabold^{D,t}$ as the total dressing contribution for tooth $\mathcal{T}_t$
@@ -195,7 +195,7 @@ We rewrite $\deltabold^m$ as
 \label{eq:rewrite1}
 \deltabold^{m} = \sum_{t=0}^{\dot t_m - 1} \deltabold^{D,t}+ \frac{1}{M_m} \sum_{I} \gamma^m_{I} \deltabold_I.
 \end{equation}
-The second term being $\deltabold^m$ without its deterministic contribution, we can trivially write, defining $\gamma^ 0_I=0$ for convenience,
+The second term being $\deltabold^m$ without its deterministic contribution, we can write, defining $\gamma^ 0_I=0$ for convenience,
 \begin{equation}
 \gamma^m_I = 
 \begin{cases}
@@ -224,7 +224,7 @@ $\deltabold^{D,t}$ with $I \in \mathcal{T}_t$. This is exactly one write.
 $\deltabold^{S,m}$ where $\gamma^m_I - \gamma^{m-1}_I \neq 0$. This is
  \begin{itemize}
  \item No write if generator $\ket{D_I}$ is moved to $\mathcal{D}_D$ in the same checkpoint it is first drawn or computed for tooth filling
- \item Otherwise, one write per checkpoint in which it is drawn until the one where it is moved to $\mathcal{D}_D$, inclusive.
+ \item Otherwise, one write per checkpoint in which $I$ is drawn until the one where it is moved to $\mathcal{D}_D$, inclusive.
  \end{itemize}
  While this increases the theoretical maximum of writes to $\Ncp+1$ per sample, it is much lower in practice.
 \end{itemize}
@@ -233,7 +233,7 @@ For convenience we define
 \begin{equation}
 \tilde \mu^m_I = \gamma^m_I - \gamma^{m-1}_I.
 \end{equation}
-The task queue is built in a fashion similar to the one for the $\EPT$ computation, with some differences.
+The task queue is built similarly to the one for $\EPT$ computation, with some differences.
 \begin{itemize}
 \item
 $M_{m,I}$ are evaluated for the computation of $\tilde \mu^m_I$.
@@ -260,7 +260,7 @@ with $j$ the task index associated with $I$, i.e. $Q[j]=I$. These sets are track
 \begin{algorithm}
 	\caption{Compute task queue and checkpoints. Tasks are fragmented as described in section \ref{seq:fragmentation} (not shown).}
 	\label{PRECOMPUTE_MONTECARLO}
-		\KwData{$M_m$ the desired number of combs for checkpoints $m$. $M_0 = 0$ for convenience. $M_{n+1} > M_n$, $\exists M_n > \Ngen$}
+		\KwData{$M_m$ the desired numbers of combs for checkpoints. $M_0 = 0$ for convenience. $M_{n+1} > M_n$, $\exists M_n > \Ngen$}
 		\KwResult{$Q$ the task array, $\Ncp$ the number of checkpoints, $P$ the array so that $P[I] = m$ iff $I \in \mathcal{P}_m$, $R^{-1}$ the array so that checkpoint $m$ becomes available when the first $R^{-1}[m]$ tasks have been computed.}
 		$\tilde M$ array of size $\Ndet$ initialized with $0$\;
 		$u$ array of size $\Ngen$ initialized with random numbers $\in [0,1)_\mathbb{R}$ \;

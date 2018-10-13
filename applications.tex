@@ -7,7 +7,7 @@ In this chapter, we present applications that were made possible thanks by
 the optimized CIPSI implementation presented in this thesis, and the hybrid
 stochastic-deterministic algorithm. 
 We first present a difficult benchmark of excited states, and then the use
-of CIPSI wavefunctions for quantum Monte Carlo calculations.
+of CIPSI wave functions for quantum Monte Carlo calculations.
 
 \section{Excited states benchmark}
 
@@ -32,7 +32,7 @@ $\epsilon_\alpha$ among all the considered states.
 
 \newcommand{\rn}{\mathbf{r}_1,\dots,\mathbf{r}_N}
 \newcommand{\drn}{\text{d}\mathbf{r}_1\,\dots\,\text{d}\mathbf{r}_N}
-In a diffusion quantum Monte Carlo calculation (DMC), a trial wavefunction
+In a diffusion quantum Monte Carlo calculation (DMC), a trial wave function
 $\Psi$ is required. One is able to compute
 \begin{align}
   \EDMC = \frac{\Hij{\Phi^{\text{FN}}}{\Psi}}{\braket{\Phi^{\text{FN}}}{\Psi}} & = 
@@ -43,7 +43,7 @@ as a stochastic average with the $3N$-dimensional density $\Psi \times \Phi^{\te
 \begin{equation}
   \EDMC = \left \langle \frac{{\hat H}\Psi(\rn)}{\Psi(\rn)} \right \rangle_{\Psi \times \Phi^{\text{FN}}}.
 \end{equation}
-$\Phi^{\text{FN}}$ is an improved wavefunction of the form
+$\Phi^{\text{FN}}$ is an improved wave function of the form
 \begin{equation}
 \Phi^{\text{FN}}(\rn)  = \Psi(\rn) \times w (\rn)
 \end{equation}
@@ -56,21 +56,21 @@ process with drift and branching.\cite{Hammond_1994}
 
 The non-negativity constraint of $w$ implies that the nodal
 hyper-surfaces of $\Phi^{\text{FN}}$ coincide with those of $\Psi$, but not necessarily with
-those of the exact wavefunction. Hence, the Diffusion Monte Carlo (DMC) method
+those of the exact wave function. Hence, the Diffusion Monte Carlo (DMC) method
 suffers from the so-called \emph{fixed-node approximation}. But if the trial wave
-function has nodes which coincide with those of the exact wavefunction, the
+function has nodes which coincide with those of the exact wave function, the
 exact energy is obtained.
 
-There is no way to improve the nodes of the wavefunction by minimizing directly $\EDMC$.
+There is no way to improve the nodes of the wave function by minimizing directly $\EDMC$.
 However, it has recently been shown\cite{Caffarel_2016} that for each atomic basis
-set there was an $\EDMC$ associated with the FCI wavefunction, and increasing the
+set there was an $\EDMC$ associated with the FCI wave function, and increasing the
 size of the basis set enabled a smooth extrapolation to the exact energy.
-Hence, one expects that computing DMC energy differences with FCI wavefunctions will
+Hence, one expects that computing DMC energy differences with FCI wave functions will
 show an efficient compensation of errors.
 
 In this work, we have introduced an extrapolation scheme, $\EDMC$ as a function
 of $\EPT$ to estimate the $\EDMC$ we would have obtained if the trial wave
-function was a FCI wavefunction. We have applied this scheme to the difficult
+function was a FCI wave function. We have applied this scheme to the difficult
 case of the Fe--S molecule, for which the nature of the ground state in not
 clear. Two states of different symmetries, $^5\Sigma$ and $^5\Delta$ are very
 close in energy, and the main methods of quantum chemistry disagree.

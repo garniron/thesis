@@ -51,7 +51,7 @@
 %\title{Development and parallel implementation of Selected Configuration Interaction methods}
 \title{Développement et implémentation parallèle de méthodes d'interaction de configurations sélectionnées}
 \author{Yann GARNIRON}
-\defencedate{15/11/2018}
+\defencedate{30/11/2018}
 \lab{Laboratoire de Chimie et Physique Quantiques (UMR 5626)}
 %\cotutelle{Institut de cotutelle}
 
@@ -103,11 +103,20 @@
 
 \chapter*{Acknowledgments}
 
-
-
 %Alors?? Tu n'ecris pas ta these ???
 
+Trois années déjà, le temps s'est écoulé trop vite.
 
+Avant tout, je remercie bien entendu mon directeur de thèse Anthony, son flot ininterrompu d'idées toutes intéressantes mais trop nombreuses pour espérer en exécuter une fraction, son humour toujours fin et sa bienveillance naturelle. Je remercie également Michel, Jean-Paul et Titou, véritables puits de science, pour les moult discussions enrichissantes.
+
+Merci à l'ensemble du LCPQ pour son accueil, et un merci de plus à l'équipe GMO pour les réunions du jeudi matin, en particulier les 3 dont je suis reparti avec la bouteille de vin soigneusement sélectionnée par Trond ou Arjan. La dernière est conservée pour le pot de thèse.
+
+Une petite excuse pour l'équipe administrative, pour ma rigueur très approximative en la matière.
+Un petit merci à Bryan, qui ne lira sûrement jamais ces lignes, pour les parties d'agar.io (en dehors des heures de stage bien sûr!) et sa ponctualité scandaleuse.
+
+Je laisse le mot de la fin à ma petit Aurore venue m'apporter son soutien au beau milieu de ma thèse:
+
+eszqqwxxcccvbvbkllkkjuuuèèèè-wxwxxde'"'s""za <
 
 
 \newpage
@@ -144,11 +153,15 @@ ${\Nint = \lfloor \frac{\Norb-1}{64} \rfloor + 1}$
 
 \item [$\NFCI$] : Number of determinants in the FCI space
 
-\item [$|\mathcal{D}|$] : Cardinality of the set $\mathcal{D}$.
+\item [$|\mathcal{D}|$] : Cardinality of the set $\mathcal{D}$
 
 \item [$\kalpha$] : External determinant
 
-\item [$\ket {D_I}$] : Internal determinant.
+\item [$\ket {D_I}$] : Internal determinant
+
+\item [$I_\sigma$] : Bitstring representation of the $\sigma \in \{\uparrow, \downarrow \}$ spin part of $\ket I$
+
+
 \end{itemize}
 
 
@@ -217,9 +230,9 @@ CIPSI,\cite{Huron_1973} that are iterative and thus a priori not well adapted to
 massively parallel architectures. But things turn out differently, and the
 focus of this thesis was to investigate how to make \emph{configuration
 interaction} (CI) methods efficient on modern supercomputers.
-%Unlike Monte-Carlo, most wavefunction methods are not easy to parallelize.
+%Unlike Monte-Carlo, most wave function methods are not easy to parallelize.
 
-The \QP\cite{QP} developed at the LCPQ is a suite of wavefunction quantum
+The \QP\cite{QP} developed at the LCPQ is a suite of wave function quantum
 chemistry methods, that strives to allow easy implementation and
 experimentation of new methods, and to make parallel computation
 as simple and efficient as possible. The main purpose of this package
@@ -228,7 +241,7 @@ more than to be used massively in production.
 Hence, the initial choice of the \QP was to go in the direction of
 determinant-driven algorithms, as opposed to the more traditional
 integral-driven algorithms.
-A determinant-driven approach essentially implies that the wavefunction
+A determinant-driven approach essentially implies that the wave function
 is expressed as a linear combination of determinants, and that the 
 outermost loops of the algorithms loop over determinants.
 On the other hand, integral-driven algorithms have their outermost loop
@@ -258,23 +271,23 @@ scale linearly. This fact gave us some insight that there was room for
 improvement in this step. 
 
 The second focus was the improvement of the determinant selection algorithm
-which is the main method used by the \QP to build compact wavefunctions
+which is the main method used by the \QP to build compact wave functions
 suitable for determinant-driven computations. In a nutshell, the principle is
-to incrementally build a variational wavefunction by scavenging its external
+to incrementally build a variational wave function by scavenging its external
 space for determinants that interact with it. While the significant
 improvement that was brought to this implementation was in itself the most
 important part of this work, it also turned out to be the basis for the subsequent
 implementation of other algorithms. Indeed, efficiently implementing this
-method raised the fundamental question of connecting a variational wavefunction
+method raised the fundamental question of connecting a variational wave function
 to its external space ; that is, gathering data to go beyond what is readily
 available in it. The next steps were partly guided by the aversion to waste
 data gathered during the selection.
 
 Our selection algorithm, CIPSI, implies computing a perturbative contribution
 for external determinants, and including those with the largest contributions into
-the internal space in which the variational wavefunction is expressed.
+the internal space in which the variational wave function is expressed.
 $\EPT$, the sum of all the contributions of the external determinants,
-approximates how much energy the variational wavefunction is missing compared
+approximates how much energy the variational wave function is missing compared
 to  the exact solution in the same basis set, namely the \emph{Full Configuration Interaction} or Full CI. However to
 perform an acceptably accurate selection, not all external determinants need to
 be considered, nor does each contribution need to be known with a great accuracy.\cite{Evangelisti_1983}
@@ -286,15 +299,15 @@ scheme which enabled us to get an accurate value for $\EPT$ by
 computing just a few percent of all the contributions.
 
 The computation of $\EPT$ allows to correct the energy of the 
-wavefunction by taking into account its external space. Unfortunately, it only
-improves the energy, but leaves the wavefunction unchanged. Based on the
+wave function by taking into account its external space. Unfortunately, it only
+improves the energy, but leaves the wave function unchanged. Based on the
 shifted-\Bk algorithm, using our CIPSI implementation and the hybrid
-deterministic-stochastic scheme we were able to refine the wavefunction under
+deterministic-stochastic scheme we were able to refine the wave function under
 the effect of a stochastically estimated external space using
 a Hamiltonian dressed by a matrix computed semi-stochastically.
 
 In addition, we set up a general framework to enable the refining of the
-variational wavefunction under the effect of any
+variational wave function under the effect of any
 external space, with a stochastic estimation.
 This was experimented by implementing a stochastic selected \emph{multi-reference
 coupled cluster with singe and double substitutions} (MR-CCSD).
@@ -302,7 +315,7 @@ coupled cluster with singe and double substitutions} (MR-CCSD).
 The efficiency of the implemented algorithms is exposed, and the code
 was used in numerous applications, in particular to obtain reference
 excitation energies for difficult molecular systems. The high quality
-and compactness of the CIPSI wavefunction was also used for quantum Monte Carlo
+and compactness of the CIPSI wave function was also used for quantum Monte Carlo
 calculations to characterize the ground state of the Fe--S molecule.
 
 Of course, the technical considerations were not the focus of the different
@@ -366,7 +379,7 @@ Our implementation could be further improved by using together the linear-scalin
 algorithms, keeping track of an estimate of the allocated memory and switching smoothly between the
 two variants.
 
-Some other methods for packing internal determinants into disjoint subsets were also experimented. Because none yielded results as satisfying as the packing by spin part currently used, none is currently implemented in the \QP. However, it was recently figured that the next most interesting method, packing according to the set of singly occupied orbitals, had an intersting property: the fact that it packs together determinants connected by two-indices integrals (they by construction cannot alter which orbitals are singly occupied), which are the largest ones. The associated matrix elements are therefore available almost ``for free'' and add to those associated with $\uparrow \uparrow$ and $\downarrow \downarrow$ excitations, that are unexpensive in our current system. It is planned to examine whether this can be taken advantage of in a stochastic diagonalization scheme.
+%Some other methods for packing internal determinants into disjoint subsets were also experimented. Because none yielded results as satisfying as the packing by spin part currently used, none is currently implemented in the \QP. However, it was recently figured that the next most interesting method, packing according to the set of singly occupied orbitals, had an intersting property: the fact that it packs together determinants connected by two-indices integrals (they by construction cannot alter which orbitals are singly occupied), which are the largest ones. The associated matrix elements are therefore available almost ``for free'' and add to those associated with $\uparrow \uparrow$ and $\downarrow \downarrow$ excitations, that are unexpensive in our current system. It is planned to examine whether this can be taken advantage of in a stochastic diagonalization scheme.
 
 The CIPSI selection algorithm, for which the previous implementation examined the external determinants one by one, was enormously improved, allowing for applications that were not feasible so far.\cite{Scemama_2018,1806.05115} Several different optimizations were used, reducing the cost of finding connections between external and internal determinants (batch approach, filtering), as well as the cost of computing the corresponding matrix element in the Hamiltonian (phase mask, systematic determination of excitations). Again, a distributed implementation was realized after 
 solving the problems related to load imbalance. For the selection algorithm, the speedup is almost ideal with 50 nodes. Despite the implementational improvements we have shown, there is still space for improvement from an algorithmic point of view. For instance, the selection step could be dramatically accelerated without reducing its quality by using a combination of CIPSI and of the Heat-Bath CI algorithm\cite{Holmes_2016_2}, by simply splitting the orbital space. The CIPSI selection, more expensive but more precise, would be used only where it is necessary, namely for excitations involving orbitals close to the Fermi level where the role of the denominator is crucial, and the Heat-Bath selection algorithm would be used the for the rest of the space.
@@ -399,7 +412,7 @@ generate external determinants. This truncation is the source of a small but
 spurious size-consistence error.
 
 %J'en suis la
-To get the best of the data we were already able to compute, we implemented the shifted-\Bk method, which uses the energy contributions computed by $\EPT$ to refine the wavefunction. It essentially creates an external space of determinants $\kalpha$ whose coefficients are perturbatively estimated, and allows them to act on the coefficients of the wavefunction in the internal space. This method requires the computation of a dressing matrix, which we could estimate stochastically in a way similar to what we proposed for $\EPT$ (stochastic matrix dressing).
+To get the best of the data we were already able to compute, we implemented the shifted-\Bk method, which uses the energy contributions computed by $\EPT$ to refine the wave function. It essentially creates an external space of determinants $\kalpha$ whose coefficients are perturbatively estimated, and allows them to act on the coefficients of the wave function in the internal space. This method requires the computation of a dressing matrix, which we could estimate stochastically in a way similar to what we proposed for $\EPT$ (stochastic matrix dressing).
 The challenge in this case was to estimate, instead of a scalar, a vector of size $\Ndet$, which can be up to a few million elements. The storage and network issues could be solved by setting up a system of predefined checkpoints, a modest drawback being the impossibility to get an estimated dressing matrix outside of those checkpoints.
 
 Finally, this stochastic matrix dressing computation was extended to another external space, that of the Multi-Reference Coupled-Cluster we had previously implemented deterministically,\cite{Garniron_2017} which allowed to explore some possibilities of the bitstring-based determinant-driven approach.

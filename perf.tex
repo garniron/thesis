@@ -43,7 +43,7 @@ energy obtained in a larger basis set.
 \end{figure}
 
 \begin{table}[hbt]
-\caption{Energies and second-order perturbative corrections for increasingly large wavefunctions. $\Delta E$ is the energy difference
+\caption{Energies and second-order perturbative corrections for increasingly large wave functions. $\Delta E$ is the energy difference
 between the ground state and the excited state.}
 \label{tab:energy_pt2}
 \begin{center}
@@ -91,17 +91,17 @@ First, we measure the time required to compute one iteration of the Davidson alg
 
 Plotting this data with a log-log scale (figure~\ref{fig:speedup_davidson_ndet}) shows an agreement with the predicted $\order{\Ndet^{3/2}}$ scaling.
 
-Then, we took the two largest wavefunctions. One with $9~356~952$ and one with $42~959~496$ determinants, and measured the wall-clock time required to
+Then, we took the two largest wave functions. One with $9~356~952$ and one with $42~959~496$ determinants, and measured the wall-clock time required to
 perform one iteration of the Davidson diagonalization, with an increasing number of compute nodes.
 
 The timings are reported in table~\ref{tab:time_davidson} and the parallel speedup curve is represented in figure~\ref{fig:speedup_davidson}.
 As the communication scales as $\order{\Ndet}$ and the computation scales as
 $\order{\Ndet^{3/2}}$, the parallel efficiency increases together with $\Ndet$,
 as shown on figure~\ref{fig:speedup_davidson}. For the largest wave function a 
-parallel efficiency of 76\% is obtained on 50 nodes for the largest wavefunction.
+parallel efficiency of 76\% is obtained on 50 nodes for the largest wave function.
 
 \begin{table}[hbt]
-\caption{Wall-clock time (in seconds) to run one Davidson's iteration in parallel with increasingly large wavefunctions.}
+\caption{Wall-clock time (in seconds) to run one Davidson's iteration in parallel with increasingly large wave functions.}
 \label{tab:time_davidson_ndet}
 \begin{center}
 \begin{tabular}{rr}
@@ -122,13 +122,13 @@ $42~959~496$ &  $11~198.70$ \\
     \begin{center}
       \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_davidson_ndet}
       \caption{Wall-clock time of one Davidson iteration as a function of the number of
-determinants in the wavefunction.}
+determinants in the wave function.}
       \label{fig:speedup_davidson_ndet}
     \end{center}
 \end{figure}
 
 \begin{table}[hbt]
-\caption{Wall-clock time (in seconds) to run one Davidson's iteration in parallel on two different wavefunctions 
+\caption{Wall-clock time (in seconds) to run one Davidson's iteration in parallel on two different wave functions 
 with an increasing number of 36-core compute nodes.}
 \label{tab:time_davidson}
 \begin{center}
@@ -165,13 +165,13 @@ $50$ &$ 33.67$ &$   295.25$\\
 We have measured the time necessary to realize a selection step, with an
 increasing number of determinants in the variational space.
 Figure~\ref{fig:scaling_sel_node} shows a near-linear scaling with the number of
-determinants. This is due to the threshold $n_g$ which tends to make the number of external determinants constant when the wavefunction becomes large enough.
+determinants. This is due to the threshold $n_g$ which tends to make the number of external determinants constant when the wave function becomes large enough.
 
 The parallel speedup was also measured with up to 50 nodes, showing an almost ideal speedup curve with 95\% of parallel efficiency with 50 nodes. This is in part due to the tuning of the fragmentation of the
 tasks which gives a very well balanced task queue.
 
 \begin{table}[hbt]
-\caption{Single-node (36-core) CIPSI selection for increasingly large wavefunctions. Time is given in seconds.}
+\caption{Single-node (36-core) CIPSI selection for increasingly large wave functions. Time is given in seconds.}
 \label{tab:time_selection}
 \begin{center}
 \begin{tabular}{rr}
@@ -191,7 +191,7 @@ $9~356~952$ & $ 22~560.33$ \\
 
 \begin{table}[hbt]
 \caption{Time (in seconds) to run parallel CIPSI selections on the
-9~356~952-determinant wavefunction with an increasing number of 36-core
+9~356~952-determinant wave function with an increasing number of 36-core
 compute nodes.}
 \label{tab:selection_parallel}
 \begin{center}
@@ -215,7 +215,7 @@ $50$ & $   472.33$ \\
     \begin{center}
       \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sel_det}
       \caption{Wall-clock time of the selection as a function of the number of
-determinants in the wavefunction.}
+determinants in the wave function.}
       \label{fig:scaling_sel_ndet}
     \end{center}
 \end{figure}
@@ -246,10 +246,10 @@ with the number of determinants, as plotted in figure~\ref{fig:scaling_det_pt2},
 which is close to linear.
 This can be understood, since 
 the number of $\ket{\alpha}$ determinants is proportional to the
-number of determinants in the variational wavefunction, and each
+number of determinants in the variational wave function, and each
 $\ket{\alpha}$ needs to be compared to all the determinants 
 in the computation of $\mel{\alpha}{H}{\Psi}$.
-But when the wavefunction becomes large enough, the second point is not true any more because only a limited number of determinants $\ket{I}$ of $\Psi$ have a non-zero
+But when the wave function becomes large enough, the second point is not true any more because only a limited number of determinants $\ket{I}$ of $\Psi$ have a non-zero
 value $\mel{\alpha}{H}{I}$, and this number is bounded by the number of single and double excitations, characteristic of the basis set.
 Fitting the last points with a log-log plot shows an asymptotic scaling as
 $\order{\Ndet^{1.07}}$, which is compatible with the expected linear scaling for
@@ -263,13 +263,13 @@ The second reason for the non-ideal speedup is the pre-computation of the combs 
 \begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_pt2_det}
-		\caption{Wall clock time required to compute $\EPT$ for the ground and the excited states, as a function of the number of determinants in the wavefunction.}
+		\caption{Wall clock time required to compute $\EPT$ for the ground and the excited states, as a function of the number of determinants in the wave function.}
 		\label{fig:scaling_det_pt2}
 	\end{center}
 \end{figure}
 
 \begin{table}[h]
-\caption{Single-node (36-core) $\EPT$ calculations for increasingly large wavefunctions. Time is given in seconds.}
+\caption{Single-node (36-core) $\EPT$ calculations for increasingly large wave functions. Time is given in seconds.}
 \label{tab:time_pt2}
 \begin{center}
 \begin{tabular}{rrr}
@@ -289,7 +289,7 @@ $9~356~952$ &  $ 7~779.80$ & $ 9~855.45$ \\
 \end{table}
 
 \begin{table}
-\caption{Time (in seconds) to run parallel $\EPT$ calculations on the largest wavefunction with an
+\caption{Time (in seconds) to run parallel $\EPT$ calculations on the largest wave function with an
 increasing number of 36-core compute nodes.}
 \label{tab:pt2_parallel}
 \begin{center}
@@ -311,7 +311,7 @@ $50$ & $  225.08$  & $  278.21$  \\
 \begin{figure}[hbt]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_pt2_node}
-		\caption{Parallel speedup for the calculation of the $\EPT$ contribution of the ground state using the largest wavefunction. Each node contains 36 physical CPU cores.}
+		\caption{Parallel speedup for the calculation of the $\EPT$ contribution of the ground state using the largest wave function. Each node contains 36 physical CPU cores.}
 		\label{fig:scaling_node_pt2}
 	\end{center}
 \end{figure}
@@ -332,11 +332,11 @@ This scaling is slightly higher than the $\order{\Ndet^{1.07}}$ measured for $\E
 but close to linear, as expected. The additional overhead is due to the handling of
 the checkpoints which eliminates the communication bottleneck.
 
-Then, the parallel speedup was measured using the wavefunction with 9~356~952 determinants. The results
+Then, the parallel speedup was measured using the wave function with 9~356~952 determinants. The results
 are plotted in figure~\ref{fig:scaling_node_sbk}.
 
 \begin{table}[h]
-\caption{Single-node (36-core) Shifted-$B_k$ iteration for increasingly large wavefunctions.
+\caption{Single-node (36-core) Shifted-$B_k$ iteration for increasingly large wave functions.
 Time is given in seconds.}
 \label{tab:sbk_selection}
 \begin{center}
@@ -357,7 +357,7 @@ $9~356~952$ & $ 19~881.30$  & $ 22~082.60$ \\
 \begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sbk_det}
-		\caption{Wall clock time required to compute the Shifted-$B_k$ dressing for the ground and the excited states, as a function of the number of determinants in the wavefunction.}
+		\caption{Wall clock time required to compute the Shifted-$B_k$ dressing for the ground and the excited states, as a function of the number of determinants in the wave function.}
 		\label{fig:scaling_det_sbk}
 	\end{center}
 \end{figure}
@@ -380,7 +380,7 @@ $50$ & $  514.53$  & $  544.50$  \\
 \begin{figure}[hbt]
 	\begin{center}
 		\includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sbk_node}
-		\caption{Parallel speedup for the calculation of the matrix dressing of the ground state using the largest wavefunction. Each node contains 36 physical CPU cores.}
+		\caption{Parallel speedup for the calculation of the matrix dressing of the ground state using the largest wave function. Each node contains 36 physical CPU cores.}
 		\label{fig:scaling_node_sbk}
 	\end{center}
 \end{figure}

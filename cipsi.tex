@@ -6,7 +6,7 @@
 
 
 \section{The basic algorithm}
-My initial and most important work has been the improvement of the implementation of the CIPSI algorithm present in the \QP, that had been implemented by my predecessor.\cite{giner:tel-01077016} As was briefly described in section~\ref{sec:meth_cipsi}, it is an \emph{on the fly} iterative selection algorithm, where determinants are added to the variational wavefunction according to a perturbative criterion. Because it gathers a large amount of information, this CIPSI implementation has been the basis for other subsequent works presented in the next chapters.
+My initial and most important work has been the improvement of the implementation of the CIPSI algorithm present in the \QP, that had been implemented by my predecessor.\cite{giner:tel-01077016} As was briefly described in section~\ref{sec:meth_cipsi}, it is an \emph{on the fly} iterative selection algorithm, where determinants are added to the variational wave function according to a perturbative criterion. Because it gathers a large amount of information, this CIPSI implementation has been the basis for other subsequent works presented in the next chapters.
 
 The $n^\text{th}$ iteration of CIPSI can be described like so:
 
@@ -24,7 +24,7 @@ For all \emph{external} determinants $\kalpha \notin \{\ket{D_I}\}^{(n)}$, we co
 \begin{equation}
 e_\alpha = \frac{\Hij{\Psi^{(n)}}{\alpha}^2}{E^{(n)} - \Hij{\alpha}{\alpha}}.
 \end{equation}
-As we use Epstein-Nesbet perturbation theory, $E^{(n)}=\Evar^{(n)}$ is the variational energy of the wavefunction at the current iteration (note that another perturbation theory could be used here).
+As we use Epstein-Nesbet perturbation theory, $E^{(n)}=\Evar^{(n)}$ is the variational energy of the wave function at the current iteration (note that another perturbation theory could be used here).
 
 \item Summing the contributions of all the external determinants gives the second order perturbative correction
 \begin{equation}
@@ -42,7 +42,7 @@ We extract $\{ \ket{\alpha_\star} \}^{(n)}$ the subset of determinants $\kalpha$
 \end{equation}
 
 \item
-Go to iteration $n+1$, or exit on some criterion (number of determinants in the wavefunction, low $\EPT^{(n)}$, \dots).
+Go to iteration $n+1$, or exit on some criterion (number of determinants in the wave function, low $\EPT^{(n)}$, \dots).
 
 \end{enumerate}
 
@@ -99,7 +99,7 @@ We do not need extremely accurate values for $e_\alpha$ as small differences are
 So  connections to $\ket {D_I}$ with small coefficients $|c_I|$ can be neglected
 in the expression of $e_\alpha$.
 This approximation is achieved in a similar way by defining a threshold $n_s$
-on the norm of the wavefunction, and $N_{sel} \geq \Ngen$ a number of so-called
+on the norm of the wave function, and $N_{sel} \geq \Ngen$ a number of so-called
 \emph{selectors}. We approximate 
 \begin{equation}
   \Hij{\Psi}{\alpha} \approx \sum_{I \leq N_{sel}} c_I \Hij{D_I}{\alpha}.
@@ -231,7 +231,7 @@ Iterate over all possible $a_p a_q \ket G = \ket {G_{pq}}$.
 Allocate a zero-initialized array for the matrix $P(G_{pq})$ indexed by $r$ and $s$. Each cell is associated with $\ordering a^\dagger_r a^\dagger_s a_p a_q  \ket G = \Gpqrs$. Some cells will be tagged as not being associated with a unique $\ket \alpha$, but either one of :
 \begin{itemize}
 \item
-a determinant already present in the wavefunction
+a determinant already present in the wave function
 \item
 an \emph{exclusion principle violating} determinant (EPV), i.e. $\Gpqrs = 0$
 \item
@@ -699,7 +699,7 @@ $\an{ij\ldots}$ is a compact notation for $\an i \an j \ldots$
 \item
 $X$ and $Y$ are ``wildcard'' indices referring to any spinorbital unoccupied in both $\ket S$ and $\ket {G_{pq}}$ 
 \end{itemize}
-%- "is in wavefunction" : $\ket {G_{pq}^{rs}} = S$. There is no need to compute $\langle \ket {G_{pq}^{rs}}|H|S \rangle$ since $\ket {G_{pq}^{rs}}$ is necessarily tagged for being present in the wavefunction.
+%- "is in wave function" : $\ket {G_{pq}^{rs}} = S$. There is no need to compute $\langle \ket {G_{pq}^{rs}}|H|S \rangle$ since $\ket {G_{pq}^{rs}}$ is necessarily tagged for being present in the wave function.
 \end{minipage}
 \end{center}
 \end{table}
@@ -788,13 +788,13 @@ For the determinant selection, we still use the mixed MPI/OpenMP paradigm, where
 \section{Obtaining spin-pure states}
 \label{sec:cipsi_s2}
 
-The presented algorithm generates a wavefunction which is expressed on a truncated space of Slater determinants. Determinants are not necessarily eigenfunctions of the $\widehat S^2$ operator, so the eigenfunctions of the truncated Hamiltonian are not guaranteed to be also eigenfunctions of $\widehat S^2$.
+The presented algorithm generates a wave function which is expressed on a truncated space of Slater determinants. Determinants are not necessarily eigenfunctions of the $\widehat S^2$ operator, so the eigenfunctions of the truncated Hamiltonian are not guaranteed to be also eigenfunctions of $\widehat S^2$.
 
 A conventional solution to avoid this issue is to work in the basis of \emph{Configuration State Functions} (CSFs). These are linear combinations of determinants which are eigenfunctions of $\widehat S^2$, and with the desired eigenvalue. Diagonalizing $\widehat H$ in this basis ensures that the solution is spin pure.
 
 Working with CSFs instead of determinants has the additional advantage that the space of CSFs is smaller than the space of determinants. CSFs could in principle be used for CIPSI, but that makes the computation of the matrix elements of $\widehat H$ less straightforward.
 
-We have chosen a more practical solution.\cite{Bytautas_2009} After the selection step, we add to the variational space all the determinants that are necessary to obtain a spin pure solution. These determinants correspond to all the possible spin flips in open shell determinants with the constraint that $\Nalpha$ and $\Nbeta$ are constant. The diagonalization of $\widehat H$ will automatically yield spin pure eigenfunctions at the cost of increasing the size of the wavefunction with many determinants with very small weights.
+We have chosen a more practical solution.\cite{Bytautas_2009} After the selection step, we add to the variational space all the determinants that are necessary to obtain a spin pure solution. These determinants correspond to all the possible spin flips in open shell determinants with the constraint that $\Nalpha$ and $\Nbeta$ are constant. The diagonalization of $\widehat H$ will automatically yield spin pure eigenfunctions at the cost of increasing the size of the wave function with many determinants with very small weights.
 
 \section{Conclusion}
 
