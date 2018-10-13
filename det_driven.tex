@@ -609,23 +609,15 @@ Using the above formulas and taking into account the internal representation of 
 Algorithm \ref{alg:PHASE_SINGLE} is a general one, efficient for computing the phase factor for arbitrary determinants. However, a phase computation is typically needed every time two determinants are compared, resulting in a vast amount of computational power being consumed. When only this method was used in the \QP, it was not uncommon to find that a large fraction of the computational time was spent in phase computations.
 Advantage can be taken of the fact that, in most cases, the considered determinants aren't actually arbitrary. Usually, the phase computation will be performed repeatedly with the same determinant. For a fairly modest computational price, it is possible to compress the phase information from a particular determinant and make it cheaper to extract. The underlying principle is little more than a cumulative sum. If, for a determinant $\ket{I}$ that is going to be used repeatedly for phase computations, we pre-compute
 \begin{equation}
-E^I_i = \sum_{k=1}^{i-1} \occ{k}{I}
+E^I_i = \sum_{k=1}^{i} \occ{k}{I}
 \end{equation}
-and
+we can access $N^I_{ij}$ for any $i$ and $j>i$ with no need to loop over $k$ as
 \begin{equation}
-\tilde{N}^I_{ij} = E^I_j - E^I_{i+1}.
-\end{equation}
-Now, we can access $N^I_{ij}$ for any $i$ and $j>i$ with no need to loop over $k$ as
-\begin{equation}
-N^I_{ij} = \tilde N^I_{ij}.
+N^I_{ij} = E^I_{j-1} - E^I_{i}.
 \end{equation}
 
 
-Note that $\tilde N^I_{ij}$ is still defined when $j<i$. The reason for this will be made clear later.
-This requires to store $E^I$ which is an integer array of size $2 \times (\Norb+1)$. 
-
-
-This may be somewhat memory consuming if we want to pre-compute and store $E$ for each determinant. However, because the actual information needed isn't $N^I_{ij}$, but merely its parity, we only need to store the so-called ``phase mask'' array $P^I$
+This requires to store $E^I$ which is an integer array of size $2 \times (\Norb+1)$. This may be somewhat memory consuming if we want to pre-compute and store $E$ for each determinant. However, because the actual information needed isn't $N^I_{ij}$, but merely its parity, we only need to store the so-called ``phase mask'' array $P^I$
 \begin{equation}
 \label{eq:phasemask}
 P^I_i = p(E^I_i)
@@ -633,36 +625,54 @@ P^I_i = p(E^I_i)
 which is 1 bit of information per spinorbital, as opposed to an integer big enough to accommodate a number of electrons.
 \begin{align}
 E^I_i & = 2 \times  \Big \lfloor \frac{E^I_i}{2} \Big \rfloor + P^I_i \\
-\tilde N^I_{ij} & = E^I_j - E^I_{i+1} \\
- & = 2 \times \qty( \Big \lfloor \frac{E^I_j}{2} \Big \rfloor - \Big \lfloor \frac{E^I_{i+1}}{2} \Big \rfloor ) + P^I_j - P^I_{i+1}
+N^I_{ij} & = E^I_{j-1} - E^I_{i} \\
+ & = 2 \times \qty( \Big \lfloor \frac{E^I_{j-1}}{2} \Big \rfloor - \Big \lfloor \frac{E^I_{i}}{2} \Big \rfloor ) + P^I_{j-1} - P^I_{i}
 \end{align}
 	    
-In the last equation, $\tilde N^I_{ij}$ is expressed as a sum of three terms. The first one being even by construction, the parity of $\tilde N^I_{ij}$ is the parity of the rest of the sum:
+In the last equation, $N^I_{ij}$ is expressed as a sum of three terms. The first one being even by construction, the parity of $N^I_{ij}$ is the parity of the rest of the sum:
 \begin{equation}
-p(\tilde N^I_{ij})=p(P^I_j - P^I_{i+1})
+p(N^I_{ij})=p(P^I_{j-1} - P^I_{i})
 \end{equation}
 This can be rewritten in a slightly more efficient way as
 \begin{equation}
-p(\tilde N^I_{ij}) = P^I_j \oplus P^I_{i+1}
+p(N^I_{ij}) = P^I_{j-1} \oplus P^I_{i}
 \end{equation}
 
 %Note that using $E^I$ instead of $P^I$ would require an extra ADD instruction ( totalement negligeable ? )
 %\begin{equation}
-%p(\tilde N^I_{ij}) = (E^I_{i+1} - E^I_j) \wedge 1
+%p(N^I_{ij}) = (E^I_{i+1} - E^I_j) \wedge 1
 %\end{equation}
 
-We have used sorted indices $i<j$. But just like for the general algorithm, if we consider $\hat T_{i'}^{j'}$ we need to sort $i'$ and $j'$ to get the $i=\min(i', j')$ and $j=\max(i', j')$ indices used for the phase computation.
+We have used sorted indices $i<j$. In practice, we know which index refers to the particle and which refers to the hole. With an excitation operator $\hat T_h^p$ applied to $\ket {I}$, noticing that
 
-This however doesn't need to be done explicitly. We can arbitrarily choose $i=i'$ and $j=j'$, and reverse the phase if $j<i$. We effectively have computed $p(N^I_{i'j'})$ instead of $p(N^I_{j'i'})$, and it can be proved they are always of different parity:
+\begin{itemize}
+\item
+if $p>h$ we have
 \begin{align}
-\tilde N^{I}_{i' j'} + \tilde N^{I}_{j'i'} & = E^{I}_{j'} - E^I_{i'+1} + E^I_{i'} - E^I_{j'+1} \\
-& = -\qty( \occ{j'}{I} + \occ{i'}{I})
+p(N^I_{hp}) &= P^I_{p-1} \oplus P^I_{h} \\
+& = P^I_{p} \oplus P^I_{h} \oplus \occ{p}{I} \\
+& = P^I_{p} \oplus P^I_{h} 
 \end{align}
-Because $\hat T_{i'}^{j'} \ket I \neq 0$, we know that $\occ{j'}{I} + \occ{i'}{I} = 1$. 
-\begin{equation}
-\tilde N^{I}_{j' i'} = -(\tilde N^{I}_{i'j'} + 1)
-\end{equation}
-This translates to $\tilde N^{I}_{j' i'}$ and $\tilde N^{I}_{i'j'}$ being of different parity.
+
+\item
+if $h>p$ we have
+\begin{align}
+p(N^I_{ph}) &= P^I_{h-1} \oplus P^I_{p} \\
+& = P^I_{h} \oplus P^I_{p} \oplus \occ{h}{I} \\
+& = P^I_{h} \oplus P^I_{p} \oplus 1
+\end{align}
+
+\end{itemize}
+
+the phase factor can be computed as
+\begin{align}
+\label{eq:PHASE_FACTOR}
+\phase{\ket{I}}{\ordering \hat T_h^p \ket{I}} = 
+\begin{cases}
+(-1)^{P^I_{h} \oplus P^I_{p}} & \text{if } p>h \\
+-(-1)^{P^I_{h} \oplus P^I_{p}} & \text{if } h>p \\
+\end{cases}
+\end{align}
 
 
 \begin{algorithm}
@@ -688,6 +698,8 @@ This translates to $\tilde N^{I}_{j' i'}$ and $\tilde N^{I}_{i'j'}$ being of dif
 				}
 			}
 		}
+		%\tcc{Ignoring the shift will cause all phases to be flipped, which is transparent.}
+		%$P = \ishft{P}{1}$ \;
 		\KwRet{$P$} \;
 		}
 \end{algorithm}
@@ -714,7 +726,7 @@ This translates to $\tilde N^{I}_{j' i'}$ and $\tilde N^{I}_{i'j'}$ being of dif
 		$j_n \gets (j-1)/64$ \;
 		$i_b \gets (i-1) \mod 64$ \;
 		$j_b \gets (j-1) \mod 64$ \;
-		$B \gets \ISHFT{P_\sigma^I[i_n]}{-i_b} + \ISHFT{P_\sigma^I[j_n]}{-j_b}$ \;
+		$B \gets \ISHFT{P_\sigma^I[i_n]}{-i_b} \oplus \ISHFT{P_\sigma^I[j_n]}{-j_b}$ \;
 		\uIf{$B \wedge 1 = c$}{
 		\KwRet{ $-1$}\;}
                 \Else{\KwRet{ $1$} \; }
@@ -730,17 +742,17 @@ This translates to $\tilde N^{I}_{j' i'}$ and $\tilde N^{I}_{i'j'}$ being of dif
                 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.5\columnwidth]{figures/determinant_driven/phase}
+		\includegraphics[width=0.65\columnwidth]{figures/determinant_driven/phase}
 		\caption[phase mask illustration]{
-		$i$ and $j$ are the lowest and highest spinorbitals involved in the excitation. $E_i^I$ is the number of electrons in spinorbitals below $i$ and of same spin, $P_i^I$ is its parity. $E_j^I - E_{i+1}^I$ gives the number of electrons that are ``crossed'' during the excitation, $\phi = P^I_{i+1} \oplus P^I_j$ the parity of that number, $(-1)^\phi$ is the phase factor.
+		Illustrative exemple of phase mask use. $h$ and $p$ are the hole and particle involved in the excitation. $E_i^S$ is the number of electrons in spinorbitals $i$ and below (of same spin), $P_i^S$ is its parity. Because $h>p$, $E_{h-1}^S - E_{p}^S$ gives the number of electrons that are ``crossed'' during the excitation. The phase factor is computed according to Eq.\ref{eq:PHASE_FACTOR}
 		}
 		\label{generators_selectors}
 	\end{center}
 \end{figure}
 
 
-Currently, the \QP does not store the $\bitP$ vector for each determinant of the wavefunction, but recomputes it whenever needed before a loop.
-The algorithm for computing $P^I$ as a phase mask is shown as algorithm \ref{alg:PHASEMASK}. It uses a trick to get the phase mask of a single integer with a logarithmic complexity (loop at line 6 of the algorithm). With $P^0$ a single-integer bitstring for which we want to compute the phase mask, bits being indexed from $0$:
+Currently, the \QP does not store a phase mask for each determinant of the wavefunction, but recomputes it whenever needed before a loop.
+The algorithm for computing $P^I$ as a bitstring is shown as algorithm \ref{alg:PHASEMASK}. It uses a trick to get the phase mask of a single integer with logarithmic complexity (loop at line 6 of the algorithm). With $P^0$ a single-integer bitstring for which we want to compute the phase mask, bits being indexed from $0$:
 
 \begin{enumerate}
 \item
@@ -752,7 +764,9 @@ P^1_i& =
   	p(P_{i-1}^0 + P_{i}^0)   & \text{if } i \geq 1 \\
   \end{cases}
 \end{align}
-
+\begin{equation}
+P^1_i = p \left (\sum_{j=max(i-1,0)}^{i} P_j^0 \right )
+\end{equation}
 \item
 $P^2 \gets P^1 \oplus \ishft{P^1}{2^1})$.\\
 \begin{align}
@@ -763,7 +777,7 @@ P^2_i& =
   \end{cases}
 \end{align}
 \begin{equation}
-P^2_i = p(P_{\min(i-3, 0)}^0 + \ldots + P_i^0)
+P^2_i = p \left (\sum_{j=max(i-3,0)}^{i} P_j^0 \right )
 \end{equation}
 \item
 $P^3 \gets P^2 \oplus \ishft{P^2}{2^2})$.\\
@@ -775,14 +789,27 @@ P^3_i& =
   \end{cases}
 \end{align}
 \begin{equation}
-P^3_i = p(P_{\min(i-7, 0)}^0 + \ldots + P_i^0)
+P^3_i = p \left (\sum_{j=max(i-7,0)}^{i} P_j^0 \right )
 \end{equation}
 \item
 etc...
 \end{enumerate}
+For a 64-bit integer we have to go to 
+\begin{equation}
+P^6_{i<64} = p \left (\sum_{j=0}^{i} P_j^0 \right )
+\end{equation}
+which is the definiton of a phase mask (here indexed from $0$).
 
-The method to compute the phase associated with a single excitation from a phase mask is shown as algorithm \ref{alg:PHASE_SINGLE}.
-With this method, the cost of computing a phase ---~after paying the overhead of computing $P$~--- is accessing two bits and applying the \lstinline{IEOR} function to them, in addition to the tests. Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the cumbersome boundaries of 64-bit integers.\phantom{\ref{alg:EXC_DEGREE}}
+%The phase mask as described is
+%\begin{equation}
+%P = \ISHFT{P^6}{1} \; ;\; P_i = p \left (\sum_{j=0}^{i-1} P_j^0 \right )
+%\end{equation}
+%but for convenience, the $\text{\texttt{ISHFT}}$ may be omitted. Because in a feasible excitation $\hat T_i^j$ it is known exactly one of $i$ and $j$ is occupied, using $P^6$ directly as the phase mask will result in the computed phases to be systematically flipped, which is transparent. Alternatively, the return value of algorithm \ref{alg:PHASE_FROM_PHASEMASK} can be flipped if used with an ``unshifted'' phase mask.
+
+
+
+The method to compute the phase factor associated with a single excitation from a phase mask is shown as algorithm \ref{alg:PHASE_FROM_PHASEMASK}.
+With this method, the cost of computing a phase factor ---~after paying the overhead of computing $P$~--- is accessing two bits and applying the \lstinline{IEOR} function to them, in addition to the tests. Unlike the general method, its cost doesn't depend on $\Nint$, and doesn't require to deal with the cumbersome boundaries of 64-bit integers.\phantom{\ref{alg:EXC_DEGREE}}
 
 
 \subsection{Double excitations}

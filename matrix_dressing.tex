@@ -223,8 +223,8 @@ $\deltabold^{D,t}$ with $I \in \mathcal{T}_t$. This is exactly one write.
 \item
 $\deltabold^{S,m}$ where $\gamma^m_I - \gamma^{m-1}_I \neq 0$. This is
  \begin{itemize}
- \item No write if generator $\ket{D_I}$ is moved to $\mathcal{D}$ in the same checkpoint it is first drawn or computed for tooth filling
- \item Otherwise, one write per checkpoint in which it is drawn until the one where it is moved to $\mathcal{D}$, inclusive.
+ \item No write if generator $\ket{D_I}$ is moved to $\mathcal{D}_D$ in the same checkpoint it is first drawn or computed for tooth filling
+ \item Otherwise, one write per checkpoint in which it is drawn until the one where it is moved to $\mathcal{D}_D$, inclusive.
  \end{itemize}
  While this increases the theoretical maximum of writes to $\Ncp+1$ per sample, it is much lower in practice.
 \end{itemize}
@@ -258,7 +258,7 @@ with $j$ the task index associated with $I$, i.e. $Q[j]=I$. These sets are track
 \end{figure}
 
 \begin{algorithm}
-	\caption{Compute task queue and checkpoints.}
+	\caption{Compute task queue and checkpoints. Tasks are fragmented as described in section \ref{seq:fragmentation} (not shown).}
 	\label{PRECOMPUTE_MONTECARLO}
 		\KwData{$M_m$ the desired number of combs for checkpoints $m$. $M_0 = 0$ for convenience. $M_{n+1} > M_n$, $\exists M_n > \Ngen$}
 		\KwResult{$Q$ the task array, $\Ncp$ the number of checkpoints, $P$ the array so that $P[I] = m$ iff $I \in \mathcal{P}_m$, $R^{-1}$ the array so that checkpoint $m$ becomes available when the first $R^{-1}[m]$ tasks have been computed.}
@@ -340,8 +340,9 @@ with $j$ the task index associated with $I$, i.e. $Q[j]=I$. These sets are track
 %		$\Ncp \gets k$ \;
 \end{algorithm}
 
-Algorithm~\ref{PRECOMPUTE_MONTECARLO} presents the computation of the task queue, and
-algorithm \ref{alg:OPTIMIZE_MONTECARLO} is an optional reorganization of task order. It ensures results for a checkpoint are available as quickly as possible, without altering them.
+Algorithm~\ref{PRECOMPUTE_MONTECARLO} presents the computation of the task queue, which can be (optionally) optimized with algorithm \ref{alg:OPTIMIZE_MONTECARLO}, which ensures results for a checkpoint are available as quickly as possible, without altering them. Computation for other needed variables is shown as algorithm \ref{alg:COMPUTE_MU}.
+Finally, algorithms \ref{alg:DRESS_MASTER} and \ref{alg:DRESS_SLAVE} show the pseudo-code for the master and slave processes, respectively.
+%Algorithm \ref{alg:COMPUTE_MU} shows computation of $\tilde \mu$, $\dot t$ and $\dot n_0$.
 %Some checkpoints may however be removed if no extra computation is required to reach the next one ; this situation can't happen in the unoptimized task queue, because of the tooth filling. Two things are taken into consideration:
 \begin{itemize}
 \item
@@ -354,7 +355,7 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 
 \begin{algorithm}
 	\caption{Computation of $\tilde \mu$, $\dot t$ and $\dot n_0$.}
-	\label{COMPUTE_MU}
+	\label{alg:COMPUTE_MU}
 	\KwData{$Q$, $R^{-1}$, $n_0$, $\Nteeth$}
 		\KwResult{ $\tilde \mu$, $\dot t$ and $\dot n_0$}
 		$\tilde \mu^*_* \gets 0$ \;
@@ -395,96 +396,10 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 \newcommand{\cpmax}{\text{cp\_max}}
 \newcommand{\willsend}{\text{will\_send}}
 
-\begin{algorithm}
-\caption{Main matrix dressing code for a slave node, parallelized with OpenMP.}
-	
-	\cpdone, \cpsent : shared scalars initialized to $0$ \;
-	\cpmax : shared array of size $\Nproc$ initialized to $0$ \;
-	$f$ : shared array of size $\Ngen$ initialized to $0$ \;
-	
-	\tcc{Loop for each core $\iproc$}
-	\While{$\cpdone > \cpsent \vee m < \Ncp+1$ }{
-		Try to get task $(I,s)$ from queue \;
-		\uIf{task was available}{
-			$m$ so that $I \in \mathcal{P}_m$ \;	
-		}\Else{
-			$m \gets \Ncp + 1$ \;		
-		}
-		will\_send $\gets 0$ \;
-		-- OMP CRITICAL -- \;
-		$\cpmax[\iproc] \gets m$ \;
-		$\cpdone \gets \min(\text{cp\_max}) -1$ \;
-		\If{$\cpdone > \cpsent$}{
-			$\cpsent \gets \cpsent + 1$ \;		
-			$\willsend \gets \cpsent$ \;				
-		}
-		-- OMP END CRITICAL -- \;
-		\If{$\willsend \neq 0$}{
-			Send $\deltabold^{\willsend}$ (shown in algorithm \ref{alg:build_checkpoints})
-		}
-		\If{$m < \Ncp+1$}{
-			Perform task $(I,s)$ (shown in algo \ref{alg:update_checkpoints}) \;
-		}
-	}
-\end{algorithm}
-
-
-\begin{algorithm}
-	\caption{Perform task $(I,s)$, that is, update ``node-local'' partial values of $\deltabold^{D,t}$ and $\deltabold^{S,m}$.}
-	\label{alg:update_checkpoints}
-	\KwData{global shared scope (at node level): $\deltabold^{D,t}$ and $\deltabold^{S,m}$ initialized with $0$, $f$ an array of size $\Ngen$ initialized with $0$. The fragmentation count}
-	
-	\KwData{from outer scope : $s, I$} 
-	\BlankLine
-	$m $ so that $I \in \mathcal{P}_m$ \;
-	$t$ so that $I \in \mathcal{T}_t$ \;
-	
-	Compute $\deltabold_{I,s}$ (fragment $s$ of $\deltabold_{I}$)\;
-	\tcc{Lock global arrays before update}
-	$\deltabold^{D,t} \gets \deltabold^{D,t} + \deltabold_{I,s}$ \;
-	\For{$p\gets m,\Ncp$}{
-		\If{$\tilde \mu^p_I \neq 0$}{
-			$\deltabold^{S,p} \gets \deltabold^{S,p} + \tilde \mu^{p}_I \deltabold_{I,s}$ \;
-		}
-	}
-	$x \gets {\bf c} \cdot \deltabold_{I,s}$ \;
-	-- OMP ATOMIC -- \;
-	$e_I \gets e_I + x$ \;
-	-- OMP ATOMIC -- \;
-	$f[I] \gets f[I] + 1$ \;
-\end{algorithm}
-
-
-\begin{algorithm}
-	\caption{Build $ \deltabold^m$ and send it to the master process.}
-	\label{alg:build_checkpoints}
-	\tcc{Compute partial value of $\deltabold^m$ with partial values of $\deltabold^{D,t}$ and $\deltabold^{S,m}$}
-	\tcc{Sending information for checkpoint $m$}
-
-	
-	$\dot f \gets \sum_{I \in \mathcal{P}_{p\leq m}} f[I]$ \;
-	\If{$\dot f = 0$}{
-		return \;
-	}
-	
-
-	$\deltabold^m \gets 0$ \;
-	\tcc{Reverse loop for numerical precision}
-	\For{$p\gets m,1$ \KwBy $-1$}{
-		$\deltabold^m \gets \deltabold^m + \deltabold^{S,p}$
-	}
-	$\deltabold^m \gets \frac{\deltabold^m}{M_m}$ \; 
-	\For{$t\gets \dot t_m-1,0$ \KwBy $-1$}{
-		$\deltabold^m \gets \deltabold^m + \deltabold^{D,t}$ \;
-
-	}
-	%$\mathcal{I}$ the set of $I \in \mathcal{P}_m$ with $f[I] > 0$ \;
-	send ($m$, $\deltabold^m$, $e_{I \in \mathcal{P}_m}$, $\dot f$) \;
-\end{algorithm}
-
 
 \begin{algorithm}
         \caption{Master node for stochastic estimation of ${\deltabold}$ }
+    \label{alg:DRESS_MASTER}
 	$m \gets 1$ \;
 	$c \gets 1$ \;
 	$error \gets 0$ \;
@@ -514,7 +429,7 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 		}
 		\Else{
 			
-			retrieve $(\breve l,  \breve {\deltabold}^l$, $ \breve {e}_{I \in \mathcal{P}_l}, \breve f)$  \;
+			retrieve $(l,  \breve {\deltabold}^l$, $ \breve {e}_{I \in \mathcal{P}_l}, \breve f)$  \;
 			increment $e_{I \in \mathcal{P}_l}$ with $\breve e_{I \in \mathcal{P}_l}$\;
 			increment $\deltabold^l$ with $\breve  \deltabold^l$ \;
 			decrement $\dot f[l]$ with $\breve  f$\;
@@ -525,15 +440,104 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 \end{algorithm}
 
 
+\begin{algorithm}
+\caption{Main matrix dressing code for a slave node, parallelized with OpenMP.}
+	\label{alg:DRESS_SLAVE}
+	\cpdone, \cpsent : shared scalars initialized to $0$ \;
+	\cpmax : shared array of size $\Nproc$ initialized to $0$ \;
+	$f$ : shared array of size $\Ngen$ initialized to $0$ \;
+	
+	\tcc{Loop for each core $\iproc$}
+	\While{$\cpdone > \cpsent \vee m < \Ncp+1$ }{
+		Try to get task $(I,s)$ from queue \;
+		\uIf{task was available}{
+			$m$ so that $I \in \mathcal{P}_m$ \;	
+		}\Else{
+			$m \gets \Ncp + 1$ \;		
+		}
+		will\_send $\gets 0$ \;
+		-- OMP CRITICAL -- \;
+		$\cpmax[\iproc] \gets m$ \;
+		$\cpdone \gets \min(\text{cp\_max}) -1$ \;
+		\If{$\cpdone > \cpsent$}{
+			$\cpsent \gets \cpsent + 1$ \;		
+			$\willsend \gets \cpsent$ \;				
+		}
+		-- OMP END CRITICAL -- \;
+		\If{$\willsend \neq 0$}{
+			Send $\deltabold^{\willsend}$ (shown in algorithm \ref{alg:build_checkpoints})
+		}
+		\If{$m < \Ncp+1$}{
+			Perform task $(I,s)$ (shown in algorithm \ref{alg:update_checkpoints}) \;
+		}
+	}
+\end{algorithm}
+
+
+\begin{algorithm}
+	\caption{Perform task $(I,s)$, that is, update ``node-local'' partial values of $\deltabold^{D,t}$ and $\deltabold^{S,m}$.}
+	\label{alg:update_checkpoints}
+	\KwData{global shared scope (at node level): $\deltabold^{D,t}$ and $\deltabold^{S,m}$ initialized with $0$, $f$ an array of size $\Ngen$ initialized with $0$ (fragment count).}
+	
+	\KwData{from outer scope : $s, I$} 
+	\BlankLine
+	$m$ so that $I \in \mathcal{P}_m$ \;
+	$t$ so that $I \in \mathcal{T}_t$ \;
+	
+	Compute $\deltabold_{I,s}$ (fragment $s$ of $\deltabold_{I}$)\;
+	\tcc{Lock global arrays before update}
+	$\deltabold^{D,t} \gets \deltabold^{D,t} + \deltabold_{I,s}$ \;
+	\For{$p\gets m,\Ncp$}{
+		\If{$\tilde \mu^p_I \neq 0$}{
+			$\deltabold^{S,p} \gets \deltabold^{S,p} + \tilde \mu^{p}_I \deltabold_{I,s}$ \;
+		}
+	}
+	$x \gets {\bf c} \cdot \deltabold_{I,s}$ \;
+	-- OMP ATOMIC -- \;
+	$e_I \gets e_I + x$ \;
+	-- OMP ATOMIC -- \;
+	$f[I] \gets f[I] + 1$ \;
+\end{algorithm}
+
+
+\begin{algorithm}
+	\caption{Build $ \deltabold^m$ and send it to the master process.}
+	\label{alg:build_checkpoints}
+	\KwData{global shared scope (at node level): $\deltabold^{D,t}$ and $\deltabold^{S,m}$ initialized with $0$, $f$ an array of size $\Ngen$ initialized with $0$ (fragment count).}
+	\KwData{from outer scope : $\willsend$} 
+	
+	
+	$m \gets \willsend$ \;
+	$\dot f \gets \sum_{I \in \mathcal{P}_{p\leq m}} f[I]$ \;
+	\If{$\dot f = 0$}{
+		return \;
+	}
+	\tcc{Compute partial value of $\deltabold^m$ with partial values of $\deltabold^{D,t}$ and $\deltabold^{S,m}$}
+
+
+	$\deltabold^m \gets 0$ \;
+	\tcc{Reverse loop for numerical precision}
+	\For{$p\gets m,1$ \KwBy $-1$}{
+		$\deltabold^m \gets \deltabold^m + \deltabold^{S,p}$
+	}
+	$\deltabold^m \gets \frac{\deltabold^m}{M_m}$ \; 
+	\For{$t\gets \dot t_m-1,0$ \KwBy $-1$}{
+		$\deltabold^m \gets \deltabold^m + \deltabold^{D,t}$ \;
+
+	}
+	%$\mathcal{I}$ the set of $I \in \mathcal{P}_m$ with $f[I] > 0$ \;
+	\tcc{Sending partial information for checkpoint $m$}
+	send ($m$, $\deltabold^m$, $e_{I \in \mathcal{P}_m}$, $\dot f$) \;
+\end{algorithm}
+
+
+
 \section{Conclusion}
 
 In this chapter we have implemented a stochastic version of the shifted-\Bk algorithm, using the same algorithm we used for computation of $\EPT$, and were able to get acceptable accuracies performing a few percent of the full computation.
 The additional difficulties of estimating a vector rather than a scalar were solved by setting a limited number of pre-determined checkpoints between which no result is available.
 
 The fact that we implemented the shifted-\Bk method boils down to our choice to build the external space using Epstein-Nesbet perturbative estimation for $c_\alpha$. However, the proposed algorithm does not put any particular restriction on $c_\alpha$. From this stemmed the idea of a more general framework to allow easy experimentation of the effect of different external spaces, which was used to design an MR-CCSD method as shown in chapter \ref{chap:exp_dressing}.
-
-%\alert{IL FAUT FAIRE REFERENCES AUX ALGORITHMES DANS LE TEXTE}
-
 
 \clearpage
 \section{Selected configuration interaction dressed by perturbation}

@@ -827,3 +827,64 @@ As previously seen, the most important of excitations, those of the form $\hat T
 	\end{center}
 \end{figure}
 
+
+
+\begin{algorithm}
+	\caption{Build $\mathcal{C}_{rs}$ from $\tilde{\mathcal{C}}_{rs}$}
+	\label{alg:compute_connected}
+	\tcc{This takes place after $\tilde{\mathcal{C}}_{rs}$ and $B_{rs}$ for a given batch have been fully computed}
+		\KwData{$\tilde{\mathcal{C}}_{rs}$ the intermediate sets, $B_{rs}$ the tag matrix}
+		%\KwResult{$Z^\star(\Gpqrs, \mathcal{C}_{rs})$ is called for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$}
+		\KwResult{$\mathcal{C}_{rs}$ is computed for all $\Gpqrs$ of $G_{pq}$ batch that are unique $\kalpha$} 
+		\tcc{$\interC{rs}$ and $\finC{rs}$ are considered arrays, the syntax $\finC{rs}[i\ldots j]$ is used to denote a segment of array, $|\finC{rs}|$ is the cardinality of $\finC{rs}$}
+		$T$ an array of size $\Nsel$ initialized to $\TRUE$ \;
+		$L$ an array of determinants size $\Nsel$ \;
+        $i_1 \gets |\interC{00}|$ \;   
+        $L[1 \ldots i_1] \gets \interC{00}[1 \ldots {i_1}]$ \;
+        
+		\tcc {$B_{r0} = \TRUE$ if column $r$ is entirely tagged}		
+		\ForAll{$r ; \neg B_{r0}$}{
+		  $i_2 \gets i_1 + |\interC{r0}|$ \;
+		  $L[i_1+1 \ldots i_2] \gets \interC{r0}$ \;
+		  \For{$i\gets 1,|\interC{r0}|$}{
+		    $T[\interC{r0}[i]] \gets \FALSE$
+		  }
+		  \ForAll{$s;\neg (B_{rs} \vee B_{0s})$}{
+		    $i_3 \gets i_2$ \;
+		    \For{$i\gets 1,|\interC{s0}|$}{
+		      \If{$T[\interC{s0}[i]]$}{
+		        $i_3 \gets i_3+1$ \;
+		        $L[i_3] \gets \interC{s0}[i]$ \;
+		      }
+		    }
+		    
+		    $i_4 \gets i_3 + |\interC{rs}|$ \;
+		    $L[i_3+1 .. i_4] \gets \interC{rs}$ \;
+		    assert $L = \finC{rs}$
+		  }
+		 \For{$i\gets 1,|\interC{s0}|$}{
+		    $T[\interC{s0}[i]] \gets \TRUE$
+		  }
+		}
+\end{algorithm}
+
+\begin{comment}
+But just like for the general algorithm, if we consider $\hat T_{i'}^{j'}$ we need to sort $i'$ and $j'$ to get the $i=\min(i', j')$ and $j=\max(i', j')$ indices used for the phase computation.
+
+This however doesn't need to be done explicitly. 
+
+
+
+
+We can arbitrarily choose $i=i'$ and $j=j'$, and reverse the phase if $j<i$. We effectively have computed $p(N^I_{i'j'})$ instead of $p(N^I_{j'i'})$, and it can be proved they are always of different parity:
+\begin{align}
+N^{I}_{i' j'} + N^{I}_{j'i'} & = E^{I}_{j'-1} - E^I_{i'} + E^I_{i'-1} - E^I_{j'} \\
+& = -\qty( \occ{j'}{I} + \occ{i'}{I})
+\end{align}
+Because $\hat T_{i'}^{j'} \ket I \neq 0$, we know that $\occ{j'}{I} + \occ{i'}{I} = 1$. 
+\begin{equation}
+N^{I}_{j' i'} = -(N^{I}_{i'j'} + 1)
+\end{equation}
+This translates to $N^{I}_{j' i'}$ and $N^{I}_{i'j'}$ being of different parity.
+
+\end{comment}
