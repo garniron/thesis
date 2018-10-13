@@ -1,4 +1,4 @@
-Remplacer alpha et beta par fleches pour les spins? Si oui, ne pas oublier na et nb dans la section 5.7 Filtering and loop breaking.
+Calculer le monte carlo en recouvrant avec les calculs paralleles
 
 
 1) Exp dressing

@@ -217,7 +217,7 @@ focus of this thesis was to investigate how to make \emph{configuration
 interaction} (CI) methods efficient on modern supercomputers.
 %Unlike Monte-Carlo, most wavefunction methods are not easy to parallelize.
 
-The \QP developed at the LCPQ is a suite of wavefunction quantum
+The \QP\cite{QP} developed at the LCPQ is a suite of wavefunction quantum
 chemistry methods, that strives to allow easy implementation and
 experimentation of new methods, and to make parallel computation
 as simple and efficient as possible. The main purpose of this package
@@ -401,11 +401,35 @@ To get the best of the data we were already able to compute, we implemented the 
 The challenge in this case was to estimate, instead of a scalar, a vector of size $\Ndet$, which can be up to a few million elements. The storage and network issues could be solved by setting up a system of predefined checkpoints, a modest drawback being the impossibility to get an estimated dressing matrix outside of those checkpoints.
 
 Finally, this stochastic matrix dressing computation was extended to another external space, that of the Multi-Reference Coupled-Cluster we had previously implemented deterministically,\cite{Garniron_2017} which allowed to explore some possibilities of the bitstring-based determinant-driven approach.
-This was done by first setting up a framework to limit the implementational effort needed to build an external space ; essentially, one only needs to define a function mapping an external determinant to its desired coefficient. While this was proven convenient, in its current state it lacks some flexibility ; for instance, in the Multi-Reference Coupled-Cluster external space, external determinants generated from reference determinants are known to be of zero coefficient, but there is no simple way to inform the framework that a generator should be ignored. This issue, however minor, can be solved by a simple callback function to ``ask'' the user if the forthcoming generator is of interest. Setting up a few such callback functions could improve efficiency for more specific situations. There is also no simple way to retrieve custom information from a remote node ; the base algorithm only sends the partial $\deltabold_I$ vectors, but the user may be interested in some other informations. For instance the sum over generated ${c_\alpha}^2$ which hints the weight of the external space versus internal space. This functionality is currently being worked on.
+This was done by first setting up a framework to limit the implementational
+effort needed to build an external space ; essentially, one only needs to
+define a function mapping an external determinant to its desired coefficient.
+While this was proven convenient, in its current state it lacks some
+flexibility ; for instance, in the Multi-Reference Coupled-Cluster external
+space, external determinants generated from reference determinants are known to
+be of zero coefficient, but there is no simple way to inform the framework that
+a generator should be ignored. This issue, however minor, can be solved by a
+simple callback function to ``ask'' the programmer if the forthcoming generator
+is of
+interest. Setting up a few such callback functions could improve the efficiency for
+more specific situations. There is also no simple way to retrieve some custom
+information from a remote node ; the base algorithm only sends the partial
+$\deltabold_I$ vectors, but the user may be interested in some other
+information. For instance the sum over generated ${c_\alpha}^2$ which hints
+the weight of the external space versus internal space. This functionality is
+currently being worked on.
 
 
-During the multiple steps of evolution of the program, more and more applications were made possible.\cite{Loos_2018,Garniron_2018,Giner_2017,Garniron_2017,Garniron_2017b,Scemama_2018,1806.05115} This gave to the \QP more visibility, and it was selected as a benchmark code for the choice of the new supercomputer of the CALMIP center. Moreover, different groups started to use it for applications and use it to develop new ideas. For example, the Argonne group is currently implementing complex orbitals to 
-adapt the \QP to solids.
+During the multiple steps of evolution of the program, more and more
+applications were made
+possible.\cite{Loos_2018,Garniron_2018,Giner_2017,Garniron_2017,Garniron_2017b,Scemama_2018,1806.05115}
+This gave to the \QP more visibility, and it was selected as a benchmark code
+for the choice of the new supercomputer of the CALMIP center. Moreover,
+different groups started to use it for applications and use it to develop new
+ideas. For example, Claudia Filippi's group in the Netherlands is now using
+CIPSI wave functions as a starting point for quantum Monte Carlo calculations,\cite{Dash_2018}
+and the Argonne group is currently implementing complex orbitals to adapt the \QP
+to solids.\cite{Benali_2018}
 
 \appendix
 
