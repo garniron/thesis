@@ -255,7 +255,7 @@ Fitting the last points with a log-log plot shows an asymptotic scaling as
 $\order{\Ndet^{1.07}}$, which is compatible with the expected linear scaling for
 very large numbers of determinants.
 
-To analyze the parallel efficiency of the $\EPT$ calculation, we have made the parallel speedup curve using up to 50 nodes (1800 CPU cores), plotted in figure~\ref{fig:scaling_node_pt2}. With 50 nodes, one obtains a speedup with respect to the single-node reference of $35\times$ for both the ground and excited states. This corresponds to a parallel efficiency of 70\%, which is less satisfactory than the almost ideal speedup obtained for the selection.
+To analyze the parallel efficiency of the $\EPT$ calculation, we have made the parallel speedup curve using up to 50 nodes (1800 CPU cores), plotted in figure~\ref{fig:scaling_node_pt2}. With 50 nodes, one obtains a speedup with respect to the single-node reference of $40\times$ for both the ground and excited states. This corresponds to a parallel efficiency of 80\%, which is less satisfactory than the almost ideal speedup obtained for the selection.
 
 There are two reasons for this disappointing speedup. The first one is that the calculation is aborted when the target precision is below a given threshold. So when more compute nodes are used, more samples are gathered at the end of the calculation and the computation is more precise. In the limit of $\Ndet$ CPU cores, only the deterministic calculation can be done, whatever the stopping criterion. So the computation of the speedup is not 100\% fair.
 The second reason for the non-ideal speedup is the pre-computation of the combs on the master process which delays the start of the computation of the tasks.
@@ -282,7 +282,7 @@ $   29~409$ &  $    13.83$ & $    16.21$ \\
 $  168~595$ &  $    75.62$ & $   103.26$ \\
 $1~322~537$ &  $   708.53$ & $   818.58$ \\
 $8~495~334$ &  $ 5~578.76$ & $ 6~751.25$ \\
-$9~356~952$ &  $ 7~779.80$ & $ 9~855.45$ \\
+$9~356~952$ &  $ 7~883.74$ & $ 9~829.19$ \\
 \hline
 \end{tabular}
 \end{center}
@@ -297,13 +297,13 @@ increasing number of 36-core compute nodes.}
 \hline
 \tabc{Nodes} & \tabc{Ground state} & \tabc{Excited state} \\
 \hline
-$1 $ & $7~779.80$  & $9~855.45$  \\ %TODO
-$5 $ & $1~649.26$  & $2~037.44$  \\
-$10$ & $  854.52$  & $1~054.09$  \\
-$20$ & $  461.96$  & $  560.73$  \\
-$30$ & $  352.26$  & $  424.19$  \\
-$40$ & $  281.51$  & $  331.23$  \\
-$50$ & $  225.08$  & $  278.21$  \\
+$1 $ & $7~883.74$  & $9~829.19$  \\
+$5 $ & $1~629.06$  & $2~022.36$  \\
+$10$ & $  832.89$  & $1~029.91$  \\
+$20$ & $  440.76$  & $  537.37$  \\
+$30$ & $  303.31$  & $  378.69$  \\
+$40$ & $  246.12$  & $  296.31$  \\
+$50$ & $  201.84$  & $  241.55$  \\
 \hline
 \end{tabular}
 \end{center}
