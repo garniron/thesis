@@ -351,13 +351,13 @@ which implies a simple algorithm that finds the diamonds in $\mathcal{O}(N \time
 \item
 Iterate over $(R_r, D_I)$
 \item
-Binary search for $D_J = (R_r \oplus D_I \oplus \alpha)$ in $\{\mathcal{D}\}$ if $||D_J|| = \Nelec$.
+Binary search for $D_{J>I} = (R_r \oplus D_I \oplus \alpha)$ in $\{\mathcal{D}\}$ if $||D_J|| = \Nelec$.
 \end{enumerate}
 
 Depending on the sizes of the $\{D\}$ and $\{R\}$ sets, an alternative variant can also be used, giving a complexity of $\mathcal{O}(N^2 \times \log(\Nref))$:
 \begin{enumerate}
 \item
-Iterate over $(D_I, D_J)$
+Iterate over unordered pairs $(D_I, D_J)$
 \item
 Binary search for $R_r = (D_I \oplus D_J \oplus \alpha)$ in $\{\mathcal{R}\}$ if $||R_r|| = \Nelec$.
 \end{enumerate}
