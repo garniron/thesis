@@ -140,7 +140,7 @@ A = \IAND{C} {\IEOR{B}{C}}
 Ici $A$ est un $\uparrow \downarrow$-bitstring qui, en toutes lettres, contient les spinorbitales présentes dans $\ket C$ et dont l'occupation diffère entre $\ket B$ et $\ket C$. Autrement dit, les particules impliquées dans l'excitation $\hat T$ telle que $\ket C = \hat T \ket B$. De la même manière les trous impliqués dans $\hat T$ sont déterminés par $\IAND{B} {\IEOR{B}{C}}$
 
 Puisque notre représentation en $\uparrow \downarrow$-bitstring ne stock pas le signe d'un déterminant, lorsqu'une excitation est appliquée, il faut calculer un facteur de phase, qui peut être de $1$ ou $-1$. Pour une excitation $\hat T_p^q$, ce facteur est lié à la parité du nombre d'électrons entre les spinorbitales $p$ et $q$. Dans la mesure où le facteur de phase doit être calculé de nombreuses fois sur un même déterminant, une manière efficace de le faire consiste à stocker pour chaque spinorbitale, le nombre d'électrons dans les spinorbitales inférieures ; il suffit ensuite d'une soustraction pour connaître le nombre d'électrons entre deux spinorbitales. En pratique, il n'est pas nécessaire de stocker le nombre, mais seulement sa parité (connaissant les parités de $A$ et $B$ il est trivial de déterminer la parité de $A-B$) ; ce type de stockage est appelé \emph{phase mask}.
-\section{Diagonalization de Davidson}
+\section{Diagonalisation de Davidson}
 
 D'un point de vu algorithmique, la question posée se résume au calcul (mais pas au stockage) de la matrice hamiltonienne. Le calcul d'un élément de matrice peut être fait efficacement, mais le calcul de chacun des $\Ndet^2$ éléments (avec $\Ndet$ le nombre de déterminants dans la fonction d'onde variationnelle) reste extrêmement coûteux.
 
@@ -326,32 +326,32 @@ Pour 50 nœuds avec la fonction d'onde à $42~959~496$ déterminants, l'efficaci
 \begin{figure}[h!]
     \begin{center}
       \includegraphics[width=0.80\columnwidth]{figures/perf/scaling_davidson_ndet}
-      \caption{temps mural d'une itération de Davidson en fonction du nombre de détermiants dans la fonction d'onde.}
+      \caption{Temps mural d'une itération de Davidson en fonction du nombre de détermiants dans la fonction d'onde.}
       \label{fig:speedup_davidson_ndet_fr}
     \end{center}
 \end{figure}
 \begin{figure}[h!]
     \begin{center}
       \includegraphics[width=0.80\columnwidth]{figures/perf/scaling_davidson}
-      \caption{Speedup pour une itération de Davidson en fonction du nombre de noeuds à 36 cœurs.}
+      \caption{Accélération pour une itération de Davidson en fonction du nombre de noeuds à 36 cœurs.}
       \label{fig:speedup_davidson_fr}
     \end{center}
 \end{figure}
 \subsection{CIPSI}
 Nous mesurons le temps nécessaire à une étape de sélection par CIPSI, en fonction du nombre de déterminants (figure \ref{fig:scaling_sel_ndet_fr}), puis du nombre de cœurs (figure \ref{fig:scaling_sel_node_fr}) avec la plus grande fonction d'onde ($9~356~952$ déterminants).
-Le speedup en fonction du nombre de déterminant est presque idéal ; toutefois, cela est dû à une approximation (le seuil $n_g$, non discuté dans ce résumé), qui fait que le nombre de déterminants générateurs tend à devenir constant.
-Le speedup en fonction du nombre de nœuds est également presque idéal, avec 95\% d'efficacité parallèle pour 50 nœuds. Cela est en partie dû à la fragmentation qui permet des tâches équilibrées.
+L'accélération en fonction du nombre de déterminant est presque idéale ; toutefois, cela est dû à une approximation (le seuil $n_g$, non discuté dans ce résumé), qui fait que le nombre de déterminants générateurs tend à devenir constant.
+L'accélération en fonction du nombre de nœuds est également presque idéale, avec 95\% d'efficacité parallèle pour 50 nœuds. Cela est en partie dû à la fragmentation qui permet des tâches équilibrées.
 \begin{figure}[h!]
     \begin{center}
       \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sel_det}
-      \caption{temps mural de la sélection CIPSI en fonction du nombre de déterminants dans la fonction d'onde.}
+      \caption{Temps mural de la sélection CIPSI en fonction du nombre de déterminants dans la fonction d'onde.}
       \label{fig:scaling_sel_ndet_fr}
     \end{center}
 \end{figure}
 \begin{figure}[h!]
     \begin{center}
       \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sel_node}
-      \caption{Speedup parallèle pour la sélection CIPSI. La référence est un unique nœuds à 36 cœurs.}
+      \caption{Accélération parallèle pour la sélection CIPSI. La référence est un unique nœuds à 36 cœurs.}
       \label{fig:scaling_sel_node_fr}
     \end{center}
 \end{figure}
@@ -371,20 +371,20 @@ Le pré-calcul des peignes sur le processus maître délaye le début de la part
 Contrairement au CIPSI, le calcul est ici interrompu de manière imprévisible, lors que la barre d'erreur atteint le seuil requis. Par conséquent un certain nombre de tâches ``superflues'' peuvent être lancées, ce nombre étant d'autant plus grand que le nombre de cœurs est important ; dans la limite où $\Ndet$ est égal au nombre de cœurs, c'est de fait toujours le calcul complet qui sera réalisé, alors que dans le mode mono-cœur aucune tâche superflue ne sera calculée.
 \end{itemize}
 
-Les tâches qualifiées de superflues pouvant néanmoins être utilisées pour réduire la barre d'erreur, ce calcul de speedup n'est pas tout à fait pertinent car la barre d'erreur finale sera plus faible quand le nombre de nœuds est plus grand.
+Les tâches qualifiées de superflues pouvant néanmoins être utilisées pour réduire la barre d'erreur, ce calcul d'accélération n'est pas tout à fait pertinent car la barre d'erreur finale sera plus faible quand le nombre de nœuds est plus grand.
 
 
 \begin{figure}[h!]
         \begin{center}
                 \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_pt2_det}
-                \caption{temps mural requis pour calculer la contribution perturbative $\EPT$ pour l'état fondamental et l'état excité, en fonction du nombre de déterminants dans la fonction d'onde.            }
+                \caption{Temps mural requis pour calculer la contribution perturbative $\EPT$ pour l'état fondamental et l'état excité, en fonction du nombre de déterminants dans la fonction d'onde.            }
                 \label{fig:scaling_det_pt2_fr}
         \end{center}
 \end{figure}
 \begin{figure}[hbt!]
         \begin{center}
                 \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_pt2_node}
-                \caption{Speedup parallèle pour le calcul de la contribution perturbative $\EPT$ pour l'état fondamental avec la plus grande fonction d'onde. Chaque nœud contient 36 cœurs physiques.               }
+                \caption{Accélération parallèle pour le calcul de la contribution perturbative $\EPT$ pour l'état fondamental avec la plus grande fonction d'onde. Chaque nœud contient 36 cœurs physiques.               }
                 \label{fig:scaling_node_pt2_fr}
         \end{center}
 \end{figure}
@@ -399,7 +399,7 @@ Le scaling en fonction du nombre de déterminants (figure \ref{fig:scaling_det_s
 
 Ce coût additionnel est lié à la gestion des résultats par checkpoint, qui élimine le goulot d'étranglement lié aux communications. 
 
-Le speedup en fonction du nombre de nœuds (figure \ref{fig:scaling_node_sbk_fr}) a été mesuré avec la fonction d'onde à $9~356~952$ déterminants.
+L'accélération en fonction du nombre de nœuds (figure \ref{fig:scaling_node_sbk_fr}) a été mesurée avec la fonction d'onde à $9~356~952$ déterminants.
 
 \begin{figure}[h!]
         \begin{center}
@@ -411,7 +411,7 @@ Le speedup en fonction du nombre de nœuds (figure \ref{fig:scaling_node_sbk_fr}
 \begin{figure}[hbt!]
         \begin{center}
                 \includegraphics[width=0.8\columnwidth]{figures/perf/scaling_sbk_node}
-                \caption{Speedup parallèle pour le calcule de la matrice d'habillage de l'état fondamental avec la plus grande fonction d'onde. Chaque noeud contient 36 cœurs physiques.}
+                \caption{Accélération parallèle pour le calcul de la matrice d'habillage de l'état fondamental avec la plus grande fonction d'onde. Chaque noeud contient 36 cœurs physiques.}
                 \label{fig:scaling_node_sbk_fr}
         \end{center}
 \end{figure}
@@ -426,12 +426,12 @@ La diagonalisation de Davidson, au centre des méthodes variationnelles, souffre
 
 À présent, les déterminants sont séparés en plusieurs ensembles disjoints et souvent identifiables comme entièrement déconnectés les uns des autres ; de ce fait, la vaste majorité des éléments de matrice n'ont plus à être explicitement considérés, et le scaling est ramené à $\order{\Ndet^{3/2}}$. Une variante de scaling linéaire est possible, mais n'a pas été implémentée du fait d'une empreinte mémoire trop importante. Cependant, l'implémentation pourrait être raffinée afin d'utiliser conjointement les deux méthodes.
 
-Bien que la parallélisation de l'algorithme proposé soit difficile, l'implémentation distribuée qui en a été réalisée offre un speedup satisfaisant, de l'ordre de $35\times$ pour $50$ nœuds ($1~800$ cœurs). 
+Bien que la parallélisation de l'algorithme proposé soit difficile, l'implémentation distribuée qui en a été réalisée offre une accélération satisfaisante, de l'ordre de $35\times$ pour $50$ nœuds ($1~800$ cœurs). 
 
 L'algorithme de sélection CIPSI a été considérablement amélioré, ce qui a rendu possible des applications jusque là infaisables.\cite{Scemama_2018,1806.05115}
 
 Les différentes optimisations réalisées portent à la fois sur la mise en évidence des connexions entre les espaces interne et externe (approche par batch de déterminants, filtrage), et le coût de calcul des éléments de matrice correspondants (phase mask, détermination implicite des excitations).
-L'implémentation distribuée offre un speedup presque idéal avec 50 nœuds.
+L'implémentation distribuée offre une accélération presque idéale avec 50 nœuds.
 
 D'un point de vue méthodologique, le CIPSI est toutefois d'une précision et donc d'un coût qui ne se justifie pas dans toutes les situations ; de meilleurs performances, sans perte de précision, pourraient être obtenues en combinant le CIPSI avec un algorithme de sélection moins précis mais très peu coûteux, le \emph{Heat-Bath Configuration Interaction (HCI)}. \cite{Holmes_2016, Sharma_2017}
 
