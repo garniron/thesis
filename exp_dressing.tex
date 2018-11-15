@@ -251,7 +251,7 @@ The equation for $c_\alpha$ as well as the procedure for computing amplitudes is
 
 With $\kalpha$ the external determinant being considered, $\ket {D_I}$ and $\ket {D_J}$ internal determinants, and $\ket {R_r}$ a reference determinant.  Parallel arrows indicate connections (excitation degree at most 2) by the same excitation, the vertical arrow indicates $\ket {R_r}$ and $\kalpha$ aren't connected (excitation degree at least 3). More generally, we only consider $\kalpha$ determinants that are not connected to any $\ket {R_r}$. All the determinants we are considering are ordered according to $\ordering$.
 
-The matrix dressing implementation supplies $\{\mathcal{D}\}$ the complete set of the $\Ndet$ internal determinants that connect to $\kalpha$. We call $\{\mathcal{R}\}$ the set of the $\Nref$ reference determinants.
+The matrix dressing implementation supplies $\{\mathcal{D}\}$ the complete set of the $N$ internal determinants that connect to $\kalpha$. We call $\{\mathcal{R}\}$ the set of the $\Nref$ reference determinants.
 
 A naive way to find those diamonds, would be to loop over all unordered triplets 
 \begin{equation}
@@ -362,15 +362,14 @@ Iterate over unordered pairs $(D_I, D_J)$
 Binary search for $R_r = (D_I \oplus D_J \oplus \alpha)$ in $\{\mathcal{R}\}$ if $||R_r|| = \Nelec$.
 \end{enumerate}
 
-Those are desirable if one of $\{\mathcal{D}\}$ or $\{\mathcal{R}\}$ is relatively small, in particular, in case of single-reference computation, i.e. $|\mathcal{R}|=1$, the former variant is ideal. For larger sets, however, a more complex variant with a complexity $\mathcal{O}(N \times (N+\Nref))$ is introduced next.
+Those are desirable if one of $\{\mathcal{D}\}$ or $\{\mathcal{R}\}$ is relatively small, in particular, in case of single-reference computation, i.e. $N=1$, the former variant is ideal. For larger sets, however, a more complex variant with a complexity $\mathcal{O}(N \times (N+\Nref))$ is introduced next.
 
 
 \paragraph{Locating diamonds by rewriting excitations as additions}
 Although the method could be chosen on a ``by-$\alpha$'' basis depending on $N$ and $\Nref$, only this one is currently used in the \QP as it works for larger sets.
 Unlike the previous one, this method may yield false positives, thus it uses Eq.~\eqref{eq:diamond_xor} for confirmation.
-The idea is to express an excitation as an addition. As was said, bitstrings can be interpreted as integers, so they can be added, subtracted and compared as such. As in the case of the $\hat f$ operator, this approach entirely ignores phase factors. We can easily associate the integer values $T_{A \rightarrow B}$ and $T_p^q$ to excitations $\pm \hat T_{A \rightarrow B}$ and $\pm \hat T_p^q$ respectively.
+The idea is to express an excitation as an addition. As was said, bitstrings can be interpreted as integers, so they can be added, substracted and compared as such. As in the case of the $\hat f$ operator, this approach entirely ignores phase factors. We can easily associate the integer value $T_{A \rightarrow B}$ to excitation $\pm \hat T_{A \rightarrow B}$.
 \begin{align}
-T_p^q & = 2^{q-1} - 2^{p-1} \\
 T_{A \rightarrow B} & =  B - A \\
 T_{A \rightarrow B} + A & = B 
 \end{align}
@@ -418,9 +417,9 @@ a_1 - a_2 &\equiv b_1 - b_2 \pmod{n}
 \end{align}
 with $a_1 \equiv b_1 \pmod n$, and $a_2 \equiv b_2 \pmod n$. When it comes to addition and substraction, signed and unsigned integers are equivalent, so signed integers can be used as well.
 \item
-It is not required to handle bitstrings as actual arbitrary size integers when it comes to addition and subtraction. While addition to a bitstring was introduced as being associated with an excitation, it can actually be associated with any combination of creation and annihilation operators. It is therefore valid to consider each 64-bit integer as an independent ``sub-bitstring'' on which a subset of the operators will be applied. In short, additions and subtractions can be done integer-wise, without the overhead of handling carries.
+It is not required to handle bitstrings as actual arbitrary size integers when it comes to addition and substraction. While addition to a bitstring was introduced as being associated with an excitation, it can actually be associated with any combination of creation and annihilation operators. It is therefore valid to consider each 64-bit integer as an independent ``sub-bitstring'' on which a subset of the operators will be applied. In short, additions and substraction can be done integer-wise, without the overhead of handling carries.
 \end{itemize}
-When it comes to comparison, since the 64-bit integers corresponding to the lower orbitals will typically have more mobile electrons, they should be given them more weight in order to resolve comparison as fast as possible.
+When it comes to comparison, since the 64-bit integers corresponding to the lower orbitals will typically have more mobile electrons, they should be given more weight in order to resolve comparison as fast as possible.
 
 \paragraph{Computing the phase factor}
 

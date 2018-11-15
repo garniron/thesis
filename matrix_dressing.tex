@@ -176,7 +176,7 @@ $\mu^m_I$ is defined as follows
 \begin{equation}
 \mu^m_I = 
 \begin{cases}
-1 & \text{if } i \leq \dot n_0(m) \\
+1 & \text{if } I \leq \dot n_0(m) \\
 \frac{W_T \times M_{m,I}}{w_I \times M_m} & \text{if } I > \dot n_0(m)
 \end{cases}
 \end{equation}
@@ -223,7 +223,7 @@ $\deltabold^{D,t}$ with $I \in \mathcal{T}_t$. This is exactly one write.
 \item
 $\deltabold^{S,m}$ where $\gamma^m_I - \gamma^{m-1}_I \neq 0$. This is
  \begin{itemize}
- \item No write if generator $\ket{D_I}$ is moved to $\mathcal{D}_D$ in the same checkpoint it is first drawn or computed for tooth filling
+ \item No write if generator $\ket{D_I}$ is moved to $\mathcal{D}_D$ in the same checkpoint it is first drawn or computed for tooth filling.
  \item Otherwise, one write per checkpoint in which $I$ is drawn until the one where it is moved to $\mathcal{D}_D$, inclusive.
  \end{itemize}
  While this increases the theoretical maximum of writes to $\Ncp+1$ per sample, it is much lower in practice.
@@ -238,7 +238,7 @@ The task queue is built similarly to the one for $\EPT$ computation, with some d
 \item
 $M_{m,I}$ are evaluated for the computation of $\tilde \mu^m_I$.
 \item
-Instead of $R$ we evaluate $R^{-1}$, based on indices of checkpoints rather than of combs. In the algorithm for $\EPT$, when the first $j$ tasks are completed, the comb of index $R[j]$ is available. Here, when the first $R^{-1}[m]$ tasks have been completed, checkpoint $m$ has just become computable.
+Instead of $R$ we evaluate $R^{-1}$, based on indices of checkpoints rather than of combs. In the algorithm for $\EPT$, when the first $j$ tasks are completed, the $R[j]$-th comb is available. Here, when the first $R^{-1}[m]$ tasks have been completed, checkpoint $m$ has just become computable.
 \item
 We create sample subsets $\mathcal{P}_m$ associated with checkpoints. $I \in \mathcal{P}_m$ iff
 \begin{equation}

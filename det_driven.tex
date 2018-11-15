@@ -756,7 +756,7 @@ The algorithm for computing $P^I$ as a bitstring is shown as algorithm \ref{alg:
 
 \begin{enumerate}
 \item
-$P^1 \gets P^0 \oplus \ishft{P^0}{2^0})$.\\
+$P^1 \gets P^0 \oplus \ishft{P^0}{2^0}$.\\
 \begin{align}
 P^1_i& =
   \begin{cases}
@@ -768,7 +768,7 @@ P^1_i& =
 P^1_i = p \left (\sum_{j=max(i-1,0)}^{i} P_j^0 \right )
 \end{equation}
 \item
-$P^2 \gets P^1 \oplus \ishft{P^1}{2^1})$.\\
+$P^2 \gets P^1 \oplus \ishft{P^1}{2^1}$.\\
 \begin{align}
 P^2_i& =
   \begin{cases}
@@ -780,7 +780,7 @@ P^2_i& =
 P^2_i = p \left (\sum_{j=max(i-3,0)}^{i} P_j^0 \right )
 \end{equation}
 \item
-$P^3 \gets P^2 \oplus \ishft{P^2}{2^2})$.\\
+$P^3 \gets P^2 \oplus \ishft{P^2}{2^2}$.\\
 \begin{align}
 P^3_i& =
   \begin{cases}
@@ -798,7 +798,7 @@ For a 64-bit integer we have to go to
 \begin{equation}
 P^6_{i<64} = p \left (\sum_{j=0}^{i} P_j^0 \right )
 \end{equation}
-which is the definiton of a phase mask (here indexed from $0$).
+which is the definition of a phase mask (here indexed from $0$).
 
 %The phase mask as described is
 %\begin{equation}
@@ -830,7 +830,7 @@ As far as phase computation goes, it is irrelevant which index of an excitation 
 \begin{equation}
 \tilde T_{ab} = \hat T_a^b + \hat T_b^a
 \end{equation}
-since at most one of $\hat T_a^b$ or $\hat T_b^a$ is non-zero on a determinant.
+since at most one of $\hat T_a^b$ or $\hat T_b^a$ can be applied to a determinant.
 
 
 Considering a double excitation $\tilde T^2$ involving 4 spinorbitals $p,q,r,s$ of same spin, there are two possible situations, shown in figure \ref{fig:biphasefactor}. 
