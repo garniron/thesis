@@ -4,7 +4,7 @@
 
 \draw (A) node[draw] (Psi){$\left \{ \left| D_I \right \rangle \right \}$};
 
-\draw (A)+(0,-1.5) node[right] (S){$|S\rangle = | D_J$};
+\draw (A)+(0,-1.5) node[right] (S){$|S\rangle = | D_J \rangle$};
 \draw (A)+(5,-2) node[right] (G){$G= D_I$};
 \draw[dashed] (A)+(-5,-2) -- (G);
 
