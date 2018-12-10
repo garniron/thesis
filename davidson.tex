@@ -3,10 +3,12 @@
  
 \begin{document}
 
-The diagonalization of the Hamiltonian is a necessary step in configuration
-interaction. Standard diagonalization algorithms scale as $\order{\Ndet^3}$ in
-terms of computation, and $\order{\Ndet^2}$ in terms of storage, so the cost is
-prohibitive as $\Ndet$ ranges usually between a few million and a few billion.
+Finding eigenvectors associated with the lowest eigenvalues of the Hamiltonian
+is a necessary step in configuration interaction. Standard diagonalization
+algorithms scale as $\order{\Ndet^3}$ in terms of computation, and
+$\order{\Ndet^2}$ in terms of storage, so the cost of the full diagonalization
+is prohibitive as $\Ndet$ ranges usually between a few million and a few
+billion.
 
 Fortunately, not all the spectrum of $\hat H$ is required: only the few lowest
 eigenstates are of interest. The Davidson
