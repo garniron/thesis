@@ -400,12 +400,12 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 \begin{algorithm}
         \caption{Master node for stochastic estimation of ${\deltabold}$ }
     \label{alg:DRESS_MASTER}
+    $S$ and $S^{(2)}$ float arrays size $\Nteeth+1$ initialized with $0$ \;
+    $\dot f$ integer array of size $\Ncp$ initialized with $\dot f[m] = \sum_{I \in \mathcal{P}_{p\leq m}} F_{I}$ \;
 	$m \gets 1$ \;
 	$c \gets 1$ \;
 	$error \gets 0$ \;
-	$S$ and $S^{(2)}$ float arrays size $\Nteeth+1$ initialized with $0$ \;
 	$e_* \gets 0$ \;
-	$\dot f$ integer array of size $\Ncp$ initialized with $\dot f[m] = \sum_{I \in \mathcal{P}_{p\leq m}} F_{I}$ \;
 	\While{}{
 		\uIf{$\dot f[m] = 0$}{
 %			\tcc{See algorithm \ref{alg:UPDATE_S}.}
