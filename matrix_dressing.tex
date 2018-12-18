@@ -446,7 +446,7 @@ Because of the ``tooth filling'', sometimes samples computed inside a checkpoint
 	\cpdone, \cpsent : shared scalars initialized to $0$ \;
 	\cpmax : shared array of size $\Nproc$ initialized to $0$ \;
 	$f$ : shared array of size $\Ngen$ initialized to $0$ \;
-	
+	$m \gets 0$ \;
 	\tcc{Loop for each core $\iproc$}
 	\While{$\cpdone > \cpsent \vee m < \Ncp+1$ }{
 		Try to get task $(I,s)$ from queue \;
