@@ -99,8 +99,14 @@
 
 %\makeflyleaf
 \includepdf{couverture_these}
+
+
+\newpage
+\thispagestyle{empty}
+\mbox{}
 \newpage
 
+\setcounter{page}{2}
 \chapter*{Acknowledgments}
 
 %Alors?? Tu n'ecris pas ta these ???
@@ -122,7 +128,10 @@ eszqqwxxcccvbvbkllkkjuuuèèèè-wxwxxde'"'s""za <
 
 
 \newpage
-
+\thispagestyle{empty}
+\mbox{}
+\newpage
+\setcounter{page}{3}
 \tableofcontents
 \newpage
 
@@ -173,7 +182,6 @@ ${\Nint = \lfloor \frac{\Norb-1}{64} \rfloor + 1}$
 
 \chapter{Introduction}
 
-%During the 3 years I spent at the LCPQ, I worked on improving the \QP, a suit of quantum chemistry code intended for developers, which focuses on ease of implementation and parallelism.
 
 Quantum chemistry is a discipline which relies on very expensive computations.
 The scalings of wave function methods lie between $\order{N^5}$ and
@@ -460,10 +468,6 @@ to solids.\cite{Benali_2018}
 \bibliographystyle{ieeetr}
 \bibliography{thesis}
 
-%\appendix 
-%\chapter{Quantum Package basics}
-%\minitoc
-%\subfile{qp_general}
 
 \end{document}
 
