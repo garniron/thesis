@@ -688,7 +688,7 @@ the phase factor can be computed as
 		\For{$\sigma \in \{\uparrow, \downarrow\}$}{
 		$r \gets 0$ \;
 		\For{$i \gets 0, N_{int}-1$}{
-				$\bitPsigma[i] \gets \texttt{IEOR}(\bitIsigma[i], \text{ISHFT}(\bitIsigma[i], 1)$ \;
+				$\bitPsigma[i] \gets \texttt{IEOR}(\bitIsigma[i], \text{ISHFT}(\bitIsigma[i], 1))$ \;
 				\For{$d \gets 0, 5$}{
 					$\bitPsigma[i] \gets \text{IEOR}(\bitPsigma[i], \text{ISHFT}(P_\sigma[i], 2^d)$ \;
 				}
